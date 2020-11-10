@@ -362,7 +362,7 @@ static int uhci_control_request(struct usb_request *req) {
   /* Data in/out packets */
 
   if (len > 0) {
-    packet_type = req->token & USB_TOKEN_OUT ? TD_PACKET_IN : TD_PACKET_OUT;
+    packet_type = req->token & USB_TOKEN_OUT ? TD_PACKET_OUT : TD_PACKET_IN;
 
     uint8_t *tmp = (uint8_t *)req->buf;
     uint8_t *end = tmp + len; /* end of buffer */
