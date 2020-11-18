@@ -53,6 +53,14 @@ static struct uhci_td *uhci_alloc_td(void) {
     return td;
 }
 
+static void uhci_td_free(struct uhci_td *td) {
+	pool_free(&uhci_tds, td);
+}
+
+static void uhci_qh_free(struct uhci_qh *qh) {
+	pool_free(&uhci_qhs, qh);
+}
+
 static void uhci_port_set(uint32_t addr, uint16_t data) {
     uint16_t status = UHCI_READ_16(addr);
     status |= data;
@@ -93,8 +101,8 @@ static void *uhci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 
   async_qh->head = TD_PTR_TERMINATE;
   async_qh->element = TD_PTR_TERMINATE;
-  //async_qh->qh_link.prev = &async_qh->qh_link;
-  //async_qh->qh_link.next = &async_qh->qh_link;
+  async_qh->qh_link.prev = &async_qh->qh_link;
+  async_qh->qh_link.next = &async_qh->qh_link;
 
   uhc->qh_async = async_qh;
 	for (int i = 0; i < UHCI_FRAMELIST_SIZE; i++) {
@@ -276,10 +284,37 @@ static void uhci_init_qh(struct uhci_qh *qh, struct uhci_td *td) {
 }
 
 static void uhci_insert_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
-    struct uhci_qh *end = uhc->qh_async; /* now just for the first control req, TODO: add finder last qh in the queue */
+  struct uhci_qh *list = uhc->qh_async;
+  struct uhci_qh *end = (struct uhci_qh *)((char *)(list->qh_link.prev) - (unsigned long)(&(((struct uhci_qh*)0)->qh_link))); /* find last active qh, TODO: rewrite this place with dlist from embox */
 
-    qh->head = TD_PTR_TERMINATE;
-    end->head = (uint32_t)qh | TD_PTR_QH; /* add link to the qh in the end of the queue */
+  qh->head = TD_PTR_TERMINATE;
+  end->head = (uint32_t)qh | TD_PTR_QH; /* add link to the qh in the end of the queue */
+
+  /* add new qh in the end TODO: rewrite this place with dlist from embox */
+  struct uhci_link *a = &list->qh_link;
+  struct uhci_link *x = &qh->qh_link;
+
+  struct uhci_link *p = a->prev;
+  struct uhci_link *n = a;
+  n->prev = x;
+  x->next = n;
+  x->prev = p;
+  p->next = x;
+}
+
+static void uhci_remove_qh(struct uhci_qh *qh) {
+  struct uhci_qh *prev = (struct uhci_qh *)((char *)(qh->qh_link.prev) - (unsigned long)(&(((struct uhci_qh*)0)->qh_link))); /* find last active qh, TODO: rewrite this place with dlist from embox */
+
+  prev->head = qh->head;
+
+  /* remove our qh TODO: rewrite this place with dlist from embox */
+  struct uhci_link *x = &qh->qh_link;
+  struct uhci_link *p = x->prev;
+  struct uhci_link *n = x->next;
+  n->prev = p;
+  p->next = n;
+  x->next = 0;
+  x->prev = 0;
 }
 
 static int uhci_process_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
@@ -294,11 +329,6 @@ static int uhci_process_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
 
         if (td->cs & TD_CS_STALLED) {
             printk("TD is stalled\n");
-            printk("error td adress: %x\n",(uint32_t) td);
-            printk("error td token: %x\n",(uint32_t) td->token);
-            printk("error td status: %x\n",(uint32_t) td->cs);
-            return 1;
-
         }
 
         if (td->cs & TD_CS_DATABUFFER) {
@@ -314,10 +344,7 @@ static int uhci_process_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
             printk("TD bitstuff error\n");
         }
     }
-    /* if complete */
-    //free qh
-    //free tds
-    //return 1
+
     return 0;
 }
 
@@ -330,13 +357,30 @@ static void uhci_wait_for_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
     }
 }
 
+static void uhci_complete_control_request(struct uhci_qh *qh, struct uhci_td *head, struct usb_request *req) {
+    struct uhci_td *td = head;
+    struct uhci_td *remove;
+    do {
+      remove = td;
+      req->actual_len += 8;
+      td = (struct uhci_td *)(td->link & ~0xf);
+      uhci_td_free(remove);
+    } while(td->link != TD_PTR_TERMINATE);
+    uhci_td_free(td);
+
+    usb_request_complete(req);
+
+    uhci_remove_qh(qh);
+    uhci_qh_free(qh);
+}
+
 static int uhci_control_request(struct usb_request *req) {
   struct uhci_hcd *uhcd = hcd2uhci(req->endp->dev->hcd);
   struct uhci_controller *uhc = uhcd->uhc;
 
   /* Request properties */
   uint32_t speed = req->endp->dev->speed;
-  uint32_t addr = req->endp->dev->addr;
+  uint32_t addr = 0;
   uint32_t endp = 0;
   uint32_t max_size = 8;
   uint32_t len = req->len;
@@ -344,6 +388,9 @@ static int uhci_control_request(struct usb_request *req) {
   int toggle = 0;
   uint32_t packet_type = TD_PACKET_SETUP;
   uint32_t packet_size;
+
+  struct uhci_td *test = uhci_alloc_td();
+  uhci_td_free(test);
 
   /* Create queue of transfer descriptors */
   struct uhci_td *td = uhci_alloc_td();
@@ -403,6 +450,52 @@ static int uhci_control_request(struct usb_request *req) {
   uhci_insert_qh(uhc, qh);
 
   uhci_wait_for_qh(uhc, qh);
+
+  uhci_complete_control_request(qh, head, req);
+  return 0;
+}
+
+static int uhci_common_request(struct usb_request *req) {
+  struct uhci_hcd *uhcd = hcd2uhci(req->endp->dev->hcd);
+  struct uhci_controller *uhc = uhcd->uhc;
+
+  /* Request properties */
+  uint32_t speed = req->endp->dev->speed;
+  uint32_t addr = 0;
+  uint32_t endp = req->endp->address;
+  uint32_t len = req->len;
+  int toggle = 0;
+  uint32_t packet_type;
+
+  struct uhci_td *td;
+
+  packet_type = req->token & USB_TOKEN_OUT ? TD_PACKET_OUT : TD_PACKET_IN;
+
+  td = uhci_alloc_td();
+  if (!td) {
+    return 0;
+  }
+
+  uhci_init_td(td, 0, speed, addr, endp, toggle, packet_type, len, req->buf);
+
+  /* Initialize queue head */
+  struct uhci_qh *qh = uhci_alloc_qh();
+  uhci_init_qh(qh, td);
+
+  /* Wait until queue has been processed */
+  uhci_insert_qh(uhc, qh);
+
+  uhci_wait_for_qh(uhc, qh);
+
+  /* finish our request */
+  uhci_td_free(td);
+
+  req->actual_len += len;
+
+  usb_request_complete(req);
+
+  uhci_remove_qh(qh);
+  uhci_qh_free(qh);
   return 0;
 }
 
@@ -415,12 +508,11 @@ static int uhci_request_do(struct usb_request *req) {
 	case USB_COMM_BULK:
 	case USB_COMM_INTERRUPT:
 	case USB_COMM_ISOCHRON:
-		//uhci_common_req(req);
+		uhci_common_request(req);
 		break;
 	default:
 		panic("uhci_request: Unsupported enpd type %d", req->endp->type);
 	}
-
 
 	return 0;
 }
@@ -432,7 +524,6 @@ static int uhci_request(struct usb_request *req) {
 }
 
 static struct usb_hcd_ops uhci_hcd_ops = {
-
   .hcd_hci_alloc = uhci_hcd_alloc,
 	.hcd_start = uhci_start,
 	.hcd_stop = uhci_stop,

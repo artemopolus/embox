@@ -117,8 +117,13 @@ struct uhci_td {
 
     /* internal fields */
     uint32_t td_next;
-    uint8_t active;
 }__attribute__((packed,aligned(16)));
+
+/* selfmade link structure TODO rewrite with dlist from embox */
+struct uhci_link {
+	struct uhci_link *prev;
+	struct uhci_link *next;
+};
 
 struct uhci_qh {
     volatile uint32_t head;
@@ -126,9 +131,8 @@ struct uhci_qh {
 
     /* internal fields */
     struct usb_request *req;
-    //struct uhci_link qh_link; need for building schedule
+    struct uhci_link qh_link;
     uint32_t td_head;
-    uint32_t active;
 }__attribute__((packed,aligned(16)));
 
 struct uhci_controller {
