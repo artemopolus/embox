@@ -215,15 +215,15 @@ static int uhci_root_hub_control(struct usb_request *req) {
   			break;
   		case USB_PORT_FEATURE_C_CONNECTION:
 
-        if (ctrl->w_index == 1) {
-			port_reg = uhcd->uhc->io_addr + REG_PORT1;
-        } else if (ctrl->w_index == 1) {
-			port_reg = uhcd->uhc->io_addr + REG_PORT2;
-        }
-        /* after this our port have correct status for work */
-        uhci_port_set(port_reg, PORT_RESET);
-        uhci_port_clr(port_reg, PORT_RESET);
-        uhci_port_clr(port_reg, PORT_ENABLE_CHANGE | PORT_CONNECTION_CHANGE);
+			if (ctrl->w_index == 1) {
+				port_reg = uhcd->uhc->io_addr + REG_PORT1;
+        	} else if (ctrl->w_index == 1) {
+				port_reg = uhcd->uhc->io_addr + REG_PORT2;
+        	}
+        	/* after this our port have correct status for work */
+        	uhci_port_set(port_reg, PORT_RESET);
+        	uhci_port_clr(port_reg, PORT_RESET);
+        	uhci_port_clr(port_reg, PORT_ENABLE_CHANGE | PORT_CONNECTION_CHANGE);
   			break;
   		case USB_PORT_FEATURE_C_RESET:
 
@@ -234,9 +234,9 @@ static int uhci_root_hub_control(struct usb_request *req) {
   		}
 		break;
 	default:
-    	panic("uhci_root_hub_control: Unknown req_type=0x%x, request=0x%x\n",
-    		ctrl->bm_request_type, ctrl->b_request);
-    		break;
+		panic("uhci_root_hub_control: Unknown req_type=0x%x, request=0x%x\n",
+				ctrl->bm_request_type, ctrl->b_request);
+    	break;
 
 	}
 	req->req_stat = USB_REQ_NOERR;
@@ -284,7 +284,9 @@ static void uhci_init_qh(struct uhci_qh *qh, struct uhci_td *td) {
 
 static void uhci_insert_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
 	struct uhci_qh *list = uhc->qh_async;
-	struct uhci_qh *end = (struct uhci_qh *)((char *)(list->qh_link.prev) - (unsigned long)(&(((struct uhci_qh*)0)->qh_link))); /* find last active qh, TODO: rewrite this place with dlist from embox */
+	/* find last active qh, TODO: rewrite this place with dlist from embox */
+	struct uhci_qh *end = (struct uhci_qh *)((char *)(qh->qh_link.prev) -
+			(unsigned long)(&(((struct uhci_qh*)0)->qh_link)));
 
 	qh->head = TD_PTR_TERMINATE;
 	end->head = (uint32_t)qh | TD_PTR_QH; /* add link to the qh in the end of the queue */
@@ -302,7 +304,9 @@ static void uhci_insert_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
 }
 
 static void uhci_remove_qh(struct uhci_qh *qh) {
-	struct uhci_qh *prev = (struct uhci_qh *)((char *)(qh->qh_link.prev) - (unsigned long)(&(((struct uhci_qh*)0)->qh_link))); /* find last active qh, TODO: rewrite this place with dlist from embox */
+	/* find last active qh, TODO: rewrite this place with dlist from embox */
+	struct uhci_qh *prev = (struct uhci_qh *)((char *)(qh->qh_link.prev) -
+			(unsigned long)(&(((struct uhci_qh*)0)->qh_link)));
 
 	prev->head = qh->head;
 
