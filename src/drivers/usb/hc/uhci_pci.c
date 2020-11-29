@@ -285,7 +285,7 @@ static void uhci_init_qh(struct uhci_qh *qh, struct uhci_td *td) {
 static void uhci_insert_qh(struct uhci_controller *uhc, struct uhci_qh *qh) {
 	struct uhci_qh *list = uhc->qh_async;
 	/* find last active qh, TODO: rewrite this place with dlist from embox */
-	struct uhci_qh *end = (struct uhci_qh *)((char *)(qh->qh_link.prev) -
+	struct uhci_qh *end = (struct uhci_qh *)((char *)(list->qh_link.prev) -
 			(unsigned long)(&(((struct uhci_qh*)0)->qh_link)));
 
 	qh->head = TD_PTR_TERMINATE;
