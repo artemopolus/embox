@@ -1,0 +1,8 @@
+package afina.tf_module
+
+@BuildDepends(third_party.tensorflow.start)
+module base{
+	@IncludeExport(path="tensorflow")
+    source "CNN_model_tfmodel.h"
+
+}
