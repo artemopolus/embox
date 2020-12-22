@@ -1,7 +1,7 @@
-package afina.tf_module
+package exacto.tf_module
 
 @BuildDepends(third_party.tensorflow.tf)
-module base{
+module start{
 	@IncludeExport(path="tensorflow")
     source "CNN_model_tfmodel.h"
 
