@@ -41,8 +41,8 @@ void SignedSymmetricPerChannelQuantize(const float* values,
   int channel_count = dims->data[quantized_dimension];
   int per_channel_size = input_size / channel_count;
 
-  int stride;
-  int channel_stride;
+  int stride = 0;
+  int channel_stride = 0;
   if (quantized_dimension == 0) {
     stride = 1;
     channel_stride = per_channel_size;
