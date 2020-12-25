@@ -10,6 +10,11 @@ module tf_cppflags {
 
 }
 
+
+@BuildDepends(embox.lib.libgcc)
+@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(third_party.gcc.libstdcxx)
+//@BuildDepends(third_party.lib.libstdcxx_toolchain)
 @BuildDepends(third_party.tensorflow.tf_cppflags)
 static module tf{
     source "tensorflow/lite/micro/simple_memory_allocator.cc",
@@ -89,7 +94,12 @@ static module tf{
 //     "tensorflow/lite/micro/examples/hello_world/output_handler.cc", 
 //     "tensorflow/lite/micro/examples/hello_world/constants.cc"
 
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.libgcc
+    @NoRuntime depends third_party.gcc.libstdcxx
 	@NoRuntime depends third_party.tensorflow.tf_cppflags 
+//    @NoRuntime depends third_party.lib.libstdcxx_toolchain
 
 
 }

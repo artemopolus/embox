@@ -1,8 +1,12 @@
 package exacto.tf_module
 
+@AutoCmd
+@Cmd(name="tensorflow", help = "")
 @BuildDepends(third_party.tensorflow.tf)
 module start{
-	@IncludeExport(path="tensorflow")
-    source "CNN_model_tfmodel.h"
+    source "CNN_model_tfmodel.cpp"
+	//@IncludeExport(path="tensorflow")
+    //source "CNN_model_tfmodel.hpp"
+    @NoRuntime depends third_party.tensorflow.tf
 
 }
