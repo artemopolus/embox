@@ -12,6 +12,10 @@
 #include <limits.h>
 #include <sys/types.h>
 
+#include <util/member.h>
+
+#include <drivers/device.h>
+
 #include <framework/mod/options.h>
 #include <config/embox/driver/block_dev.h>
 
@@ -23,31 +27,22 @@
 #define IOCTL_GETGEOMETRY       3
 #define IOCTL_REVALIDATE        4
 
-#define NODEV                 (-1)
-#define DEV_TYPE_STREAM         1
-#define DEV_TYPE_BLOCK          2
-#define DEV_TYPE_PACKET         3
-
 struct block_dev {
-	dev_t id;
-	char name[NAME_MAX + 1];
-	void *dev_vfs_info;
+	struct dev_module dev_module;
 
-	const struct block_dev_driver *driver;
-	void *privdata;
+	const struct block_dev_ops *driver;
 
 	uint64_t size;
 	size_t block_size;
 	struct block_dev_cache *cache;
 
-	struct dev_module *dev_module;
 
 	/* partitions */
 	uint64_t start_offset;
 	struct block_dev *parent_bdev;
 };
 
-struct block_dev_driver {
+struct block_dev_ops {
 	char *name;
 
 	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
@@ -59,7 +54,7 @@ struct block_dev_driver {
 
 struct block_dev_module {
 	const char * name;
-	const struct block_dev_driver *dev_drv;
+	const struct block_dev_ops *dev_drv;
 };
 
 struct block_dev_cache {
@@ -77,7 +72,7 @@ struct indexator;
 
 extern struct block_dev **get_bdev_tab(void);
 
-extern struct block_dev *block_dev_create(const char *name, const struct block_dev_driver *driver, void *privdata);
+extern struct block_dev *block_dev_create(const char *name, const struct block_dev_ops *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
 
 extern struct block_dev_cache *block_dev_cache_init(void *bdev, int blocks);
@@ -88,7 +83,7 @@ extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, 
 extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
-extern int block_dev_destroy(void *bdev);
+extern int block_dev_destroy(struct block_dev *bdev);
 extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
@@ -97,24 +92,26 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 extern int block_dev_max_id(void);
 extern struct block_dev *block_dev_by_id(int id);
 
+extern struct dev_module *block_dev_to_device(struct block_dev *dev);
+
 extern uint64_t block_dev_size(struct block_dev *dev);
 extern size_t block_dev_block_size(struct block_dev *dev);
 extern struct block_dev *block_dev_parent(struct block_dev *dev);
 extern const char *block_dev_name(struct block_dev *dev);
 extern dev_t block_dev_id(struct block_dev *dev);
+extern void *block_dev_priv(struct block_dev *dev);
 
 #include <util/array.h>
 
-#define BLOCK_DEV_DEF(name, block_dev_driver) \
+#define BLOCK_DEV_DRIVER_DEF(name, block_dev_ops) \
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
-	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
+	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_ops})
 
 
 extern int block_devs_init(void);
 
-#include <drivers/device.h>
 static inline struct block_dev *dev_module_to_bdev(struct dev_module *devmod) {
-	return (struct block_dev *) devmod->dev_priv;
+	return (struct block_dev *) member_cast_out(devmod, struct block_dev, dev_module);
 }
 
 #endif /* BLOCK_DEV_H_ */

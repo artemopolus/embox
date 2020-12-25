@@ -381,14 +381,14 @@ static int imx6_usdhc_write(struct block_dev *bdev, char *buffer, size_t count,
 
 static int imx6_usdhc_probe(void *args);
 
-struct block_dev_driver imx6_usdhc_driver = {
+struct block_dev_ops imx6_usdhc_driver = {
 	.name  = "imx6_usdhc_driver",
 	.probe = imx6_usdhc_probe,
 	.read  = imx6_usdhc_read,
 	.write = imx6_usdhc_write
 };
 
-BLOCK_DEV_DEF("imx6_usdhc", &imx6_usdhc_driver);
+BLOCK_DEV_DRIVER_DEF("imx6_usdhc", &imx6_usdhc_driver);
 
 PERIPH_MEMORY_DEFINE(imx6_usdhc, BASE_ADDR, 0x4000);
 
@@ -408,7 +408,6 @@ static int imx6_usdhc_probe(void *args) {
 	uint32_t tmp;
 
 	bdev = block_dev_create("sdhc", &imx6_usdhc_driver, NULL);
-	bdev->privdata = NULL;
 	bdev->block_size = BLK_LEN;
 
 	/* SDHC initialization */

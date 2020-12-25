@@ -35,12 +35,12 @@
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_RAMDISK_QUANTITY);
 INDEX_DEF(ramdisk_idx, 0, MAX_RAMDISK_QUANTITY);
 
-static int read_sectors(struct block_dev *bdev,
+int ramdisk_read_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct ramdisk *ramdisk;
 	char *read_addr;
 
-	ramdisk = bdev->privdata;
+	ramdisk = block_dev_priv(bdev);
 	read_addr = ramdisk->p_start_addr + (blkno * bdev->block_size);
 
 	memcpy(buffer, read_addr, count);
@@ -48,24 +48,23 @@ static int read_sectors(struct block_dev *bdev,
 }
 
 
-static int write_sectors(struct block_dev *bdev,
+int ramdisk_write_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct ramdisk *ramdisk;
 	char *write_addr;
 
-	ramdisk = bdev->privdata;
+	ramdisk = block_dev_priv(bdev);
 	write_addr = ramdisk->p_start_addr + (blkno * bdev->block_size);
 
 	memcpy(write_addr, buffer, count);
 	return count;
 }
 
-static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	struct ramdisk *ramd = bdev->privdata;
+int rmadisk_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
-		return ramd->blocks;
+		return bdev->size / bdev->block_size;
 
 	case IOCTL_GETBLKSIZE:
 		return bdev->block_size;
@@ -73,11 +72,11 @@ static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static const struct block_dev_driver ramdisk_pio_driver = {
+static const struct block_dev_ops ramdisk_pio_driver = {
 	.name  = "ramdisk_drv",
-	.ioctl = ram_ioctl,
-	.read = read_sectors,
-	.write = write_sectors
+	.ioctl = rmadisk_ioctl,
+	.read = ramdisk_read_sectors,
+	.write = ramdisk_write_sectors
 };
 
 /* XXX not stores index if path have no index placeholder, like * or # */
@@ -93,8 +92,6 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 		err = ENOMEM;
 		goto err_out;
 	}
-
-	ramdisk->blocks = ramdisk_size / PAGE_SIZE();
 
 	ramdisk->p_start_addr = phymem_alloc(page_n);
 	if (NULL == (ramdisk->p_start_addr)) {
@@ -131,7 +128,6 @@ err_out:
 int ramdisk_delete(const char *name) {
 	struct ramdisk *ram;
 	struct block_dev *bdev;
-	size_t ramsize;
 
 	assert(name);
 
@@ -141,15 +137,13 @@ int ramdisk_delete(const char *name) {
 		return -ENOENT;
 	}
 
-	ram = bdev->privdata;
+	ram = block_dev_priv(bdev);
 
 	if (!pool_belong(&ramdisk_pool, ram)) {
 		return -EINVAL;
 	}
 
-	ramsize = ram->blocks * RAMDISK_BLOCK_SIZE + PAGE_SIZE() - 1;
-
-	phymem_free(ram->p_start_addr, ramsize / PAGE_SIZE());
+	phymem_free(ram->p_start_addr, bdev->size / PAGE_SIZE());
 	index_free(&ramdisk_idx, ram->idx);
 	pool_free(&ramdisk_pool, ram);
 

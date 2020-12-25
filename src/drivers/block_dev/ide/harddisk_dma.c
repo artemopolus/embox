@@ -20,7 +20,7 @@
 
 
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
-static const struct block_dev_driver idedisk_udma_driver;
+static const struct block_dev_ops idedisk_udma_driver;
 
 static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 	int i;
@@ -95,7 +95,7 @@ static int hd_read_udma(struct block_dev *bdev, char *buffer, size_t count, blkn
 	}
 	bufp = (char *) buffer;
 
-	hd = (hd_t *) bdev->privdata;
+	hd = block_dev_priv(bdev);
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 
@@ -173,7 +173,7 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 	}
 	bufp = (char *) buffer;
 
-	hd = (hd_t *) bdev->privdata;
+	hd = block_dev_priv(bdev);
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 
@@ -265,7 +265,7 @@ static int idedisk_udma_init (void *args) {
 	return 0;
 }
 
-static const struct block_dev_driver idedisk_udma_driver = {
+static const struct block_dev_ops idedisk_udma_driver = {
 	"idedisk_udma_drv",
 	hd_ioctl,
 	hd_read_udma,
@@ -273,4 +273,4 @@ static const struct block_dev_driver idedisk_udma_driver = {
 	idedisk_udma_init,
 };
 
-BLOCK_DEV_DEF("idedisk_udma", &idedisk_udma_driver);
+BLOCK_DEV_DRIVER_DEF("idedisk_udma", &idedisk_udma_driver);

@@ -27,7 +27,7 @@
 #define MAX_IDE_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 INDEX_DEF(idecd_idx, 0, MAX_IDE_QUANTITY);
 
-static const struct block_dev_driver idecd_pio_driver;
+static const struct block_dev_ops idecd_pio_driver;
 
 static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 		int pktlen, char *buffer, size_t bufsize) {
@@ -153,7 +153,7 @@ static int cd_read(struct block_dev *bdev, char *buffer,
 					size_t count, blkno_t blkno) {
 	unsigned char pkt[12];
 	unsigned int blks;
-	hd_t *hd = (hd_t *) bdev->privdata;
+	hd_t *hd = block_dev_priv(bdev);
 
 	blks = count / CDSECTORSIZE;
 	if (blks > 0xFFFF) {
@@ -178,7 +178,7 @@ static int cd_write(struct block_dev *bdev, char *buffer,
 }
 
 static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	hd_t *hd = (hd_t *) bdev->privdata;
+	hd_t *hd = block_dev_priv(bdev);
 	int rc;
 
 	switch (cmd) {
@@ -234,7 +234,7 @@ static int idecd_init (void *args) {
 	return 0;
 }
 
-static const struct block_dev_driver idecd_pio_driver = {
+static const struct block_dev_ops idecd_pio_driver = {
 	"idecd_drv",
 	cd_ioctl,
 	cd_read,
@@ -242,4 +242,4 @@ static const struct block_dev_driver idecd_pio_driver = {
 	idecd_init,
 };
 
-BLOCK_DEV_DEF("idecd", &idecd_pio_driver);
+BLOCK_DEV_DRIVER_DEF("idecd", &idecd_pio_driver);
