@@ -22,6 +22,7 @@
 #undef islessgreater
 #undef isunordered
 #undef fpclassify
+#undef round
 
 namespace std {
 	using ::floor;
@@ -46,6 +47,8 @@ namespace std {
 	using ::sinh;
 	using ::log10;
 	using ::sqrt;
+	using ::isnan;
+	using ::round;
 
 	static inline float floor(float x) {
 		return floorf(x);
@@ -77,6 +80,10 @@ namespace std {
 
 	static inline float pow(float x, float y) {
 		return powf(x, y);
+	}
+
+	static inline double round(double x){
+		return round(x);
 	}
 
 	static inline long double pow(long double x, long double y) {

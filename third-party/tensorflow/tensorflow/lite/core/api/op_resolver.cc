@@ -29,7 +29,7 @@ TfLiteStatus GetRegistrationFromOpCode(
   *registration = nullptr;
   auto builtin_code = GetBuiltinCode(opcode);
   int version = opcode->version();
-
+#ifdef NO_NEW_MODEL
   if (builtin_code > BuiltinOperator_MAX ||
       builtin_code < BuiltinOperator_MIN) {
     TF_LITE_REPORT_ERROR(
@@ -39,6 +39,9 @@ TfLiteStatus GetRegistrationFromOpCode(
         builtin_code);
     status = kTfLiteError;
   } else if (builtin_code != BuiltinOperator_CUSTOM) {
+#else
+  if (builtin_code != BuiltinOperator_CUSTOM) {
+#endif
     *registration = op_resolver.FindOp(builtin_code, version);
     if (*registration == nullptr) {
       TF_LITE_REPORT_ERROR(

@@ -1,6 +1,6 @@
 package third_party.tensorflow
 
-@BuildArtifactPath(cppflags=" -DTF_LITE_STATIC_MEMORY -DTF_LITE_DISABLE_X86_NEON -DTF_LITE_USE_CTIME ")
+@BuildArtifactPath(cppflags=" -DTF_LITE_USE_GLOBAL_CMATH_FUNCTIONS -DTF_LITE_STATIC_MEMORY -DTF_LITE_DISABLE_X86_NEON -DTF_LITE_USE_CTIME ")
 @BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/third-party/tensorflow ")
 @BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/third-party/tensorflow/third_party/gemmlowp ")
 @BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/third-party/tensorflow/third_party/flatbuffers/include ")
