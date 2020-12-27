@@ -77,15 +77,15 @@ int main(int argc, char *argv[])
   error_reporter = &micro_error_reporter;
   model = tflite::GetModel(CNN_model_tfmodel);
 
-  // if (model->version() != TFLITE_SCHEMA_VERSION)
-  // {
-  //     error_reporter->Report(
-  //           "Model provided is schema version %d not equal "
-  //           "to supported version %d.",
-  //           model->version(), TFLITE_SCHEMA_VERSION);
-  // //   error_reporter->Report("Model version does not match Schema");
-  // //   while(1);
-  // }
+  if (model->version() != TFLITE_SCHEMA_VERSION)
+  {
+      error_reporter->Report(
+            "Model provided is schema version %d not equal "
+            "to supported version %d.",
+            model->version(), TFLITE_SCHEMA_VERSION);
+  //   error_reporter->Report("Model version does not match Schema");
+  //   while(1);
+  }
   
   
   // // Pull in only needed operations (should match NN layers). Template parameter
