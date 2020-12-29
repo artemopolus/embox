@@ -1,0 +1,9 @@
+package exacto.cmds.report
+
+@AutoCmd
+@Cmd(name="main_report", , help=" Test for setup report ", man='''
+AUTHOR Kuznetcov
+''')
+module main_report {
+    source "main_report.c"
+}
