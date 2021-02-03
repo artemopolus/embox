@@ -10,11 +10,11 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", PA, PIN_9, AF7),
+				PIN("TX", PB, PIN_6, AF7),
 				PIN("RX", PB, PIN_7, AF7),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
+				VAL("TX",   CLK_GPIOB),
 				VAL("RX",   CLK_GPIOB),
 				VAL("UART", CLK_USART1),
 			}
