@@ -61,9 +61,12 @@ static_assert(USART1_IRQ == USART1_IRQn);
 #endif
 
 #define STM32_USART1_ENABLED             1
-#define USART1_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART1_TX_PIN                    GPIO_PIN_9
-#define USART1_TX_GPIO_PORT              GPIOA
+// #define USART1_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART1_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+// #define USART1_TX_PIN                    GPIO_PIN_9
+#define USART1_TX_PIN                    GPIO_PIN_6
+// #define USART1_TX_GPIO_PORT              GPIOA
+#define USART1_TX_GPIO_PORT              GPIOB
 #define USART1_TX_AF                     GPIO_AF7_USART1
 #if defined STM32F746xx
 #define USART1_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
