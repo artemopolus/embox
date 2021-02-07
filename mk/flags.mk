@@ -8,7 +8,8 @@ ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
 COMPILER ?=
-BUILD_DEPS_CPPFLAGS ?=
+BUILD_DEPS_CPPFLAGS_BEFORE ?=
+BUILD_DEPS_CPPFLAGS_AFTER ?=
 BUILD_DEPS_LDFLAGS ?=
 
 CROSS_COMPILE ?=
@@ -61,14 +62,26 @@ PROFILING_CFLAGS ?= -finstrument-functions \
 			get_profiling_mode \
 			set_profiling_mode)
 
+#
+# We use '+', because we want to call external build as recursive sub-make.
+# From https://www.gnu.org/software/make/manual/html_node/MAKE-Variable.html:
+#
+# "This special feature is only enabled if the MAKE variable appears directly
+# in the recipe: it does not apply if the MAKE variable is referenced through
+# expansion of another variable. In the latter case you must use the '+' token
+# to get these special effects."
+#
+# Since $(MAKE) here is referenced through $(EXTERNAL_MAKE) it's fine to add
+# additional '+'.
+#
 EXTERNAL_MAKE = \
-	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
+	+$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_PRO = \
 	$(MKDIR) $(mod_build_dir) && \
 	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/.qmake.cache $(mod_build_dir) && \
 	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
-		INCLUDEPATH+='$(subst -I,,$(BUILD_DEPS_CPPFLAGS))' \
+		INCLUDEPATH+='$(subst -I,,$(BUILD_DEPS_CPPFLAGS_BEFORE) $(BUILD_DEPS_CPPFLAGS_AFTER))' \
 		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
 		$${TARGET:-$(dir $(my_file))} \
 		-o $(abspath $(mod_build_dir))/Makefile && \
@@ -107,11 +120,12 @@ EXTERNAL_MAKE_FLAGS = \
 	EMBOX_ARCH='$(ARCH)' \
 	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
 	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
+	EMBOX_IMPORTED_MAKEFLAGS='$(filter -j --jobserver-auth=% --jobserver-fds=%, $(MAKEFLAGS))' \
 	EMBOX_CFLAGS='$(CFLAGS)' \
 	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
-	EMBOX_DEPS_CPPFLAGS='$(BUILD_DEPS_CPPFLAGS)' \
-	EMBOX_DEPS_LDFLAGS='$(BUILD_DEPS_LDFLAGS)' \
-	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS) $(BUILD_DEPS_CPPFLAGS)' \
+	EMBOX_DEPS_CPPFLAGS_BEFORE='$(BUILD_DEPS_CPPFLAGS_BEFORE)' \
+	EMBOX_DEPS_CPPFLAGS_AFTER='$(BUILD_DEPS_CPPFLAGS_AFTER)' \
+	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' \
 	EMBOX_LDFLAGS='$(LDFLAGS) $(BUILD_DEPS_LDFLAGS)'
 
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)

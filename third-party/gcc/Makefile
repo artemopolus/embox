@@ -51,8 +51,8 @@ $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
 
 target_libgcc_cppflags := -DLIBGCC2_HAS_XF_MODE=0 \
-	-DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY \
-	-DNAME__MAIN -DSYMBOL__MAIN=__embox_register_eh_frame_once
+	-DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY
+
 cppflags = $${EMBOX_IMPORTED_CPPFLAGS} \
 	-I$(PKG_BUILD_DIR)/gcc/include
 
@@ -97,7 +97,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_BUILD_DIR) && ( \
-		. $(EMBOX_GCC_ENV) && $(MAKE) MAKEFLAGS='$${EMBOX_IMPORTED_MAKEFLAGS}' \
+		. $(EMBOX_GCC_ENV) && $(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
