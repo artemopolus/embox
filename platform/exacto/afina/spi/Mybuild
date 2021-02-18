@@ -1,0 +1,10 @@
+package exacto.afina.spi
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module spi1{
+	source "spi1.c"
+	@IncludeExport(path="spi")
+	source "spi1.h"
+    depends exacto.commander.data_storage
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+}

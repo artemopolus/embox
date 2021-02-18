@@ -1,0 +1,25 @@
+package exacto.commander
+
+module data_storage {
+	source "exacto_data_storage.c"
+	@IncludeExport(path="exacto_commander")
+	source "exacto_data_storage.h"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module sensors {
+	source "exacto_sensors.c"
+	@IncludeExport(path="exacto_commander")
+	source "exacto_sensors.h"
+
+	depends apollon_slave.spi_gen.spi1
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends apollon_slave.project.defs
+	
+}
