@@ -2,7 +2,7 @@ package exacto.commander
 
 module data_storage {
 	source "exacto_data_storage.c"
-	@IncludeExport(path="exacto_commander")
+	@IncludeExport(path="commander")
 	source "exacto_data_storage.h"
 
 	depends embox.compat.posix.util.sleep

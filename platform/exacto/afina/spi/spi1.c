@@ -99,15 +99,15 @@ static int SPI1_FULL_DMA_init(void)
     LL_DMA_DisableFifoMode(DMA2, LL_DMA_STREAM_0);
 
       /* SPI1_TX Init */
-    LL_DMA_SetChannelSelection(DMA2, LL_DMA_STREAM_3, LL_DMA_CHANNEL_3);
-    LL_DMA_SetDataTransferDirection(DMA2, LL_DMA_STREAM_3, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
-    LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_3, LL_DMA_PRIORITY_LOW);
-    LL_DMA_SetMode(DMA2, LL_DMA_STREAM_3, LL_DMA_MODE_NORMAL);
-    LL_DMA_SetPeriphIncMode(DMA2, LL_DMA_STREAM_3, LL_DMA_PERIPH_NOINCREMENT);
-    LL_DMA_SetMemoryIncMode(DMA2, LL_DMA_STREAM_3, LL_DMA_MEMORY_INCREMENT);
-    LL_DMA_SetPeriphSize(DMA2, LL_DMA_STREAM_3, LL_DMA_PDATAALIGN_BYTE);
-    LL_DMA_SetMemorySize(DMA2, LL_DMA_STREAM_3, LL_DMA_MDATAALIGN_BYTE);
-    LL_DMA_DisableFifoMode(DMA2, LL_DMA_STREAM_3);
+    LL_DMA_SetChannelSelection(DMA2, LL_DMA_STREAM_5, LL_DMA_CHANNEL_3);
+    LL_DMA_SetDataTransferDirection(DMA2, LL_DMA_STREAM_5, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+    LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_5, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetMode(DMA2, LL_DMA_STREAM_5, LL_DMA_MODE_NORMAL);
+    LL_DMA_SetPeriphIncMode(DMA2, LL_DMA_STREAM_5, LL_DMA_PERIPH_NOINCREMENT);
+    LL_DMA_SetMemoryIncMode(DMA2, LL_DMA_STREAM_5, LL_DMA_MEMORY_INCREMENT);
+    LL_DMA_SetPeriphSize(DMA2, LL_DMA_STREAM_5, LL_DMA_PDATAALIGN_BYTE);
+    LL_DMA_SetMemorySize(DMA2, LL_DMA_STREAM_5, LL_DMA_MDATAALIGN_BYTE);
+    LL_DMA_DisableFifoMode(DMA2, LL_DMA_STREAM_5);
 
     SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
@@ -124,34 +124,35 @@ static int SPI1_FULL_DMA_init(void)
     LL_SPI_EnableNSSPulseMgt(SPI1);
 
     // embox DMA settings
-    LL_DMA_ConfigAddresses(DMA2,
-                           LL_DMA_Stream_0,
+    LL_DMA_ConfigAddresses(DMA2, 
+                            LL_DMA_STREAM_0,
                            LL_SPI_DMA_GetRegAddr(SPI1), (uint32_t)SPI1_FULL_DMA_rx_buffer.dt_buffer,
-                           LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_Stream_0));
-    LL_DMA_SetDataLength(DMA2, LL_DMA_Stream_0, SPI1_FULL_DMA_rx_buffer.dt_count);
+                           LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_STREAM_0));
+    LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_0, SPI1_FULL_DMA_rx_buffer.dt_count);
 
     LL_DMA_ConfigAddresses(DMA2,
-                           LL_DMA_Stream_3, (uint32_t)SPI1_FULL_DMA_tx_buffer.dt_buffer,
+                           LL_DMA_STREAM_5, (uint32_t)SPI1_FULL_DMA_tx_buffer.dt_buffer,
                            LL_SPI_DMA_GetRegAddr(SPI1),
-                           LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_Stream_3));
-    LL_DMA_SetDataLength(DMA2, LL_DMA_Stream_3, SPI1_FULL_DMA_tx_buffer.dt_count);
+                           LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_STREAM_5));
+    LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_3, SPI1_FULL_DMA_tx_buffer.dt_count);
 
 
-    LL_DMA_EnableIT_TC(DMA2, LL_DMA_Stream_0);
-    LL_DMA_EnableIT_TE(DMA2, LL_DMA_Stream_0);
-    LL_DMA_EnableIT_TC(DMA2, LL_DMA_Stream_3);
-    LL_DMA_EnableIT_TE(DMA2, LL_DMA_Stream_3);
+    LL_DMA_EnableIT_TC(DMA2, LL_DMA_STREAM_0);
+    LL_DMA_EnableIT_TE(DMA2, LL_DMA_STREAM_0);
+    LL_DMA_EnableIT_TC(DMA2, LL_DMA_STREAM_5);
+    LL_DMA_EnableIT_TE(DMA2, LL_DMA_STREAM_5);
 
-    irq_attach(59, SPI1_FULL_DMA_tx_irq_handler, 0, NULL, "SPI1_FULL_DMA_irq_handler");
+    irq_attach(68, SPI1_FULL_DMA_tx_irq_handler, 0, NULL, "SPI1_FULL_DMA_irq_handler");
     irq_attach(56, SPI1_FULL_DMA_rx_irq_handler, 0, NULL, "SPI1_FULL_DMA_irq_handler");
 
-    lthread_init(&SPI1_FULL_DMA_tx_buffer.dt_lth, &SPI1_FULL_DMA_tx_irq_handler);
-    lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_irq_handler);
+    // lthread_init(&SPI1_FULL_DMA_tx_buffer.dt_lth, &SPI1_FULL_DMA_tx_irq_handler);
+    lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_handler);
 
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
     LL_SPI_Enable(SPI1);
-    LL_DMA_EnableChannel(DMA2, LL_DMA_Stream_0);
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0);
+    return 0;
 }
 static irq_return_t SPI1_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
 {
@@ -162,7 +163,7 @@ static irq_return_t SPI1_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data
     }
     return IRQ_HANDLED;
 }
-STATIC_IRQ_ATTACH(59, SPI1_FULL_DMA_tx_irq_handler, NULL);
+STATIC_IRQ_ATTACH(68, SPI1_FULL_DMA_tx_irq_handler, NULL);
 static irq_return_t SPI1_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data)
 {
     if (LL_DMA_IsActiveFlag_TC0(DMA2) != RESET)
@@ -192,7 +193,8 @@ uint8_t SPI1_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
 {
     if (datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
-    LL_DMA_DisableChannel(DMA2, LL_DMA_CHANNEL_3);
+    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);
+    // LL_DMA_DisableChannel(DMA2, LL_DMA_CHANNEL_3);
 
     for (uint8_t i = 0; i < datacount; i++)
     {
@@ -200,8 +202,9 @@ uint8_t SPI1_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
         SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = data[i];
     }
 
-    LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_3, datacount);
-    LL_DMA_EnableChannel    (DMA2, LL_DMA_CHANNEL_3);
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_5, datacount);
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);
+    // LL_DMA_EnableChannel    (DMA2, LL_DMA_CHANNEL_3);
     return 0;
 }
 uint8_t SPI1_FULL_DMA_receive(uint8_t *data, uint8_t datacount)
@@ -210,9 +213,11 @@ uint8_t SPI1_FULL_DMA_receive(uint8_t *data, uint8_t datacount)
 }
 uint8_t SPI1_FULL_DMA_setdatalength( uint8_t datalength )
 {
-    LL_DMA_DisableChannel   (DMA2, LL_DMA_CHANNEL_0);
+    // LL_DMA_DisableChannel   (DMA2, LL_DMA_CHANNEL_0);
+    LL_DMA_DisableStream    (DMA2, LL_DMA_STREAM_0);
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, datalength);
-    LL_DMA_EnableChannel    (DMA2, LL_DMA_CHANNEL_0);
+    // LL_DMA_EnableChannel    (DMA2, LL_DMA_CHANNEL_0);
+    LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
     return 0;
 }
 struct mutex SPI1_FULL_DMA_wait_rx_data(void)

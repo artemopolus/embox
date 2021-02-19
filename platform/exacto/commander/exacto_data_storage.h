@@ -5,6 +5,8 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 
+#define THREAD_CONTROL_BUFFER_SZ 16
+
 #include <stdint.h>
 // typedef enum{
 //     APPEND = 0,
