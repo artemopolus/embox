@@ -1,0 +1,26 @@
+package exacto.cmds.tests
+
+
+@AutoCmd
+@Cmd(name="spi_basic", help=" Test for spi connection", man='''
+    AUTHOR Kuznetcov
+    Test for spi connection between
+    Apollon and Afina
+    for Afina module:
+    1. Send message to Apollon
+    2. Receive answer
+    3. Print 'Done' on success
+''')
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module spi_basic {
+    source "spi_basic.c"
+    depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
+
+	depends exacto.commander.data_storage
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+}
