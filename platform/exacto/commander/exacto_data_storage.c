@@ -2,7 +2,10 @@
 #include <embox/unit.h>
 
 
-// static struct mutex MutexOfExactoDataStorage;
+/**
+ * @brief store info and data about external input
+ * 
+ */
 exactodatastorage ExDtStorage = {
     .isEmpty = 1,
 };
@@ -13,7 +16,12 @@ exactodatastorage ExDtStorage = {
 
 
 
-
+/**
+ * @brief save check data 
+ * 
+ * @param self thread with implemented data storage
+ * @return int 
+ */
 static int functionForExDtStorageHandler(struct lthread *self)
 {
     thread_control_t *_trg_lthread;
@@ -51,17 +59,33 @@ mutex_retry:
 
 
 EMBOX_UNIT_INIT(initExactoDataStorage);
+/**
+ * @brief инициирует хранилище данных, в данный момент, только мьютекс
+ * 
+ * @return int всегда ноль
+ */
 static int initExactoDataStorage(void)
 {
     mutex_init_schedee(&ExDtStorage.dtmutex);
     return 0;
 }
-
+/**
+ * @brief инициирует легкий поток для проверки наличия данных
+ * 
+ * @param base легкий поток
+ * @return uint8_t 
+ */
 uint8_t checkExactoDataStorage( thread_control_t * base)
 {
     lthread_launch(&base->thread);
     return 0;
 }
+/**
+ * @brief подготавливает легкий поток для работы
+ * 
+ * @param base легкий поток
+ * @return uint8_t 
+ */
 uint8_t initThreadExactoDataStorage( thread_control_t * base )
 {
     mutex_init_schedee(&base->mx);
