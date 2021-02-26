@@ -104,3 +104,19 @@ uint8_t initThreadExactoDataStorage( thread_control_t * base )
     base->result = THR_CTRL_WAIT;
     return 0;
 }
+uint8_t transmitExactoDataStorage()
+{
+    if (ExOutputStorage[THR_SPI_TX].isready)
+    {
+        lthread_launch(&ExOutputStorage[THR_SPI_TX].thread);
+    }
+    return 0;
+}
+uint8_t receiveExactoDataStorage()
+{
+    if (ExOutputStorage[THR_SPI_RX].isready)
+    {
+        lthread_launch(&ExOutputStorage[THR_SPI_RX].thread);
+    }
+    return 0;
+}

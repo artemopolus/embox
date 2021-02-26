@@ -57,4 +57,6 @@ extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
 extern exactodatastorage ExDtStorage;
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
+extern uint8_t transmitExactoDataStorage();
+extern uint8_t receiveExactoDataStorage();
 #endif //EXACTO_DATA_STORAGE_H

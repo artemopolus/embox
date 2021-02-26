@@ -166,8 +166,9 @@ static int SPI1_FULL_DMA_init(void)
     lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_handler);
 
     lthread_init(&ExOutputStorage[THR_SPI_TX].thread, &SPI1_FULL_DMA_transmit);
+    ExOutputStorage[THR_SPI_TX].isready = 1;
     lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI1_FULL_DMA_receive);
-
+    ExOutputStorage[THR_SPI_RX].isready = 1;
 
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
