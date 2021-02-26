@@ -9,7 +9,7 @@
 exactodatastorage ExDtStorage = {
     .isEmpty = 1,
 };
-
+thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 
 
 
@@ -67,6 +67,16 @@ EMBOX_UNIT_INIT(initExactoDataStorage);
 static int initExactoDataStorage(void)
 {
     mutex_init_schedee(&ExDtStorage.dtmutex);
+    ExOutputStorage[0].type = THR_SPI_RX;
+    ExOutputStorage[1].type = THR_SPI_TX;
+    ExOutputStorage[2].type = THR_I2C_RX;
+    ExOutputStorage[3].type = THR_I2C_TX;
+    for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
+    {
+        ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
+        ExOutputStorage[i].isready = 0;
+        ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
+    }
     return 0;
 }
 /**

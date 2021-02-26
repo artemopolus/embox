@@ -6,6 +6,7 @@
 #include <kernel/lthread/sync/mutex.h>
 
 #define THREAD_CONTROL_BUFFER_SZ 16
+#define THREAD_OUTPUT_TYPES_SZ 4
 
 #include <stdint.h>
 // typedef enum{
@@ -13,6 +14,14 @@
 //     GET,
 //     CHECK
 // }function_list_t;
+
+typedef enum t_t_t{
+    THR_SPI_RX = 0,
+    THR_SPI_TX,
+    THR_I2C_RX,
+    THR_I2C_TX,
+}thread_type_t;
+
 typedef enum t_c_r_t{
     THR_CTRL_OK = 0,
     THR_CTRL_WAIT,
@@ -24,8 +33,11 @@ typedef struct {
     struct lthread thread;                          // поток исполнения запросов
     struct mutex mx;                             // контрольный мьютекс для контроля окончания потока
     uint8_t databuffer[THREAD_CONTROL_BUFFER_SZ];   // буффер хранения данных
+    uint8_t datamaxcount;
     uint8_t datalen;
     thread_control_result_t result;
+    thread_type_t type;
+    uint8_t isready;
     // function_list_t fun_type;
 }thread_control_t;
 typedef struct{
@@ -39,6 +51,7 @@ typedef enum{
     EXACTO_DENY,
     EXACTO_ERROR
 }exacto_process_result_t;
+extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 extern exactodatastorage ExDtStorage;
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );

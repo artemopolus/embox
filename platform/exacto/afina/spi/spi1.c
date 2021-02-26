@@ -59,6 +59,9 @@ static irq_return_t SPI1_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data
 static irq_return_t SPI1_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data);
 static int SPI1_FULL_DMA_rx_handler(struct lthread *self);
 static int SPI1_FULL_DMA_tx_handler(struct lthread *self);
+
+static int SPI1_FULL_DMA_transmit(struct lthread * self);
+static int SPI1_FULL_DMA_receive(struct lthread * self);
 EMBOX_UNIT_INIT(SPI1_FULL_DMA_init);
 static int SPI1_FULL_DMA_init(void)
 {
@@ -162,6 +165,10 @@ static int SPI1_FULL_DMA_init(void)
     lthread_init(&SPI1_FULL_DMA_tx_buffer.dt_lth, &SPI1_FULL_DMA_tx_handler);
     lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_handler);
 
+    lthread_init(&ExOutputStorage[THR_SPI_TX].thread, &SPI1_FULL_DMA_transmit);
+    lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI1_FULL_DMA_receive);
+
+
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
     LL_SPI_Enable(SPI1);
@@ -232,19 +239,21 @@ mutex_retry:
         return lthread_yield(&&start, &&mutex_retry);
     }
     ExDtStorage.isEmpty = 0;
+    for (uint8_t i = 0; i < SPI1_FULL_DMA_rx_buffer.dt_count; i++)
+    {
+        ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
+    }
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
 }
-/**
- * @brief передача данных в SPI DMA
- * 
- * @param data массив данных 
- * @param datacount количество данных в массиве
- * @return uint8_t ноль если успешно
- */
-uint8_t SPI1_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
+
+
+static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
+    thread_control_t * _trg_thread;
+    _trg_thread = (thread_control_t *)self;
+    uint32_t datacount = _trg_thread->datalen;
     if (datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);
@@ -252,22 +261,17 @@ uint8_t SPI1_FULL_DMA_transmit(uint8_t *data, uint8_t datacount)
     for (uint8_t i = 0; i < datacount; i++)
     {
         /* копирование данных */
-        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = data[i];
+        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = _trg_thread->databuffer[i];
     }
 
     LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, datacount);
     LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);
     return 0;
 }
-/**
- * @brief получить аднные из SPI DMA
- * 
- * @param data 
- * @param datacount 
- * @return uint8_t 
- */
-uint8_t SPI1_FULL_DMA_receive(uint8_t *data, uint8_t datacount)
+
+static int SPI1_FULL_DMA_receive(struct lthread * self)
 {
+
     return 0;
 }
 uint8_t SPI1_FULL_DMA_setdatalength( uint8_t datalength )
