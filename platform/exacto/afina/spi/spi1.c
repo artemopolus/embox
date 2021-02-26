@@ -241,7 +241,8 @@ mutex_retry:
     ExDtStorage.isEmpty = 0;
     for (uint8_t i = 0; i < SPI1_FULL_DMA_rx_buffer.dt_count; i++)
     {
-        ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
+        // ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     }
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
@@ -257,11 +258,13 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     if (datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);
-
+    uint8_t value = 0;
     for (uint8_t i = 0; i < datacount; i++)
     {
         /* копирование данных */
-        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = _trg_thread->databuffer[i];
+        // SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = _trg_thread->databuffer[i];
+        grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
+        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     }
 
     LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, datacount);

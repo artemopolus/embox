@@ -33,7 +33,8 @@ typedef enum t_c_r_t{
 typedef struct {
     struct lthread thread;                          // поток исполнения запросов
     struct mutex mx;                             // контрольный мьютекс для контроля окончания потока
-    uint8_t databuffer[THREAD_CONTROL_BUFFER_SZ];   // буффер хранения данных
+    // uint8_t databuffer[THREAD_CONTROL_BUFFER_SZ];   // буффер хранения данных
+    ExactoBufferUint8Type datastorage;
     uint8_t datamaxcount;
     uint8_t datalen;
     thread_control_result_t result;
