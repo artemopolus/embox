@@ -4,6 +4,7 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
+#include "commander/exacto_buffer.h"
 
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_OUTPUT_TYPES_SZ 4

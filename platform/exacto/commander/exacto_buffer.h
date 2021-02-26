@@ -81,14 +81,21 @@ __static_inline uint8_t grbfst_exbu8(ExactoBufferUint8Type * buffer, uint8_t * f
  */
 __static_inline void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
 {
-    if(!buffer->isExist)     return;
+    if(!buffer->isExist)     
+        return;
     buffer->data[buffer->lst] = value;
-		if(buffer->isEmpty)	buffer->isEmpty = 0;
+	if(buffer->isEmpty)	
+    {
+        buffer->isEmpty = 0;
+    }
     else 
-		{
-			buffer->lst = (buffer->lst + 1) & buffer->mask;
-			if(buffer->lst == buffer->str) buffer->str = (buffer->str + 1) & buffer->mask;
-		}
+    {
+        buffer->lst = (buffer->lst + 1) & buffer->mask;
+        if(buffer->lst == buffer->str) 
+        {
+            buffer->str = (buffer->str + 1) & buffer->mask;
+        }
+    }
 }
 /**
  * @brief      { забираем данные из буффера в массив }
