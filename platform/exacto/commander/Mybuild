@@ -12,6 +12,7 @@ module data_storage {
 	depends exacto.commander.buffer	
 }
 module buffer{
+	option number buffersz=2
 	@IncludeExport(path="commander")
 	source "exacto_buffer.h"
 }

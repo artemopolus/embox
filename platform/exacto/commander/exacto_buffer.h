@@ -5,8 +5,29 @@
 #include <stdlib.h>
 
 
+#include <framework/mod/options.h>
+#include <module/exacto/commander/buffer.h>
+#define MODOPS_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__buffer,NUMBER, buffersz)
+
+#if MODOPS_BUFFER_SZ == 2
+#define EXACTO_BUFFER_UINT8_SZ  2 
+#elif MODOPS_BUFFER_SZ == 4
+#define EXACTO_BUFFER_UINT8_SZ  4 
+#elif MODOPS_BUFFER_SZ == 8
+#define EXACTO_BUFFER_UINT8_SZ  8 
+#elif MODOPS_BUFFER_SZ == 16
+#define EXACTO_BUFFER_UINT8_SZ  16 
+#elif MODOPS_BUFFER_SZ == 32
+#define EXACTO_BUFFER_UINT8_SZ  32 
+#elif MODOPS_BUFFER_SZ == 64
+#define EXACTO_BUFFER_UINT8_SZ  64 
+#else
+#error Unsupported exacto buffer sz
+#endif
+
+
 typedef struct{
-    uint8_t * data;
+    uint8_t data[EXACTO_BUFFER_UINT8_SZ];
     uint8_t str;
     uint8_t lst;
     uint8_t isExist;
@@ -15,17 +36,9 @@ typedef struct{
     uint8_t mask;
 } ExactoBufferUint8Type;
 
-typedef enum{
-    EXACTO_BUFLEN_02 = 2,
-    EXACTO_BUFLEN_04 = 4,
-    EXACTO_BUFLEN_08 = 8,
-    EXACTO_BUFLEN_16 = 16,
-    EXACTO_BUFLEN_64 = 64,
-    EXACTO_BUFLEN_128 = 128,
-    EXACTO_BUFLEN_256 = 256
-}ExactoBufferUint8TypSizes;
 
 #define __static_inline static inline
+
     
 /**
  * @brief      { инициализируем буффер для заданного указателя }
@@ -33,15 +46,15 @@ typedef enum{
  * @param      buffer  указатель
  * @param[in]  sz      размер буффера
  */
-__static_inline void    setini_exbu8(ExactoBufferUint8Type * buffer, ExactoBufferUint8TypSizes sz)
+__static_inline int  setini_exbu8(ExactoBufferUint8Type * buffer)
 {
     buffer->str = 0;
     buffer->lst = 0;
-    buffer->data = (uint8_t *)calloc(sz, sizeof(uint8_t));
     buffer->isExist = 1;
     buffer->isEmpty = 1;
-    buffer->datalen = sz;
-    buffer->mask = sz - 1;
+    buffer->datalen = EXACTO_BUFFER_UINT8_SZ;
+    buffer->mask = EXACTO_BUFFER_UINT8_SZ - 1;
+    return 0;
 }
 /**
  * @brief      { получаем размер буффера заданного указателя }
