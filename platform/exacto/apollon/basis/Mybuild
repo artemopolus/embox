@@ -8,9 +8,10 @@ static module apollon_conf extends third_party.bsp.stmf1cube.stm32f1_conf {
 
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module arch extends embox.arch.arch {
-	source "arch.c"
+	source "arch_generated.c"
 
 	source "system_stm32f1xx.c"
+	depends third_party.bsp.stmf1cube.cube
 }
 @Build(stage=1)
 @BuildDepends(apollon_conf)
