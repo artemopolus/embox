@@ -59,4 +59,5 @@ extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
 extern uint8_t transmitExactoDataStorage();
 extern uint8_t receiveExactoDataStorage();
+extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount);
 #endif //EXACTO_DATA_STORAGE_H

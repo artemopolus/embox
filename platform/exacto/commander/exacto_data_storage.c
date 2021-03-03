@@ -120,3 +120,11 @@ uint8_t receiveExactoDataStorage()
     }
     return 0;
 }
+uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount)
+{
+    for (uint8_t i = 0; i < datacount; i++)
+    {
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
+    }
+    return 0;
+}

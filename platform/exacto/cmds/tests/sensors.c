@@ -4,10 +4,10 @@
 #include <stdio.h>
   
 #include <stdint.h>
-#include "exacto_commander/exacto_data_storage.h"
-#include "exacto_commander/exacto_sensors.h"
-#include "project/base_project_defs.h"
-#include "spi_gen/spi1_generated.h"
+#include "commander/exacto_data_storage.h"
+#include "commander/exacto_sensors.h"
+// #include "project/base_project_defs.h"
+#include "spi/spi1_generated.h"
 
 static spi_pack_t PackageToSend = {
     .result = EXACTO_OK,

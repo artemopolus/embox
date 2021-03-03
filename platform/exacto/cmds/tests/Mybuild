@@ -24,3 +24,38 @@ module spi_basic {
 	depends exacto.commander.data_storage
 	@NoRuntime depends third_party.bsp.stmf7cube.cube
 }
+@AutoCmd
+@Cmd(name="test_spi_dma_send", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_dma_send {
+	source "spi_dma_receive_send.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+    depends exacto.apollon.spi.spi1
+	depends exacto.commander.data_storage
+	
+	depends third_party.bsp.stmf1cube.cube
+}
+@AutoCmd
+@Cmd(name="test_sensors", help = "")
+module sensors {
+	source "sensors.c"
+	
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
+
+	depends exacto.apollon.spi.spi1
+	depends exacto.commander.data_storage
+	depends exacto.commander.sensors
+	//depends apollon_slave.project.defs
+	
+	depends third_party.bsp.stmf1cube.cube
+}
