@@ -1,2 +1,1 @@
-"help",
-"report_init"
+"help"

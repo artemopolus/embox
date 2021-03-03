@@ -1,4 +1,4 @@
-#include <exacto_apollon_stm32f103.conf.h>
+#include <stm32f103_base.conf.h>
 
 CONFIG {
 	uarts[1].status = DISABLED;
