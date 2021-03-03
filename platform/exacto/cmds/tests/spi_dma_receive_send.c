@@ -9,7 +9,7 @@
 thread_control_t MainThread;
 
 uint8_t MarkerThread = 0;
-uint8_t DataToBuffer[] = {0, 7, 2, 10};
+uint8_t DataToBuffer[] = {0, 7, 2, 10, 1};
 
 struct lthread PrintThread;
 struct lthread MarkerCheckerThread;
@@ -18,7 +18,7 @@ struct lthread UpdateDataToBufferThread;
 struct lthread SendDataThread;
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, 4); 
+    setDataToExactoDataStorage(DataToBuffer, 5); 
     return 0;
 }
 static int sendDataThreadRun(struct lthread * self)

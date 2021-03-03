@@ -19,7 +19,7 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
-#include "exacto_commander/exacto_data_storage.h"
+#include "commander/exacto_data_storage.h"
 
 
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 5

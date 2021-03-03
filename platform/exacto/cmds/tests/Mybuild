@@ -28,17 +28,33 @@ module spi_basic {
 @Cmd(name="test_spi_dma_send", help=" Test for sending test array throw spi dma ", man='''
 AUTHOR Kuznetcov
 ''')
-module spi_dma_send {
+module spi_dma_receive {
 	source "spi_dma_receive_send.c"
 
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	
-    depends exacto.apollon.spi.spi1
+    depends exacto.apollon.spi.spi2
 	depends exacto.commander.data_storage
 	
-	depends third_party.bsp.stmf1cube.cube
+	//depends third_party.bsp.stmf1cube.cube
+}
+@AutoCmd
+@Cmd(name="test_afina_transmit", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_dma_afina_transmit {
+	source "spi_basic_transmit_receive.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+    depends exacto.afina.spi.spi1
+	depends exacto.commander.data_storage
+	
+	depends third_party.bsp.stmf7cube.cube
 }
 @AutoCmd
 @Cmd(name="test_sensors", help = "")

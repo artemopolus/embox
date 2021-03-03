@@ -9,9 +9,22 @@
 thread_control_t MainThread;
 
 uint8_t MarkerThread = 0;
+uint8_t DataToBuffer[] = {0, 7, 2, 10, 1};
+struct lthread UpdateDataToBufferThread;
+struct lthread SendDataThread;
 
 struct lthread PrintThread;
 struct lthread MarkerCheckerThread;
+static int updateDataToBufferThreadRun(struct lthread * self)
+{
+    setDataToExactoDataStorage(DataToBuffer, 5); 
+    return 0;
+}
+static int sendDataThreadRun(struct lthread * self)
+{
+    transmitExactoDataStorage();
+    return 0;
+}
 /**
  * @brief just indicator
  * 
@@ -45,8 +58,14 @@ int main(int argc, char *argv[]) {
     initThreadExactoDataStorage(&MainThread);
     printf("Set printf thread\n");
     lthread_init(&PrintThread, printThreadRun);
+    printf("Set thread for data uploading\n");
+    lthread_init(&UpdateDataToBufferThread, updateDataToBufferThreadRun);
     printf("Set thread for data sending\n");
-
+    lthread_init(&SendDataThread, sendDataThreadRun);
+    printf("Upload data to buffer\n");
+    lthread_launch(&UpdateDataToBufferThread);
+    printf("Send data\n");
+    lthread_launch(&SendDataThread);
     printf("Run cycle for checking\n");
     uint8_t pt = 0;
     const uint8_t pt_max = 5;
