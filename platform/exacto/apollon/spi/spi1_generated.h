@@ -1,8 +1,8 @@
 #ifndef SPI1_GENERATED_H
 #define SPI1_GENERATED_H
 #include <stdint.h>
-#include "exacto_commander/exacto_data_storage.h"
-#include "project/base_project_defs.h"
+#include "commander/exacto_data_storage.h"
+#define SPI_PACK_SZ 16
 typedef enum{
     SPI_DT_TRANSMIT = 0,
     SPI_DT_RECEIVE,

@@ -1,6 +1,6 @@
 package third_party.bsp.stmf1cube
 
-@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32F1_CUBE $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/,Drivers/STM32F1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include)")
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -DSTM32F1_CUBE $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/,Drivers/STM32F1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include)")
 module cube_cppflags {
 
 }
@@ -33,7 +33,24 @@ static module cube {
 		"stm32f1xx_hal_tim.c",
 		"stm32f1xx_hal_usart.c",
 		"stm32f1xx_hal_uart.c",
-		"stm32f1xx_hal_wwdg.c"
+		"stm32f1xx_hal_wwdg.c",
+		"stm32f1xx_ll_adc.c",
+		"stm32f1xx_ll_crc.c",
+		"stm32f1xx_ll_dac.c",
+		"stm32f1xx_ll_dma.c",
+		"stm32f1xx_ll_exti.c",
+		"stm32f1xx_ll_fsmc.c",
+		"stm32f1xx_ll_gpio.c",
+		"stm32f1xx_ll_i2c.c",
+		"stm32f1xx_ll_pwr.c",
+		"stm32f1xx_ll_rcc.c",
+		"stm32f1xx_ll_rtc.c",
+		"stm32f1xx_ll_sdmmc.c",
+		"stm32f1xx_ll_spi.c",
+		"stm32f1xx_ll_tim.c",
+		"stm32f1xx_ll_usart.c",
+		"stm32f1xx_ll_usb.c",
+		"stm32f1xx_ll_utils.c"
 
 	@NoRuntime depends third_party.bsp.stmf1cube.stm32f1_conf
 	@NoRuntime depends cube_cppflags
