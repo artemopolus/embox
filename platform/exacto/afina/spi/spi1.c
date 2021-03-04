@@ -140,7 +140,9 @@ static int SPI1_FULL_DMA_init(void)
     LL_SPI_SetStandard(SPI1, LL_SPI_PROTOCOL_MOTOROLA);
     LL_SPI_EnableNSSPulseMgt(SPI1);
 
-    // embox DMA settings
+    // DMA settings
+    // DMA_STREAM_0 -> RX
+    // DMA_STREAM_5 -> TX
     LL_DMA_ConfigAddresses(DMA2, 
                             LL_DMA_STREAM_0,
                            LL_SPI_DMA_GetRegAddr(SPI1), (uint32_t)SPI1_FULL_DMA_rx_buffer.dt_buffer,
@@ -153,27 +155,33 @@ static int SPI1_FULL_DMA_init(void)
                            LL_DMA_GetDataTransferDirection(DMA2, LL_DMA_STREAM_5));
     LL_DMA_SetDataLength(DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_tx_buffer.dt_count);
 
-
+    // DMA interrupts
     LL_DMA_EnableIT_TC(DMA2, LL_DMA_STREAM_0);
     LL_DMA_EnableIT_TE(DMA2, LL_DMA_STREAM_0);
     LL_DMA_EnableIT_TC(DMA2, LL_DMA_STREAM_5);
     LL_DMA_EnableIT_TE(DMA2, LL_DMA_STREAM_5);
 
-    irq_attach(68, SPI1_FULL_DMA_tx_irq_handler, 0, NULL, "SPI1_FULL_DMA_irq_handler");
+    /* embox specific section  */
+    // embox DMA interrupts handlers
+    irq_attach(68, SPI1_FULL_DMA_tx_irq_handler, 0, NULL, "SPI1_FULL_DMA_irq_handler"); // like NVIC_SetPriority(DMA2_Stream5_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
     irq_attach(56, SPI1_FULL_DMA_rx_irq_handler, 0, NULL, "SPI1_FULL_DMA_irq_handler");
 
+    // init lthread for receive and transmit events
     lthread_init(&SPI1_FULL_DMA_tx_buffer.dt_lth, &SPI1_FULL_DMA_tx_handler);
     lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_handler);
 
+    //init lthread for middle level driver named exacto_data_storage
     lthread_init(&ExOutputStorage[THR_SPI_TX].thread, &SPI1_FULL_DMA_transmit);
     ExOutputStorage[THR_SPI_TX].isready = 1;
     lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI1_FULL_DMA_receive);
     ExOutputStorage[THR_SPI_RX].isready = 1;
+    /* embox specific section  */
 
+    //enable hardware for SPI and DMA
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
     LL_SPI_Enable(SPI1);
-    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0);
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
     return 0;
 }
 /**
@@ -250,40 +258,58 @@ mutex_retry:
     return 0;
 }
 
-
+/**
+ * @brief записываем данные в массив передачи данных
+ * 
+ * @param self 
+ * @return int 
+ */
 static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
-    uint32_t datacount = _trg_thread->datalen;
-    if (datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
+    const uint32_t _datacount = _trg_thread->datalen;
+    if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
-    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);
+    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);                //отлючаем поток передачи данных
     uint8_t value = 0;
-    for (uint8_t i = 0; i < datacount; i++)
+    for (uint8_t i = 0; i < _datacount; i++)
     {
         /* копирование данных */
-        // SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = _trg_thread->databuffer[i];
-        grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
+        //grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
+        grbfst_exbu8(&_trg_thread->datastorage, &value);
         SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     }
 
-    LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, datacount);
-    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, _datacount); //устанавливаем сколько символов передачть
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);                 //включаем поток передачи данных
     return 0;
 }
-
+/**
+ * @brief забираем данные 
+ * 
+ * @param self 
+ * @return int 
+ */
 static int SPI1_FULL_DMA_receive(struct lthread * self)
 {
-
+    thread_control_t * _trg_thread;
+    _trg_thread = (thread_control_t *)self;
+    const uint32_t _datacount = _trg_thread->datalen;
+    if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
+        return 1;
+    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                //отлючаем поток передачи данных
+    for (uint8_t i = 0; i < _datacount; i++)
+        pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);
+    LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
     return 0;
 }
 uint8_t SPI1_FULL_DMA_setdatalength( uint8_t datalength )
 {
-    // LL_DMA_DisableChannel   (DMA2, LL_DMA_CHANNEL_0);
     LL_DMA_DisableStream    (DMA2, LL_DMA_STREAM_0);
+    SPI1_FULL_DMA_rx_buffer.dt_count = datalength;
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, datalength);
-    // LL_DMA_EnableChannel    (DMA2, LL_DMA_CHANNEL_0);
     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
     return 0;
 }
