@@ -248,11 +248,11 @@ mutex_retry:
         return lthread_yield(&&start, &&mutex_retry);
     }
     ExDtStorage.isEmpty = 0;
-    for (uint8_t i = 0; i < SPI1_FULL_DMA_rx_buffer.dt_count; i++)
-    {
+    // for (uint8_t i = 0; i < SPI1_FULL_DMA_rx_buffer.dt_count; i++)
+    // {
         // ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
-    }
+    // }
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
