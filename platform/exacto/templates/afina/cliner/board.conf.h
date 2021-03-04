@@ -1,4 +1,4 @@
-#include <stm32f746g_discovery.conf.h>
+#include <exacto_afina_stm32f746.conf.h>
 
 CONFIG {
 	uarts[1].status = ENABLED;

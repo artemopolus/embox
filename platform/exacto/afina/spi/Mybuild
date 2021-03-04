@@ -1,6 +1,6 @@
 package exacto.afina.spi
 @BuildDepends(third_party.bsp.stmf7cube.cube)
-module spi1{
+static module spi1 extends exacto.cmds.tests.spi_dev{
 	source "spi1.c"
 	@IncludeExport(path="spi")
 	source "spi1.h"
