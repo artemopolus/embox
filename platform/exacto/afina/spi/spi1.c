@@ -251,7 +251,7 @@ mutex_retry:
     // for (uint8_t i = 0; i < SPI1_FULL_DMA_rx_buffer.dt_count; i++)
     // {
         // ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
-        pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+        // pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     // }
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
