@@ -46,16 +46,7 @@ typedef struct{
  * @param      buffer  указатель
  * @param[in]  sz      размер буффера
  */
-__static_inline int  setini_exbu8(ExactoBufferUint8Type * buffer)
-{
-    buffer->str = 0;
-    buffer->lst = 0;
-    buffer->isExist = 1;
-    buffer->isEmpty = 1;
-    buffer->datalen = EXACTO_BUFFER_UINT8_SZ;
-    buffer->mask = EXACTO_BUFFER_UINT8_SZ - 1;
-    return 0;
-}
+extern int  setini_exbu8(ExactoBufferUint8Type * buffer);
 /**
  * @brief      { получаем размер буффера заданного указателя }
  *
@@ -63,13 +54,7 @@ __static_inline int  setini_exbu8(ExactoBufferUint8Type * buffer)
  *
  * @return     размер буфферв
  */
-__static_inline uint8_t getlen_exbu8(ExactoBufferUint8Type * buffer)
-{
-    if( buffer->lst >= buffer->str)
-        return (buffer->lst - buffer->str);
-    else
-        return (buffer->lst + buffer->datalen - buffer->str);
-}
+extern uint8_t getlen_exbu8(ExactoBufferUint8Type * buffer);
 /**
  * @brief      { забираем значение из начала буффера }
  *
@@ -78,38 +63,16 @@ __static_inline uint8_t getlen_exbu8(ExactoBufferUint8Type * buffer)
  *
  * @return     успешность операции
  */
-__static_inline uint8_t grbfst_exbu8(ExactoBufferUint8Type * buffer, uint8_t * fstval)
-{
-    if(!buffer->isExist || buffer->isEmpty)     return 0;
-    *fstval = buffer->data[buffer->str];
-    if(buffer->str == buffer->lst)  {buffer->isEmpty = 1;   return 1;}
-    buffer->str = (buffer->str + 1) & buffer->mask;
-    return 1;
-}
+extern uint8_t grbfst_exbu8(ExactoBufferUint8Type * buffer, uint8_t * fstval);
+
 /**
  * @brief      { вставляем значение в конец буффера }
  *
  * @param      buffer  указатель на буффер
  * @param[in]  value   переменная, которая вставляется в буффер
  */
-__static_inline void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
-{
-    if(!buffer->isExist)     
-        return;
-    buffer->data[buffer->lst] = value;
-	if(buffer->isEmpty)	
-    {
-        buffer->isEmpty = 0;
-    }
-    else 
-    {
-        buffer->lst = (buffer->lst + 1) & buffer->mask;
-        if(buffer->lst == buffer->str) 
-        {
-            buffer->str = (buffer->str + 1) & buffer->mask;
-        }
-    }
-}
+extern void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value);
+
 /**
  * @brief      { забираем данные из буффера в массив }
  *
@@ -118,19 +81,8 @@ __static_inline void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t v
  *
  * @return     успешна ли операция
  */
-__static_inline uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
-{
-    if(!buffer->isExist || buffer->isEmpty)     return 0;
-    uint8_t i = 0, adr = buffer->str;
-    do
-		{	
-			adr = (buffer->str + i) & buffer->mask;
-			dst[i] = buffer->data[adr];
-			i++;
-		}
-		while(adr != buffer->lst);
-    return 1;
-}
+extern uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst);
+
 /**
  * @brief      { убираем значение из начала буффера }
  *
@@ -138,13 +90,7 @@ __static_inline uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * d
  *
  * @return     успешна ли операция
  */
-__static_inline uint8_t clrval_exbu8(ExactoBufferUint8Type * buffer)
-{
-    if(!buffer->isExist || buffer->isEmpty)     return 0;
-    if(buffer->str == buffer->lst)  {buffer->isEmpty = 1;   return 0;}
-    buffer->str = (buffer->str + 1) & buffer->mask;
-    return 1;
-}
+extern uint8_t clrval_exbu8(ExactoBufferUint8Type * buffer);
 /**
  * @brief      { убираем несколько значений из начала буффера, в случае, если данных в буффере меньше, удаляются только они }
  *
@@ -153,17 +99,7 @@ __static_inline uint8_t clrval_exbu8(ExactoBufferUint8Type * buffer)
  *
  * @return     успешна ли операция
  */
-__static_inline uint8_t clrsvr_exbu8(ExactoBufferUint8Type * buffer, const uint8_t cnt)
-{
-    if(!buffer->isExist || buffer->isEmpty)     return 0;
-    uint8_t i = 0;
-    while(clrval_exbu8(buffer) &&(i < cnt))
-    {
-        i++;
-    }
-    return 1;
-}
-
+extern uint8_t clrsvr_exbu8(ExactoBufferUint8Type * buffer, const uint8_t cnt);
 /**
  * @brief      { очищаем буффер }
  *
@@ -171,16 +107,7 @@ __static_inline uint8_t clrsvr_exbu8(ExactoBufferUint8Type * buffer, const uint8
  *
  * @return     успешна ли операция
  */
-__static_inline uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer)
-{
-    if (!buffer->isExist)
-        return 0;
-    if (buffer->isEmpty)
-        return 1;
-    buffer->lst = 0;
-    buffer->str = 0;
-    buffer->isEmpty = 1;
-    return 1;
-}
+extern uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer);
+
 
 #endif /* EXACTO_BUFFER_H_ */
