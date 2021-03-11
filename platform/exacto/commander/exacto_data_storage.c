@@ -76,7 +76,7 @@ static int initExactoDataStorage(void)
         ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
         ExOutputStorage[i].isready = 0;
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
-        setini_exbu8(&ExOutputStorage->datastorage);
+        setini_exbu8(&ExOutputStorage[i].datastorage);
     }
     return 0;
 }

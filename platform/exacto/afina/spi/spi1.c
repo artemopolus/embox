@@ -195,7 +195,8 @@ static irq_return_t SPI1_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data
 {
     if (LL_DMA_IsActiveFlag_TC5(DMA2) != RESET)
     {
-        LL_DMA_IsActiveFlag_TC5(DMA2);
+        //LL_DMA_IsActiveFlag_TC5(DMA2);
+        LL_DMA_ClearFlag_TC5(DMA2);
         lthread_launch(&SPI1_FULL_DMA_tx_buffer.dt_lth);
     }
     return IRQ_HANDLED;
@@ -268,7 +269,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
-    const uint32_t _datacount = _trg_thread->datalen;
+    const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
     if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);                //отлючаем поток передачи данных

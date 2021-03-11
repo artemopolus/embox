@@ -27,14 +27,14 @@ void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
     {
         buffer->isEmpty = 0;
     }
-    else 
-    {
+    //else 
+    //{
         buffer->lst = (buffer->lst + 1) & buffer->mask;
         if(buffer->lst == buffer->str) 
         {
             buffer->str = (buffer->str + 1) & buffer->mask;
         }
-    }
+    //}
 }
 uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
 {
