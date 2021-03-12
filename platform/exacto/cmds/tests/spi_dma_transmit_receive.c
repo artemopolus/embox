@@ -68,12 +68,13 @@ int main(int argc, char *argv[]) {
     lthread_launch(&SendDataThread);
     printf("Run cycle for checking\n");
     uint8_t pt = 0;
-    const uint8_t pt_max = 5;
+    const uint8_t pt_max = 50;
     while (!MarkerThread)
     {
         checkExactoDataStorage(&MainThread);
         lthread_launch(&MarkerCheckerThread);
-        sleep(1);
+		usleep(100000);
+        
         if (pt < pt_max)
         {
             pt++;
