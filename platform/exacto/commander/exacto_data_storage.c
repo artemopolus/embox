@@ -13,7 +13,20 @@ thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
 
 
 
+struct lthread ResetThread;
 
+static int resetThreadRun(struct lthread * self)
+{
+    ExDtStorage.isEmpty = 0;
+    for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
+    {
+        ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
+        ExOutputStorage[i].isready = 0;
+        ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
+        setini_exbu8(&ExOutputStorage[i].datastorage);
+    }
+return 0;
+}
 
 
 /**
@@ -67,6 +80,7 @@ EMBOX_UNIT_INIT(initExactoDataStorage);
 static int initExactoDataStorage(void)
 {
     mutex_init_schedee(&ExDtStorage.dtmutex);
+    lthread_init(&ResetThread, resetThreadRun);
     ExOutputStorage[0].type = THR_SPI_RX;
     ExOutputStorage[1].type = THR_SPI_TX;
     ExOutputStorage[2].type = THR_I2C_RX;
@@ -126,5 +140,19 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount)
     {
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
     }
+    return 0;
+}
+uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length)
+{
+    uint8_t value;
+    for (uint8_t i = 0; ((grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))&&(i < receiver_length)); i++)
+    {
+        receiver[i] = value;
+    }
+    return 0;
+}
+uint8_t resetExactoDataStorage()
+{
+    lthread_launch(&ResetThread);
     return 0;
 }
