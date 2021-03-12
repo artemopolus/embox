@@ -12,3 +12,14 @@ module spi1 {
 	@NoRuntime depends platform.exacto.afina.basis.stm32f746g_conf
 
 }
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module spi1master extends exacto.cmds.tests.spi_dev {
+	source "spi1.c"
+	@IncludeExport(path="spi")
+	source "spi1.h"
+    depends exacto.commander.data_storage
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+
+}

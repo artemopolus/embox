@@ -175,7 +175,7 @@ static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
     }
     return IRQ_HANDLED;
 }
-STATIC_IRQ_ATTACH(142 SPI2_FULL_DMA_rx_irq_handler, NULL);
+STATIC_IRQ_ATTACH(14, SPI2_FULL_DMA_rx_irq_handler, NULL);
 static int SPI2_FULL_DMA_rx_handler(struct lthread *self)
 {
     goto *lthread_resume(self, &&start);

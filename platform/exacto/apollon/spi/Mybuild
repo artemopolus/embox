@@ -17,3 +17,12 @@ module spi2{
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 }
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module spi2slave extends exacto.cmds.tests.spi_dev {
+	source "spi2_generated.c"
+	@IncludeExport(path="spi")
+	source "spi2_generated.h"
+	depends exacto.commander.data_storage
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+}

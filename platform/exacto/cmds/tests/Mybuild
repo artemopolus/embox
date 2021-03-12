@@ -35,7 +35,8 @@ module spi_dma_receive_transmit {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	
-    depends exacto.apollon.spi.spi2
+    //depends exacto.apollon.spi.spi2
+	depends exacto.cmds.tests.spi_dev
 	depends exacto.commander.data_storage
 	
 	//depends third_party.bsp.stmf1cube.cube
@@ -54,7 +55,7 @@ module spi_dma_transmit_receive {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	
-	//depends exacto.cmds.tests.spi_dev
+	depends exacto.cmds.tests.spi_dev
 	depends exacto.commander.data_storage
 }
 @AutoCmd
