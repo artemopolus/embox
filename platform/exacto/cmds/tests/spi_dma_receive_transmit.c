@@ -104,6 +104,13 @@ int main(int argc, char *argv[]) {
     }
     lthread_launch(&PrintThread);
 
+    printf("Copy data from RX\n");
+    receiveExactoDataStorage();
+
+    printf("Download data from data storage\n");
+
+    lthread_launch(&DownLoadDataFromBufferThread);
+
     lthread_launch(&PrintDataFromBufferThread);
     
 

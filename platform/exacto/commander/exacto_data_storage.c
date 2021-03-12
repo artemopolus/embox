@@ -17,7 +17,7 @@ struct lthread ResetThread;
 
 static int resetThreadRun(struct lthread * self)
 {
-    ExDtStorage.isEmpty = 0;
+    ExDtStorage.isEmpty = 1;
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
         ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
