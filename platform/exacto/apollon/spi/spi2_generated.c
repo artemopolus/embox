@@ -136,8 +136,8 @@ static int SPI2_FULL_DMA_init(void)
 
     /* embox specific section  */
     // embox DMA interrupts handlers
-    irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_irq_handler");
-    irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_irq_handler");
+    irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_TX_irq_handler");
+    irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_RX_irq_handler");
 
     // init lthread for receive and transmit events
     lthread_init(&SPI2_FULL_DMA_tx_buffer.dt_lth, &SPI2_FULL_DMA_tx_handler);
@@ -153,7 +153,7 @@ static int SPI2_FULL_DMA_init(void)
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
     LL_SPI_Enable(SPI2);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
+    //LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     return 0;
 }
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
@@ -205,7 +205,8 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
-    const uint32_t _datacount = _trg_thread->datalen;
+    //const uint32_t _datacount = _trg_thread->datalen;
+    const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
     if (_datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
     if (SPI2_FULL_DMA_tx_buffer.is_full)

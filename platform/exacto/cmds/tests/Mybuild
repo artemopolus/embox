@@ -25,7 +25,7 @@ module spi_basic {
 	@NoRuntime depends third_party.bsp.stmf7cube.cube
 }
 @AutoCmd
-@Cmd(name="test_spi_dma_send", help=" Test for sending test array throw spi dma ", man='''
+@Cmd(name="test_spi_receive", help=" Test for sending test array throw spi dma ", man='''
 AUTHOR Kuznetcov
 ''')
 module spi_dma_receive_transmit {

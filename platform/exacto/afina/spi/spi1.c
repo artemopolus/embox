@@ -181,7 +181,8 @@ static int SPI1_FULL_DMA_init(void)
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
     LL_SPI_Enable(SPI1);
-    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
+    //LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
+    SPI1_FULL_DMA_setdatalength(SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
     return 0;
 }
 /**
