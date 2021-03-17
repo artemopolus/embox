@@ -65,23 +65,27 @@ static int checkMarkerThreadRun(struct lthread * self)
 
 int main(int argc, char *argv[]) {
     MarkerThread = 0;
-    printf("Start Slave Full Duplex SPI\n");
+    printf("Start Full Duplex SPI\n");
     lthread_init(&MarkerCheckerThread, checkMarkerThreadRun);
     printf("Reset ALL\n");
     resetExactoDataStorage();
-    printf("Init main thread\n");
+    printf("Init thread:\n-main\n");
     initThreadExactoDataStorage(&MainThread);
-    printf("Init printf thread\n");
+    printf("-printf\n");
     lthread_init(&PrintThread, printThreadRun);
-    printf("Init sending thread\n");
+    printf("-sending\n");
     lthread_init(&SendDataThread, sendDataThreadRun);
-    printf("Init buffer: \n upload\n");
+    printf("Init buffer: \n-upload\n");
     lthread_init(&UpdateDataToBufferThread, updateDataToBufferThreadRun);
-    printf("download\n");
+    printf("-download\n");
     lthread_init(&DownLoadDataFromBufferThread, downloadDataRun);
-    printf("printing\n");
+    printf("-printing\n");
     lthread_init(&PrintDataFromBufferThread, printBufferData);
     lthread_launch(&PrintDataFromBufferThread);
+    printf("Upload data to buffer\n");
+    lthread_launch(&UpdateDataToBufferThread);
+    printf("Data[ buffer] = > SPI[TX]\n");
+    lthread_launch(&SendDataThread);
     printf("Run cycle for checking:\n");
     uint8_t pt = 0;
     const uint8_t pt_max = 50;
@@ -112,15 +116,6 @@ int main(int argc, char *argv[]) {
     lthread_launch(&DownLoadDataFromBufferThread);
 
     lthread_launch(&PrintDataFromBufferThread);
-    
-
-    printf("Update buffer to send\n");
-
-    lthread_launch(&UpdateDataToBufferThread);
-
-    printf("Send some answer\n");
-
-    lthread_launch(&SendDataThread);
 
     printf("Programm reach end\n");
     return 0;
