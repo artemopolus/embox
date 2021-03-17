@@ -42,6 +42,11 @@ typedef struct {
     uint8_t isready;
     // function_list_t fun_type;
 }thread_control_t;
+
+typedef struct{
+    struct lthread thread;
+    uint8_t isready;
+}ex_io_thread_t;
 typedef struct{
     uint8_t isEmpty;
     struct mutex dtmutex;
@@ -55,6 +60,7 @@ typedef enum{
 }exacto_process_result_t;
 extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 extern exactodatastorage ExDtStorage;
+extern ex_io_thread_t ExSpi;
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
 extern uint8_t transmitExactoDataStorage();

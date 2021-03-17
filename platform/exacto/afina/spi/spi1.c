@@ -60,6 +60,15 @@ static irq_return_t SPI1_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
 static int SPI1_FULL_DMA_rx_handler(struct lthread *self);
 static int SPI1_FULL_DMA_tx_handler(struct lthread *self);
 
+static int SPI1_FULL_DMA_enabled(struct lthread * self)
+{
+    LL_SPI_Enable(SPI1);
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+    return 0;
+
+}
+
 static int SPI1_FULL_DMA_transmit(struct lthread * self);
 static int SPI1_FULL_DMA_receive(struct lthread * self);
 EMBOX_UNIT_INIT(SPI1_FULL_DMA_init);
@@ -175,14 +184,14 @@ static int SPI1_FULL_DMA_init(void)
     ExOutputStorage[THR_SPI_TX].isready = 1;
     lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI1_FULL_DMA_receive);
     ExOutputStorage[THR_SPI_RX].isready = 1;
+
+    lthread_init(&ExSpi.thread, &SPI1_FULL_DMA_enabled);
+    ExSpi.isready = 1;
     /* embox specific section  */
 
     //enable hardware for SPI and DMA
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
-    LL_SPI_Enable(SPI1);
-    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
-    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
     //SPI1_FULL_DMA_setdatalength(SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
     return 0;
 }

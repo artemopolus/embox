@@ -14,6 +14,10 @@ thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
 
 
 struct lthread ResetThread;
+ex_io_thread_t ExSpi = {
+    .isready = 0,
+};
+
 
 static int resetThreadRun(struct lthread * self)
 {
@@ -154,5 +158,10 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
 uint8_t resetExactoDataStorage()
 {
     lthread_launch(&ResetThread);
+    if (ExSpi.isready)
+    {
+        lthread_launch(&ExSpi.thread);
+    }
     return 0;
 }
+
