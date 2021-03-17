@@ -164,4 +164,12 @@ uint8_t resetExactoDataStorage()
     }
     return 0;
 }
+uint8_t checkTxSender()
+{
+    return ExOutputStorage[THR_SPI_TX].isready;
+}
+uint8_t checkRxGetter()
+{
+    return ExOutputStorage[THR_SPI_RX].isready;
+}
 

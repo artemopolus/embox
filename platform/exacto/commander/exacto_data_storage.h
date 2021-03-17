@@ -68,4 +68,6 @@ extern uint8_t receiveExactoDataStorage();
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount);
 extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t resetExactoDataStorage();
+extern uint8_t checkTxSender();
+extern uint8_t checkRxGetter();
 #endif //EXACTO_DATA_STORAGE_H

@@ -1,2 +1,2 @@
 "help",
-"test_afina_transmit"
+"test_spi_receive"

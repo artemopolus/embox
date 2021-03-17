@@ -149,7 +149,7 @@ static int SPI2_FULL_DMA_init(void)
     lthread_init(&ExOutputStorage[THR_SPI_TX].thread, &SPI2_FULL_DMA_transmit);
     ExOutputStorage[THR_SPI_TX].isready = 1;
     lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI2_FULL_DMA_receive);
-    ExOutputStorage[THR_SPI_RX].isready = 1;
+    ExOutputStorage[THR_SPI_RX].isready = 0;
     /* embox specific section  */
     //enable hardware for SPI and DMA
     LL_SPI_EnableDMAReq_RX(SPI2);
@@ -223,6 +223,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
         grbfst_exbu8(&_trg_thread->datastorage, &value);
         SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     }
+    _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, _datacount);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     return 0;
@@ -240,6 +241,7 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
     for (uint8_t i = 0; i < _datacount; i++)
         pshfrc_exbu8(&_trg_thread->datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
     SPI2_FULL_DMA_rx_buffer.is_full = 0;
+    _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, _datacount);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     return 0;

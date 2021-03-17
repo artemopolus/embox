@@ -6,9 +6,17 @@
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
 
+#define MAX_CALL_COUNT 10
+
+
+
 thread_control_t MainThread;
 
 uint8_t MarkerThread = 0;
+
+uint8_t MarkerTx = 0;
+uint8_t MarkerRx = 0;
+
 uint8_t DataToBuffer[] = {0, 7, 2, 10, 1};
 uint8_t ReceivedData[] = {0, 0, 0, 0, 0};
 
@@ -21,6 +29,20 @@ struct lthread SendDataThread;
 struct lthread DownLoadDataFromBufferThread;
 
 struct lthread PrintDataFromBufferThread;
+
+struct lthread CheckTransmitThread;
+struct lthread CheckReceiveThread;
+
+static int checkTransmitRun(struct lthread * self )
+{
+    MarkerTx = checkTxSender();
+    return 0;
+}
+static int checkReceiveRun(struct lthread * self)
+{
+    MarkerRx = checkRxGetter();
+    return 0;
+}
 
 static int printBufferData(struct  lthread * self)
 {
@@ -83,39 +105,63 @@ int main(int argc, char *argv[]) {
     lthread_init(&PrintDataFromBufferThread, printBufferData);
     lthread_launch(&PrintDataFromBufferThread);
     printf("Upload data to buffer\n");
-    lthread_launch(&UpdateDataToBufferThread);
     printf("Data[ buffer] = > SPI[TX]\n");
-    lthread_launch(&SendDataThread);
+
+    printf("Init threat for RX TX values control\n");
+    lthread_init(&CheckReceiveThread, &checkReceiveRun);
+    lthread_init(&CheckTransmitThread, &checkTransmitRun);
+
     printf("Run cycle for checking:\n");
     uint8_t pt = 0;
     const uint8_t pt_max = 50;
-    while (!MarkerThread)
+    uint32_t call_counter = 0;
+    while(call_counter < MAX_CALL_COUNT)
     {
-        checkExactoDataStorage(&MainThread);
-        lthread_launch(&MarkerCheckerThread);
-        usleep(100000);
-        
-        if (pt < pt_max)
+        printf("Try %d\n", call_counter);
+        lthread_launch(&UpdateDataToBufferThread);
+        lthread_launch(&SendDataThread);
+        printf("Tx\n");
+        while (!MarkerTx)
         {
-            pt++;
-            printf(".");
+            lthread_launch(&CheckTransmitThread);
+            if (pt < pt_max)
+            {
+                pt++;
+                printf(".");
+            }
+            else{
+                pt = 0;
+                printf("\33[2K\r");
+            }
         }
-        else{
-            pt = 0;
-            printf("\33[2K\r");
-        }
+        printf("Rx\n");
 
+        while (!MarkerRx)
+        {
+            lthread_launch(&CheckReceiveThread);
+            if (pt < pt_max)
+            {
+                pt++;
+                printf(".");
+            }
+            else{
+                pt = 0;
+                printf("\33[2K\r");
+            }
+        }
+        
+        MarkerTx = 0;
+        MarkerRx = 0;
+        printf("Copy data from RX\n");
+        receiveExactoDataStorage();
+        printf("Download data from data storage\n");
+        lthread_launch(&DownLoadDataFromBufferThread);
+        lthread_launch(&PrintDataFromBufferThread);
+        usleep(100000);
     }
+    
     lthread_launch(&PrintThread);
 
-    printf("Copy data from RX\n");
-    receiveExactoDataStorage();
-
-    printf("Download data from data storage\n");
-
-    lthread_launch(&DownLoadDataFromBufferThread);
-
-    lthread_launch(&PrintDataFromBufferThread);
 
     printf("Programm reach end\n");
     return 0;
