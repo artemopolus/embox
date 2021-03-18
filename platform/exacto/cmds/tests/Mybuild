@@ -41,6 +41,19 @@ module spi_dma_receive_transmit {
 	
 	//depends third_party.bsp.stmf1cube.cube
 }
+@AutoCmd
+@Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_dma_one_txrx {
+	source "spi_dma_one_txrx.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+}
 abstract module spi_dev{
 
 }

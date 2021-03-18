@@ -225,7 +225,7 @@ static irq_return_t SPI1_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
 {
     if (LL_DMA_IsActiveFlag_TC0(DMA2) != RESET)
     {
-        LL_DMA_IsActiveFlag_TC0(DMA2);
+        LL_DMA_ClearFlag_TC0(DMA2);
         lthread_launch(&SPI1_FULL_DMA_rx_buffer.dt_lth);
     }
     return IRQ_HANDLED;

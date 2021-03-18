@@ -16,6 +16,7 @@ thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
 struct lthread ResetThread;
 ex_io_thread_t ExSpi = {
     .isready = 0,
+    .isenabled = 0
 };
 
 
@@ -124,18 +125,18 @@ uint8_t initThreadExactoDataStorage( thread_control_t * base )
 }
 uint8_t transmitExactoDataStorage()
 {
-    if (ExOutputStorage[THR_SPI_TX].isready)
-    {
+    // if (ExOutputStorage[THR_SPI_TX].isready)
+    // {
         lthread_launch(&ExOutputStorage[THR_SPI_TX].thread);
-    }
+    // }
     return 0;
 }
 uint8_t receiveExactoDataStorage()
 {
-    if (ExOutputStorage[THR_SPI_RX].isready)
-    {
+    // if (ExOutputStorage[THR_SPI_RX].isready)
+    // {
         lthread_launch(&ExOutputStorage[THR_SPI_RX].thread);
-    }
+    // }
     return 0;
 }
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount)
@@ -158,8 +159,9 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
 uint8_t resetExactoDataStorage()
 {
     lthread_launch(&ResetThread);
-    if (ExSpi.isready)
+    if (ExSpi.isready && ! ExSpi.isenabled)
     {
+        ExSpi.isenabled = 1;
         lthread_launch(&ExSpi.thread);
     }
     return 0;

@@ -46,6 +46,7 @@ typedef struct {
 typedef struct{
     struct lthread thread;
     uint8_t isready;
+    uint8_t isenabled;
 }ex_io_thread_t;
 typedef struct{
     uint8_t isEmpty;
