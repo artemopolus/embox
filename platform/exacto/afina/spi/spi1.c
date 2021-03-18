@@ -146,8 +146,8 @@ static int SPI1_FULL_DMA_init(void)
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
     LL_SPI_Init(SPI1, &SPI_InitStruct);
-    LL_SPI_SetStandard(SPI1, LL_SPI_PROTOCOL_MOTOROLA);
-    LL_SPI_EnableNSSPulseMgt(SPI1);
+    // LL_SPI_SetStandard(SPI1, LL_SPI_PROTOCOL_MOTOROLA);
+    // LL_SPI_EnableNSSPulseMgt(SPI1);
 
     // DMA settings
     // DMA_STREAM_0 -> RX
