@@ -121,11 +121,12 @@ int main(int argc, char *argv[]) {
         lthread_launch(&UpdateDataToBufferThread);
         lthread_launch(&SendDataThread);
         printf("Tx\n");
-        uint8_t counter = 0;
-        const uint8_t counter_max = 50;
+        uint16_t counter = 0;
+        const uint16_t counter_max = 500;
         while (!MarkerTx)
         {
             lthread_launch(&CheckTransmitThread);
+            usleep(50000);
             if (pt < pt_max)
             {
                 pt++;
@@ -146,6 +147,7 @@ int main(int argc, char *argv[]) {
         while (!MarkerRx)
         {
             lthread_launch(&CheckReceiveThread);
+            usleep(50000);
             if (pt < pt_max)
             {
                 pt++;
@@ -168,7 +170,7 @@ int main(int argc, char *argv[]) {
         printf("Download data from data storage\n");
         lthread_launch(&DownLoadDataFromBufferThread);
         lthread_launch(&PrintDataFromBufferThread);
-        usleep(100000);
+        usleep(1000000);
         call_counter++;
     }
     
