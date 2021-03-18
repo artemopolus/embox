@@ -24,7 +24,6 @@ struct lthread PrintThread;
 struct lthread MarkerCheckerThread;
 
 struct lthread UpdateDataToBufferThread;
-struct lthread UpdateBufferLengthThread;
 struct lthread SendDataThread;
 
 struct lthread DownLoadDataFromBufferThread;
@@ -61,16 +60,12 @@ static int downloadDataRun(struct lthread * self)
     getDataFromExactoDataStorage(ReceivedData, 5);
     return 0;
 }
-
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
     setDataToExactoDataStorage(DataToBuffer, 5); 
     return 0;
 }
-static int updateBufferLengthThreadRun(struct lthread * self)
-{
-    return 0;
-}
+
 static int sendDataThreadRun(struct lthread * self)
 {
     transmitExactoDataStorage();

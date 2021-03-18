@@ -66,6 +66,7 @@ extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
 extern uint8_t transmitExactoDataStorage();
 extern uint8_t receiveExactoDataStorage();
+extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount);
 extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t resetExactoDataStorage();

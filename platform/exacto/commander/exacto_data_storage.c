@@ -11,7 +11,14 @@ exactodatastorage ExDtStorage = {
 };
 thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 
+thread_control_t SetupParamsThread;
 
+static int setupParamsThreadRun(struct lthread * self)
+{
+    thread_control_t * _trg_thread = (thread_control_t *) self;
+    ExOutputStorage[THR_SPI_RX].datalen = _trg_thread->datalen;
+    return 0;
+}
 
 struct lthread ResetThread;
 ex_io_thread_t ExSpi = {
@@ -86,6 +93,7 @@ static int initExactoDataStorage(void)
 {
     mutex_init_schedee(&ExDtStorage.dtmutex);
     lthread_init(&ResetThread, resetThreadRun);
+    lthread_init(&SetupParamsThread.thread, setupParamsThreadRun);
     ExOutputStorage[0].type = THR_SPI_RX;
     ExOutputStorage[1].type = THR_SPI_TX;
     ExOutputStorage[2].type = THR_I2C_RX;
@@ -173,5 +181,11 @@ uint8_t checkTxSender()
 uint8_t checkRxGetter()
 {
     return ExOutputStorage[THR_SPI_RX].isready;
+}
+uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length)
+{
+    SetupParamsThread.datalen = length;
+    lthread_launch(&SetupParamsThread.thread);
+    return 0;
 }
 

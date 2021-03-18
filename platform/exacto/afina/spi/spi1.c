@@ -311,11 +311,9 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
-    const uint32_t _datacount = _trg_thread->datalen;
-    if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
-        return 1;
-    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                //отлючаем поток передачи данных
-    for (uint8_t i = 0; i < _datacount; i++)
+    const uint32_t _datacount = SPI1_FULL_DMA_rx_buffer.dt_count;   //сколько данных влезает в буффер
+    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
+    for (uint8_t i = 0; i < _datacount; i++)                        //
         pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);

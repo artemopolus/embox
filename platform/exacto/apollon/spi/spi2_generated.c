@@ -232,9 +232,7 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
-    const uint32_t _datacount = _trg_thread->datalen;
-    if (_datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
-        return 1;
+    const uint32_t _datacount = SPI2_FULL_DMA_rx_buffer.dt_count ;
     if (SPI2_FULL_DMA_rx_buffer.is_full == 0)
         return 1;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
@@ -249,6 +247,7 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
 uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength )
 {
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    SPI2_FULL_DMA_rx_buffer.dt_count = datalength;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, datalength);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
     return 0;
