@@ -11,8 +11,7 @@
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_gpio.h"
 
-#include "spi_gen/spi1_generated.h"
-#include "exacto_commander/exacto_sensors.h"
+#include "commander/exacto_sensors.h"
 #include <embox/unit.h>
 
 

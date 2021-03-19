@@ -1,5 +1,6 @@
 #ifndef EXACTO_SENSORS_H
 #define EXACTO_SENSORS_H
+#include "spi/spi1_generated.h"
 #include <stdint.h>
 typedef enum {
     LSM303AH = 0,
