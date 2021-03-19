@@ -284,3 +284,41 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 
 	return best_rte;
 }
+
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
+int rt_add_route_netns(struct net_device *dev, in_addr_t dst,
+		in_addr_t mask, in_addr_t gw, int flags,
+		net_namespace_p net_ns) {
+	return rt_add_route(dev, dst, mask, gw, flags);
+}
+
+int rt_fib_route_ip_net_ns(in_addr_t dst_ip, in_addr_t *next_ip,
+					net_namespace_p net_ns) {
+	return rt_fib_route_ip(dst_ip, next_ip);
+}
+
+int rt_fib_source_ip_net_ns(in_addr_t dst_ip, struct net_device *dev,
+		in_addr_t *src_ip, net_namespace_p net_ns) {
+	return rt_fib_source_ip(dst_ip, dev, src_ip);
+}
+
+struct rt_entry * rt_fib_get_next_net_ns(struct rt_entry *entry,
+					 net_namespace_p netns) {
+	return rt_fib_get_next(entry);
+}
+
+struct rt_entry * rt_fib_get_first_net_ns(net_namespace_p netns) {
+	return rt_fib_get_first();
+}
+
+struct rt_entry * rt_fib_get_best_net_ns(in_addr_t dst,
+					 struct net_device *out_dev,
+					 net_namespace_p net_ns) {
+	return rt_fib_get_best(dst, out_dev);
+}
+
+int rt_fib_out_dev_net_ns(in_addr_t dst, const struct sock *sk,
+		struct net_device **out_dev, net_namespace_p net_ns) {
+	return rt_fib_out_dev(dst, sk, out_dev);
+}
+#endif

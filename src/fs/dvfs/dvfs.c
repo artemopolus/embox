@@ -88,6 +88,9 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		if (!sb->sb_iops->create) {
 			res = -ENOSUPP;
 		} else {
+			if (!S_ISDIR(flags)) {
+				new_inode->i_mode |= S_IFREG;
+			}
 			res = sb->sb_iops->create(new_inode,
 					lookup->parent->d_inode,
 					flags);
@@ -153,7 +156,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	}
 
 	if (desc->f_ops && desc->f_ops->open && !(__oflag & O_PATH)) {
-		res = desc->f_ops->open(i_no, &desc->f_idesc);
+		res = desc->f_ops->open(i_no, &desc->f_idesc, __oflag);
 		if (res == NULL) {
 			return NULL;
 		}

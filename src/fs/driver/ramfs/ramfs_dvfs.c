@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <sys/types.h>
 
 #include <util/array.h>
 #include <util/indexator.h>
@@ -68,16 +69,20 @@ static int ramfs_iterate(struct inode *next, char *name, struct inode *parent, s
 static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct ramfs_file_info *fi;
 
-	assert(i_new);
-	assert(i_new->i_dentry);
-	assert(i_new->i_dentry->name);
+	if (S_ISREG(i_new->i_mode)) {
+		assert(i_new);
+		assert(i_new->i_dentry);
+		assert(i_new->i_dentry->name);
 
-	fi = ramfs_file_alloc(i_new);
-	fi->mode = S_IFREG | mode;
+		fi = ramfs_file_alloc(i_new);
+		if (NULL == fi) {
+			return -ENOMEM;
+		}
+		fi->mode = i_new->i_mode;
+		strncpy(fi->name, i_new->i_dentry->name, sizeof(fi->name) - 1);
 
-	strncpy(fi->name, i_new->i_dentry->name, sizeof(fi->name) - 1);
-
-	i_new->i_no = fi->index;
+		i_new->i_no = fi->index;
+	}
 
 	return 0;
 }
@@ -114,18 +119,6 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	}
 
 	return NULL;
-}
-
-static int ramfs_truncate(struct inode *node, size_t length) {
-	assert(node);
-
-	if (length > MAX_FILE_SIZE) {
-		return -EFBIG;
-	}
-
-	inode_size_set(node, length);
-
-	return 0;
 }
 
 /* Declaration of operations */

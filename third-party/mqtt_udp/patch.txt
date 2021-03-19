@@ -1,0 +1,12 @@
+diff -aur mqtt_udp-0.4-1/lang/c/configure.in ../build/extbld/third_party/mqtt_udp/core/mqtt_udp-0.4-1/lang/c/configure.in
+--- mqtt_udp-0.4-1/lang/c/configure.in	2019-01-15 04:19:17.000000000 +0300
++++ ../build/extbld/third_party/mqtt_udp/core/mqtt_udp-0.4-1/lang/c/configure.in2021-03-06 19:34:59.006236839 +0300
+@@ -22,7 +22,7 @@
+ AC_TYPE_SSIZE_T
+ 
+ # Checks for library functions.
+-AC_FUNC_MALLOC
++#AC_FUNC_MALLOC
+ AC_CHECK_FUNCS([memset socket strlcpy])
+ 
+ AC_CONFIG_FILES([Makefile])

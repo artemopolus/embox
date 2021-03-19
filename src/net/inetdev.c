@@ -208,3 +208,27 @@ int ip_is_local(in_addr_t addr, int opts) {
 
 	return false;
 }
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
+struct in_device * inetdev_get_by_name_netns(const char *name,
+					net_namespace_p net_ns) {
+	return inetdev_get_by_name(name);
+}
+
+struct in_device *inetdev_get_loopback_dev_netns(net_namespace_p net_ns) {
+	return inetdev_get_loopback_dev();
+}
+
+struct in_device * inetdev_get_next_net_ns(struct in_device *in_dev,
+					   net_namespace_p netns) {
+	return inetdev_get_next(in_dev);
+}
+
+struct in_device * inetdev_get_first_net_ns(net_namespace_p netns) {
+	return inetdev_get_first();
+}
+
+int ip_is_local_net_ns(in_addr_t addr, int opts,
+		net_namespace_p net_ns) {
+	return ip_is_local(addr, opts);
+}
+#endif

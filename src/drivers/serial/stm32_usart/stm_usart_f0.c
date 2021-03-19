@@ -2,8 +2,8 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    06.08.2014
+ * @author  Vadim Deryabkin
+ * @date    07.02.2021
  */
 
 #include <stdint.h>
