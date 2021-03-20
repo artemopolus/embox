@@ -96,7 +96,7 @@ EndDependencies */
 #define SD_DETECT_GPIO_PORT                  GPIOB
 #define SD_DETECT_GPIO_CLK_ENABLE()          __HAL_RCC_GPIOB_CLK_ENABLE()
 #define SD_DETECT_GPIO_CLK_DISABLE()         __HAL_RCC_GPIOB_CLK_DISABLE()
-#define SD_DETECT_EXTI_IRQn                  EXTI15_10_IRQn
+#define SD_DETECT_EXTI_IRQn                  EXTI3_IRQn
 
 /** @addtogroup BSP
   * @{
@@ -242,8 +242,8 @@ uint8_t BSP_SD_ITConfig(void)
   HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &gpio_init_structure);
 
   /* Enable and set SD detect EXTI Interrupt to the lowest priority */
-  HAL_NVIC_SetPriority((IRQn_Type)(SD_DETECT_EXTI_IRQn), 0x0F, 0x00);
-  HAL_NVIC_EnableIRQ((IRQn_Type)(SD_DETECT_EXTI_IRQn));
+  // HAL_NVIC_SetPriority((IRQn_Type)(SD_DETECT_EXTI_IRQn), 0x0F, 0x00);
+  // HAL_NVIC_EnableIRQ((IRQn_Type)(SD_DETECT_EXTI_IRQn));
 
   return MSD_OK;
 }
