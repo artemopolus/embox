@@ -387,8 +387,8 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   
   /* Common GPIO configuration */
   gpio_init_structure.Mode      = GPIO_MODE_AF_PP;
-  // gpio_init_structure.Pull      = GPIO_PULLUP;
-  gpio_init_structure.Pull      = GPIO_NOPULL;
+  gpio_init_structure.Pull      = GPIO_PULLUP;
+  // gpio_init_structure.Pull      = GPIO_NOPULL;
   gpio_init_structure.Speed     = GPIO_SPEED_HIGH;
   gpio_init_structure.Alternate = GPIO_AF12_SDMMC1;
   

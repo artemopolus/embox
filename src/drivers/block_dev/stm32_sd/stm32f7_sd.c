@@ -44,13 +44,13 @@ static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 }
 STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
 
-// static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
-// 		void *audio_dev) {
-// 	extern SD_HandleTypeDef uSdHandle;
-// 	HAL_SD_IRQHandler(&uSdHandle);
-// 	return IRQ_HANDLED;
-// }
-// STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
+static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
+		void *audio_dev) {
+	extern SD_HandleTypeDef uSdHandle;
+	HAL_SD_IRQHandler(&uSdHandle);
+	return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
 
 static const struct block_dev_ops stm32f7_sd_driver = {
 	.name  = STM32F7_SD_DEVNAME,
@@ -81,18 +81,18 @@ static int stm32f7_sd_init(void *arg) {
 		log_error("irq_attach error");
 		return -1;
 	}
-	// if (0 != irq_attach(STM32_SDMMC_IRQ,
-	// 			stm32_sdmmc_irq,
-	// 			0, NULL, "stm32_sdmmc_irq")) {
-	// 	log_error("irq_attach error");
-	// 	return -1;
-	// }
+	if (0 != irq_attach(STM32_SDMMC_IRQ,
+				stm32_sdmmc_irq,
+				0, NULL, "stm32_sdmmc_irq")) {
+		log_error("irq_attach error");
+		return -1;
+	}
 
 	/* SDMMC2 irq priority should be higher that DMA due to
 	 * STM32Cube implementation. */
 	irqctrl_set_prio(STM32_DMA_RX_IRQ, 10);
 	irqctrl_set_prio(STM32_DMA_TX_IRQ, 10);
-	// irqctrl_set_prio(STM32_SDMMC_IRQ, 11);
+	irqctrl_set_prio(STM32_SDMMC_IRQ, 11);
 
 	if (BSP_SD_Init() == MSD_OK) {
 		bdev = block_dev_create(STM32F7_SD_DEVNAME, &stm32f7_sd_driver, NULL);
@@ -105,7 +105,7 @@ static int stm32f7_sd_init(void *arg) {
 		log_error("BSP_SD_Init error\n");
 		irq_detach(STM32_DMA_RX_IRQ, NULL);
 		irq_detach(STM32_DMA_TX_IRQ, NULL);
-		// irq_detach(STM32_SDMMC_IRQ, NULL);
+		irq_detach(STM32_SDMMC_IRQ, NULL);
 		return -1;
 	}
 }
