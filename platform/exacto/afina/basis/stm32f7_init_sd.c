@@ -387,7 +387,8 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   
   /* Common GPIO configuration */
   gpio_init_structure.Mode      = GPIO_MODE_AF_PP;
-  gpio_init_structure.Pull      = GPIO_PULLUP;
+  // gpio_init_structure.Pull      = GPIO_PULLUP;
+  gpio_init_structure.Pull      = GPIO_NOPULL;
   gpio_init_structure.Speed     = GPIO_SPEED_HIGH;
   gpio_init_structure.Alternate = GPIO_AF12_SDMMC1;
   
@@ -400,8 +401,8 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   HAL_GPIO_Init(GPIOD, &gpio_init_structure);
 
   /* NVIC configuration for SDIO interrupts */
-  HAL_NVIC_SetPriority(SDMMC1_IRQn, 0x0E, 0);
-  HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
+  // HAL_NVIC_SetPriority(SDMMC1_IRQn, 0x0E, 0);
+  // HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
     
   /* Configure DMA Rx parameters */
   dma_rx_handle.Init.Channel             = SD_DMAx_Rx_CHANNEL;
@@ -454,12 +455,12 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   HAL_DMA_Init(&dma_tx_handle); 
   
   /* NVIC configuration for DMA transfer complete interrupt */
-  HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, 0x0F, 0);
-  HAL_NVIC_EnableIRQ(SD_DMAx_Rx_IRQn);
+  // HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, 0x0F, 0);
+  // HAL_NVIC_EnableIRQ(SD_DMAx_Rx_IRQn);
   
   /* NVIC configuration for DMA transfer complete interrupt */
-  HAL_NVIC_SetPriority(SD_DMAx_Tx_IRQn, 0x0F, 0);
-  HAL_NVIC_EnableIRQ(SD_DMAx_Tx_IRQn);
+  // HAL_NVIC_SetPriority(SD_DMAx_Tx_IRQn, 0x0F, 0);
+  // HAL_NVIC_EnableIRQ(SD_DMAx_Tx_IRQn);
 }
 
 /**
