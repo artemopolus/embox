@@ -376,6 +376,7 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   GPIO_InitTypeDef gpio_init_structure;
 
   /* Enable SDIO clock */
+  __HAL_RCC_DMA2_CLK_ENABLE();
   __HAL_RCC_SDMMC1_CLK_ENABLE(); 
   
   /* Enable DMA2 clocks */
@@ -419,15 +420,23 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   dma_rx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
   
   dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
+
+  if (HAL_DMA_Init(&dma_rx_handle ) != HAL_OK)
+    {
+	    // arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
+      // Error_Handler();
+    }
+
+    __HAL_LINKDMA(hsd,hdmarx,dma_rx_handle);
   
-  /* Associate the DMA handle */
-  __HAL_LINKDMA(hsd, hdmarx, dma_rx_handle);
+  // /* Associate the DMA handle */
+  // __HAL_LINKDMA(hsd, hdmarx, dma_rx_handle);
   
-  /* Deinitialize the stream for new transfer */
-  HAL_DMA_DeInit(&dma_rx_handle);
+  // /* Deinitialize the stream for new transfer */
+  // HAL_DMA_DeInit(&dma_rx_handle);
   
-  /* Configure the DMA stream */
-  HAL_DMA_Init(&dma_rx_handle);
+  // /* Configure the DMA stream */
+  // HAL_DMA_Init(&dma_rx_handle);
   
   /* Configure DMA Tx parameters */
   dma_tx_handle.Init.Channel             = SD_DMAx_Tx_CHANNEL;
@@ -444,15 +453,23 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   dma_tx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
   
   dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
+
+
+   if (HAL_DMA_Init(&dma_tx_handle ) != HAL_OK)
+    {
+	    // arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
+      // Error_Handler();
+    }
+
+    __HAL_LINKDMA(hsd,hdmarx,dma_tx_handle); 
+  // /* Associate the DMA handle */
+  // __HAL_LINKDMA(hsd, hdmatx, dma_tx_handle);
   
-  /* Associate the DMA handle */
-  __HAL_LINKDMA(hsd, hdmatx, dma_tx_handle);
+  // /* Deinitialize the stream for new transfer */
+  // HAL_DMA_DeInit(&dma_tx_handle);
   
-  /* Deinitialize the stream for new transfer */
-  HAL_DMA_DeInit(&dma_tx_handle);
-  
-  /* Configure the DMA stream */
-  HAL_DMA_Init(&dma_tx_handle); 
+  // /* Configure the DMA stream */
+  // HAL_DMA_Init(&dma_tx_handle); 
   
   /* NVIC configuration for DMA transfer complete interrupt */
   // HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, 0x0F, 0);
