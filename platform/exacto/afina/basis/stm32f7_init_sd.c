@@ -461,7 +461,7 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
       // Error_Handler();
     }
 
-    __HAL_LINKDMA(hsd,hdmarx,dma_tx_handle); 
+    __HAL_LINKDMA(hsd,hdmatx,dma_tx_handle); 
   // /* Associate the DMA handle */
   // __HAL_LINKDMA(hsd, hdmatx, dma_tx_handle);
   
