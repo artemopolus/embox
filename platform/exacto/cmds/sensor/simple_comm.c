@@ -50,6 +50,15 @@ static int checkDataFromGett(struct lthread * self)
     return 0;
 }
 
+void sendCommand( const uint8_t value, const uint8_t address)
+{
+
+}
+void receiveData(uint8_t * buffer, )
+{
+
+}
+
 int main(int argc, char *argv[]) {
 
     const uint8_t adr_mask = 0x7F;
