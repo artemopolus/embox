@@ -9,6 +9,8 @@
 
 #include <commander/exacto_sensors.h>
 #include <commander/exacto_data_storage.h>
+#include "spi/spi1_generated.h"
+
 
 struct lthread RxCheckThread;
 struct lthread TxCheckThread;
@@ -54,7 +56,7 @@ void sendCommand( const uint8_t value, const uint8_t address)
 {
 
 }
-void receiveData( const uin8_t address, uint8_t * buffer, const u_int8_t buffer_len)
+void receiveData( const uint8_t address, uint8_t * buffer, const u_int8_t buffer_len)
 {
 
 }
