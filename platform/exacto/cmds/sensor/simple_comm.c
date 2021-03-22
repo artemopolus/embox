@@ -54,7 +54,7 @@ void sendCommand( const uint8_t value, const uint8_t address)
 {
 
 }
-void receiveData(uint8_t * buffer, )
+void receiveData( const uin8_t address, uint8_t * buffer, const u_int8_t buffer_len)
 {
 
 }

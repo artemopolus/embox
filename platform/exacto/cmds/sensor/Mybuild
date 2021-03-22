@@ -1,0 +1,9 @@
+package exacto.cmds.sensor
+
+@AutoCmd
+@Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module simple_comm{
+    source "simple_comm.c"
+} 
