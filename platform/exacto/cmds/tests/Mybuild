@@ -42,6 +42,13 @@ module spi_dma_receive_transmit {
 	//depends third_party.bsp.stmf1cube.cube
 }
 @AutoCmd
+@Cmd(name="print_to_sd", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module print_to_sd{
+	source "print_to_sd.c"
+}
+@AutoCmd
 @Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''
 AUTHOR Kuznetcov
 ''')
