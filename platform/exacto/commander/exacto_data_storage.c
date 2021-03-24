@@ -1,5 +1,6 @@
 #include "exacto_data_storage.h"
 #include <embox/unit.h>
+#include "blink/blinker.h"
 
 
 /**
@@ -12,6 +13,37 @@ exactodatastorage ExDtStorage = {
 thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 
 thread_control_t SetupParamsThread;
+
+thread_control_t TickReactionThread = {
+    .datalen = 0,
+    .datamaxcount = 10,
+    .result = THR_CTRL_WAIT,
+};
+
+static int runTickReactionThread(struct lthread * self)
+{
+    TickReactionThread.datalen++;
+    if (TickReactionThread.datalen > TickReactionThread.datamaxcount)
+    {
+        if (TickReactionThread.result == THR_CTRL_WAIT)
+        {
+            setSysLedOn();
+            TickReactionThread.result = THR_CTRL_OK;
+        }
+        else
+        {
+            setSysLedOff();
+            TickReactionThread.result = THR_CTRL_WAIT;
+        }
+        TickReactionThread.datalen = 0;
+    }
+    return 0;
+}
+
+void startTickReactionThread( )
+{
+    lthread_launch(&TickReactionThread.thread);
+}
 
 static int setupParamsThreadRun(struct lthread * self)
 {
@@ -94,6 +126,7 @@ static int initExactoDataStorage(void)
     mutex_init_schedee(&ExDtStorage.dtmutex);
     lthread_init(&ResetThread, resetThreadRun);
     lthread_init(&SetupParamsThread.thread, setupParamsThreadRun);
+    lthread_init(&TickReactionThread.thread, runTickReactionThread);
     ExOutputStorage[0].type = THR_SPI_RX;
     ExOutputStorage[1].type = THR_SPI_TX;
     ExOutputStorage[2].type = THR_I2C_RX;

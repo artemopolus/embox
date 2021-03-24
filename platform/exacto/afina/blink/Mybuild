@@ -1,6 +1,6 @@
 package exacto.afina.blink
 @BuildDepends(third_party.bsp.stmf7cube.cube)
-module basic {
+module basic extends exacto.commander.blink{
 	source "blinker.c"
 	@IncludeExport(path="blink")
 	source "blinker.h"

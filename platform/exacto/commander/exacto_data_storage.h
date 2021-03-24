@@ -72,4 +72,5 @@ extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t re
 extern uint8_t resetExactoDataStorage();
 extern uint8_t checkTxSender();
 extern uint8_t checkRxGetter();
+extern void startTickReactionThread( );
 #endif //EXACTO_DATA_STORAGE_H
