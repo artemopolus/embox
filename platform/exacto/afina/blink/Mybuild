@@ -1,0 +1,9 @@
+package exacto.afina.blink
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module basic {
+	source "blinker.c"
+	@IncludeExport(path="blink")
+	source "blinker.h"
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+
+}
