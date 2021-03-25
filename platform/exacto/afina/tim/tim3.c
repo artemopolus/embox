@@ -6,7 +6,12 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_data_storage.h"
 
-#include "tim3.h"
+#include "tim.h"
+ex_subs_service_t ExTimServices[TIM_SERVICES_COUNT];
+ex_service_info_t ExTimServicesInfo = {
+  .max_count = TIM_SERVICES_COUNT,
+  .current_count = 0,
+};
 
 #define TIMx                           TIM3
 #define TIMx_CLK_ENABLE()              __HAL_RCC_TIM3_CLK_ENABLE()
@@ -24,7 +29,8 @@ uint32_t uwPrescalerValue = 0;
 static irq_return_t runAfinaTim3IrqHandler(unsigned int irq_nr, void *data)
 {
     HAL_TIM_IRQHandler(&TimHandle);
-startTickReactionThread( );
+// startTickReactionThread( );
+   ex_updateEventForSubs(ExTimServicesInfo, ExTimServices, THR_TIM); 
     
     return IRQ_HANDLED;
 }
@@ -81,6 +87,8 @@ uwPrescalerValue = (uint32_t)((SystemCoreClock / 2) / 10000) - 1;
     /* Starting Error */
     // Error_Handler();
   }
-    return 0;
+  
+  ex_initSubscribeEvents(ExTimServicesInfo, ExTimServices);  
+  return 0;
 }
 

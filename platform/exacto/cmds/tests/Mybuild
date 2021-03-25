@@ -97,3 +97,18 @@ module sensors {
 	
 	depends third_party.bsp.stmf1cube.cube
 }
+abstract module timbase{
+
+}
+@AutoCmd
+@Cmd(name="test_tim_printer", help=" Test for tim based print ", man='''
+AUTHOR Kuznetcov
+''')
+module tim_printer{
+	source "tim_printer.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	//depends exacto.afina.tim.tim3
+	depends exacto.cmds.tests.timbase
+}
+

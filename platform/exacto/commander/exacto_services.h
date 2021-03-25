@@ -23,7 +23,9 @@ typedef struct {
     uint8_t current_count;
     uint8_t max_count;
 }ex_service_info_t;
-extern uint8_t subscribeOnEvent(ex_service_info_t info, ex_subs_service_t * service,
+extern uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * service,
  thread_type_t type ,int (*run)(struct lthread *));
-
+extern void ex_updateEventForSubs(ex_service_info_t info, ex_subs_service_t * service, 
+    thread_type_t type);
+extern void ex_initSubscribeEvents(ex_service_info_t  info, ex_subs_service_t * service);
 #endif
