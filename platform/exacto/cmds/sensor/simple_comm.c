@@ -15,6 +15,8 @@
 struct lthread RxCheckThread;
 struct lthread TxCheckThread;
 
+
+
 static spi_pack_t PackageToSend = {
     .result = EXACTO_OK,
 };
@@ -22,7 +24,8 @@ static spi_pack_t PackageToGett = {
     .result = EXACTO_WAITING,
 };
 
-uint8_t Marker = 0;
+uint8_t MarkerRx = 0;
+uint8_t MarkerTx = 0;
 
 void updatePackageToSend(uint8_t * data, const uint8_t datalen)
 {
@@ -38,7 +41,7 @@ static int checkDataFromSend( struct lthread * self)
 {
     if (PackageToSend.result == EXACTO_OK)
     {
-        Marker = 1;
+        MarkerTx = 1;
     }
     
     return 0;
@@ -47,18 +50,45 @@ static int checkDataFromGett(struct lthread * self)
 {
     if (PackageToGett.result == EXACTO_OK)
     {
-        Marker = 1;
+        MarkerRx = 1;
     }
     return 0;
 }
 
-void sendCommand( const uint8_t value, const uint8_t address)
+uint8_t setOpt( const uint8_t value, const uint8_t address)
 {
-
+    if(!MarkerTx)
+        return 1;
+    PackageToSend.data[0] = address & 0x7F;
+    PackageToSend.data[1] = value;
+    PackageToSend.datalen = 2;
+    PackageToSend.result = EXACTO_WAITING;
+    PackageToSend.type = SPI_DT_TRANSMIT;
+    sendSpi1Half(&PackageToSend);
+    return 0;
 }
-void receiveData( const uint8_t address, uint8_t * buffer, const u_int8_t buffer_len)
+uint8_t getData( const uint8_t address)
 {
+    if(!MarkerTx)
+        return 1;
+    PackageToSend.data[0] = address | 0x80;
+    PackageToSend.datalen = 1;
+    PackageToSend.result = EXACTO_WAITING;
+    PackageToSend.type = SPI_DT_TRANSMIT_RECEIVE;
+    sendSpi1Half(&PackageToSend);
+    return 0;
+}
+void receiveData( const uint8_t address, uint8_t * buffer, const uint8_t buffer_len)
+{
+    if (!MarkerRx)
+    {
+        waitSpi1Half(&PackageToGett);
+    }
+    else
+    {
 
+    }
+    
 }
 
 int main(int argc, char *argv[]) {
