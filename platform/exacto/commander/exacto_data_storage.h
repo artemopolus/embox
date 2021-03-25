@@ -5,9 +5,11 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_buffer.h"
+#include "commander/exacto_services.h"
 
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_OUTPUT_TYPES_SZ 4
+#define SERVICES_COUNT 5
 
 #include <stdint.h>
 // typedef enum{
@@ -16,12 +18,6 @@
 //     CHECK
 // }function_list_t;
 
-typedef enum t_t_t{
-    THR_SPI_RX = 0,
-    THR_SPI_TX,
-    THR_I2C_RX,
-    THR_I2C_TX,
-}thread_type_t;
 
 typedef enum t_c_r_t{
     THR_CTRL_OK = 0,
@@ -30,6 +26,9 @@ typedef enum t_c_r_t{
     THR_CTRL_NO_RESULT = 0xFF
 }thread_control_result_t;
 // THREADS
+
+
+
 typedef struct {
     struct lthread thread;                          // поток исполнения запросов
     struct mutex mx;                             // контрольный мьютекс для контроля окончания потока
@@ -59,6 +58,10 @@ typedef enum{
     EXACTO_DENY,
     EXACTO_ERROR
 }exacto_process_result_t;
+
+extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
+extern ex_service_info_t ExDataStorageServicesInfo;
+
 extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 extern exactodatastorage ExDtStorage;
 extern ex_io_thread_t ExSpi;
@@ -73,4 +76,6 @@ extern uint8_t resetExactoDataStorage();
 extern uint8_t checkTxSender();
 extern uint8_t checkRxGetter();
 extern void startTickReactionThread( );
+
+extern uint8_t subscribeOnEvent(int (*run)(struct lthread *));
 #endif //EXACTO_DATA_STORAGE_H

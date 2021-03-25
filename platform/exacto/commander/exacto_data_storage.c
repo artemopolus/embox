@@ -12,6 +12,12 @@ exactodatastorage ExDtStorage = {
 };
 thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 
+ ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
+ ex_service_info_t ExDataStorageServicesInfo = {
+     .current_count = 0,
+     .max_count = SERVICES_COUNT,
+ };
+
 thread_control_t SetupParamsThread;
 
 thread_control_t TickReactionThread = {
@@ -138,6 +144,11 @@ static int initExactoDataStorage(void)
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
         setini_exbu8(&ExOutputStorage[i].datastorage);
     }
+    for (uint8_t i = 0 ; i < ExDataStorageServicesInfo.max_count; i++)
+    {
+        ExDataStorageServices[0].isenabled = 0;
+        ExDataStorageServices[0].type = THR_NONE;
+    }
     return 0;
 }
 /**
@@ -221,4 +232,5 @@ uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length)
     lthread_launch(&SetupParamsThread.thread);
     return 0;
 }
+
 

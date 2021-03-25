@@ -3,7 +3,14 @@ package exacto.commander
 abstract module blink{
 
 }
+module services{
+	source "exacto_services.c"
+	@IncludeExport(path="commander")
+	source "exacto_services.h"
+	depends embox.kernel.lthread.lthread
 
+
+}
 module data_storage {
 	source "exacto_data_storage.c"
 	@IncludeExport(path="commander")
@@ -15,6 +22,7 @@ module data_storage {
 
 	depends exacto.commander.buffer	
 	depends exacto.commander.blink	
+	depends exacto.commander.services
 }
 module buffer{
 	option number buffersz=16
