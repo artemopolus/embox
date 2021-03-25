@@ -1,8 +1,8 @@
-package apollon.tim
+package exacto.apollon.tim
 @BuildDepends(third_party.bsp.stmf1cube.cube)
-module tim3{
+module tim3 extends exacto.cmds.tests.timbase{
 	source "tim3.c"
 	@IncludeExport(path="tim")
-	source "tim3.h"
+	source "tim.h"
 	depends embox.kernel.lthread.lthread
 }

@@ -21,7 +21,7 @@ module data_storage {
 	depends embox.kernel.lthread.sync.mutex
 
 	depends exacto.commander.buffer	
-	depends exacto.commander.blink	
+	//depends exacto.commander.blink	
 	depends exacto.commander.services
 }
 module buffer{

@@ -1,6 +1,6 @@
 #include "exacto_data_storage.h"
 #include <embox/unit.h>
-#include "blink/blinker.h"
+// #include "blink/blinker.h"
 
 
 /**
@@ -33,12 +33,12 @@ static int runTickReactionThread(struct lthread * self)
     {
         if (TickReactionThread.result == THR_CTRL_WAIT)
         {
-            setSysLedOn();
+            // setSysLedOn();
             TickReactionThread.result = THR_CTRL_OK;
         }
         else
         {
-            setSysLedOff();
+            // setSysLedOff();
             TickReactionThread.result = THR_CTRL_WAIT;
         }
         TickReactionThread.datalen = 0;

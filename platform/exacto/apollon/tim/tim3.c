@@ -8,22 +8,28 @@
 #include "stm32f1xx_ll_tim.h"
 #include "system_stm32f1xx.h"
 #include "stm32f1xx.h"
-
-#include "tim3.h"
 #include <kernel/lthread/lthread.h>
 
 #include <embox/unit.h>
 #include <kernel/irq.h>
+
+#include "tim.h"
+ex_subs_service_t ExTimServices[TIM_SERVICES_COUNT];
+ex_service_info_t ExTimServicesInfo = {
+  .max_count = TIM_SERVICES_COUNT,
+  .current_count = 0,
+};
+
 /* Initial autoreload value */
 
 /* Actual autoreload value multiplication factor */
 // static uint8_t AutoreloadMult = 1;
-static struct lthread tim_irq_lt;
+// static struct lthread tim_irq_lt;
 
 /* TIM2 Clock */
 
 static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data);
-static int tim_handler(struct lthread *self);
+// static int tim_handler(struct lthread *self);
 
 EMBOX_UNIT_INIT(apollon_tim_init);
 static int apollon_tim_init(void)
@@ -50,21 +56,24 @@ static int apollon_tim_init(void)
 
   res |= irq_attach(29, tim_irq_handler, 0, NULL, "tim_irq_handler");
   
-  lthread_init(&tim_irq_lt, &tim_handler);
-  schedee_priority_set(&tim_irq_lt.schedee, 200);
+  // lthread_init(&tim_irq_lt, &tim_handler);
+  // schedee_priority_set(&tim_irq_lt.schedee, 200);
   
   LL_TIM_EnableIT_UPDATE(TIM3);
   LL_TIM_EnableCounter(TIM3);
   LL_TIM_GenerateEvent_UPDATE(TIM3);
 
+
+  ex_initSubscribeEvents(ExTimServicesInfo, ExTimServices);  
+
   return 0;
 }
 
-static int tim_handler(struct lthread *self)
-{
-  // timer_strat_sched(cs_jiffies->jiffies);
-  return 0;
-}
+// static int tim_handler(struct lthread *self)
+// {
+//   // timer_strat_sched(cs_jiffies->jiffies);
+//   return 0;
+// }
 static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
 {
   /* Check whether update interrupt is pending */
@@ -72,9 +81,10 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
   {
     /* Clear the update interrupt flag*/
     LL_TIM_ClearFlag_UPDATE(TIM3);
+    ex_updateEventForSubs(ExTimServicesInfo, ExTimServices, THR_TIM); 
   }
   /* lthread gogogogo */
-  lthread_launch(&tim_irq_lt);
+  // lthread_launch(&tim_irq_lt);
 
   return IRQ_HANDLED;
 }
