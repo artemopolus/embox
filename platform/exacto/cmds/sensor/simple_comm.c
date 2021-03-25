@@ -14,7 +14,7 @@
 
 struct lthread RxCheckThread;
 struct lthread TxCheckThread;
-
+struct lthread UploadDataThread;
 
 
 static spi_pack_t PackageToSend = {
@@ -37,7 +37,7 @@ void updatePackageToSend(uint8_t * data, const uint8_t datalen)
     PackageToSend.type = SPI_DT_TRANSMIT;
 }
 
-static int checkDataFromSend( struct lthread * self)
+static int runTxCheckThread( struct lthread * self)
 {
     if (PackageToSend.result == EXACTO_OK)
     {
@@ -46,7 +46,7 @@ static int checkDataFromSend( struct lthread * self)
     
     return 0;
 }
-static int checkDataFromGett(struct lthread * self)
+static int runRxCheckThread(struct lthread * self)
 {
     if (PackageToGett.result == EXACTO_OK)
     {
@@ -55,9 +55,15 @@ static int checkDataFromGett(struct lthread * self)
     return 0;
 }
 
+static int runUploadDataThread(struct lthread * self)
+{
+    setDataToExactoDataStorage(PackageToGett.data, PackageToGett.datalen);
+    return 0;
+}
+
 uint8_t setOpt( const uint8_t value, const uint8_t address)
 {
-    if(!MarkerTx)
+    if(MarkerTx)
         return 1;
     PackageToSend.data[0] = address & 0x7F;
     PackageToSend.data[1] = value;
@@ -65,39 +71,55 @@ uint8_t setOpt( const uint8_t value, const uint8_t address)
     PackageToSend.result = EXACTO_WAITING;
     PackageToSend.type = SPI_DT_TRANSMIT;
     sendSpi1Half(&PackageToSend);
+    MarkerTx = 1;
     return 0;
 }
 uint8_t getData( const uint8_t address)
 {
-    if(!MarkerTx)
+    if(MarkerTx)
         return 1;
     PackageToSend.data[0] = address | 0x80;
     PackageToSend.datalen = 1;
     PackageToSend.result = EXACTO_WAITING;
     PackageToSend.type = SPI_DT_TRANSMIT_RECEIVE;
     sendSpi1Half(&PackageToSend);
+    MarkerTx = 1;
     return 0;
 }
-void receiveData( const uint8_t address, uint8_t * buffer, const uint8_t buffer_len)
+uint8_t receiveData( )
 {
     if (!MarkerRx)
     {
         waitSpi1Half(&PackageToGett);
+        return 1;
     }
     else
     {
-
+        // lthread_launch(&UploadDataThread);
+        MarkerRx = 0;
     }
-    
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
 
-    const uint8_t adr_mask = 0x7F;
+    lthread_init(&TxCheckThread, runTxCheckThread);
+    lthread_init(&RxCheckThread, runRxCheckThread);
+    lthread_init(&UploadDataThread, runUploadDataThread);
+
+    // const uint8_t adr_mask = 0x7F;
 
     const uint8_t lsm303ah_3wire_adr = 0x21;
     const uint8_t lsm303ah_3wire_val = 0x05;
     const uint8_t lsm303ah_whoami_xl_adr = 0x0f;
+    setOpt(lsm303ah_3wire_val,lsm303ah_3wire_adr);
+
+    while (MarkerTx)
+    {
+        lthread_launch(&TxCheckThread);
+    }
+
+    getData(lsm303ah_whoami_xl_adr);
         // const uint8_t lsm303ah_whoami_xl_val = 0x43;
 
     // const uint8_t lsm303ah_whoami_mg_adr = 0x4f;
