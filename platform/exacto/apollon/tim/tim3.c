@@ -34,7 +34,6 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data);
 EMBOX_UNIT_INIT(apollon_tim_init);
 static int apollon_tim_init(void)
 {
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
   static uint32_t TimOutClock = 1;
 
   static uint32_t InitialAutoreload = 0;
@@ -49,6 +48,7 @@ static int apollon_tim_init(void)
   
   InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 10);
   LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
+  // LL_TIM_InitTypeDef TIM_InitStruct = {0};
 
   // TimOutClock = SystemCoreClock / 2;
   // InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 10);

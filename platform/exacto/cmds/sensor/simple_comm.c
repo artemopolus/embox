@@ -37,7 +37,6 @@ struct lthread SubscribeThread;
 
 static int runSensorTickerThread(struct lthread * self)
 {
-    printf("Print: %d\n", SensorTickerCounter);
     SensorTickerCounter++;
     return 0;
 }
@@ -215,6 +214,9 @@ int main(int argc, char *argv[]) {
 
     while (!EndCicleMarker)
     {
+    printf("Print: %d\n", SensorTickerCounter);
+
+        usleep(100000);
     }
     
 
