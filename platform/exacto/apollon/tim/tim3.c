@@ -41,15 +41,24 @@ static int apollon_tim_init(void)
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 
-  TimOutClock = SystemCoreClock / 2;
+  LL_TIM_SetPrescaler(TIM3, __LL_TIM_CALC_PSC(SystemCoreClock, 10000));
+  
+  /* Set the auto-reload value to have an initial update event frequency of 10 Hz */
+    /* TIM2CLK = SystemCoreClock / (APB prescaler & multiplier)                 */
+  TimOutClock = SystemCoreClock/2;
+  
   InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 10);
+  LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
 
-  TIM_InitStruct.Prescaler = __LL_TIM_CALC_PSC(SystemCoreClock, 10000);
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = InitialAutoreload;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  // TimOutClock = SystemCoreClock / 2;
+  // InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 10);
 
-  LL_TIM_Init(TIM3, &TIM_InitStruct);
+  // TIM_InitStruct.Prescaler = __LL_TIM_CALC_PSC(SystemCoreClock, 10000);
+  // TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  // TIM_InitStruct.Autoreload = InitialAutoreload;
+  // TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+
+  // LL_TIM_Init(TIM3, &TIM_InitStruct);
 
 
   uint8_t res = 0;
