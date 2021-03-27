@@ -20,3 +20,16 @@ module simple_comm{
 	
 	depends third_party.bsp.stmf1cube.cube
 } 
+@AutoCmd
+@Cmd(name="sensor_storage_run", help=" Run data grabber and storager ", man='''
+AUTHOR Kuznetcov
+''')
+module storage_run{
+    source "storage.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+}

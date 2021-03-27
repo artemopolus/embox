@@ -22,7 +22,7 @@
 #include "commander/exacto_data_storage.h"
 
 
-#define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 5
+#define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 16
 typedef struct
 {
     uint8_t dt_buffer[SPI2_FULL_DMA_RXTX_BUFFER_SIZE];

@@ -43,6 +43,9 @@ uint8_t MarkerSubscribe = 0;
 struct lthread SubscribeThread;
 
 uint8_t TickEventMarker = 0;
+uint8_t PrintEventMarker = 0;
+uint16_t PrintEventCounter = 0;
+#define PRINT_EVENT_COUNTER_MAX 10
 
 static int runPrinter(struct  lthread * self)
 {
@@ -50,6 +53,16 @@ static int runPrinter(struct  lthread * self)
     CommonCounter++;
     if (!TickEventMarker)
         TickEventMarker = 1;
+    if (!PrintEventMarker)
+    {
+        if (PrintEventCounter < PRINT_EVENT_COUNTER_MAX)
+            PrintEventCounter++;
+        else
+        {
+            PrintEventMarker = 1;
+            PrintEventCounter = 0;
+        }
+    }
     return 0;
 }
 static int runSubcribeThread( struct lthread * self)
@@ -73,12 +86,14 @@ static int checkReceiveRun(struct lthread * self)
 
 static int printBufferData(struct  lthread * self)
 {
+    printf("\33[2K\r");
+    printf("\33[2K\r");
     printf("Received buffer: ");
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < BUFFER_LENGTH; i++)
     {
-        printf("%d ", ReceivedData[i]);
+        printf("[%#04x = %d] ", ReceivedData[i], ReceivedData[i]);
     }
-    printf("\n");
+    printf("\nCounter: %d", CommonCounter);
     return 0;
 }
 
@@ -174,6 +189,12 @@ int main(int argc, char *argv[]) {
         while(!TickEventMarker) {}
 
         receiveDataFromStorage();
+
+        if (PrintEventMarker)
+        {
+            lthread_launch(&PrintThread);
+            PrintEventMarker = 0;
+        }
 
         TickEventMarker = 0;
     }
