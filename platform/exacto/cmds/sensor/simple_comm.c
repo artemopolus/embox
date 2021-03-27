@@ -34,9 +34,23 @@ struct lthread SetPackageToGettToNullThread;
 struct lthread UploadDataThread;
 
 uint16_t SensorTickerCounter = 0;
-
 uint8_t MarkerSubscribe = 0;
 struct lthread SubscribeThread;
+
+uint8_t PrintTickerMarker = 0;
+uint16_t PrintTickerCounter = 0;
+#define PRINT_TICKER_MAX 9 
+
+
+//========================================================================
+
+#define TRANSMIT_MESSAGE_SIZE 16
+
+
+uint8_t DataToBuffer[TRANSMIT_MESSAGE_SIZE] = {0};
+
+
+//========================================================================
 
 static int runUploadDataThread(struct lthread * self)
 {
@@ -49,6 +63,18 @@ static int runSensorTickerThread(struct lthread * self)
     SensorTickerCounter++;
     if (!SendMarker)
         SendMarker = 1;
+    if (!PrintTickerMarker)
+    {
+        if (PrintTickerCounter < PRINT_TICKER_MAX)
+        {
+            PrintTickerCounter++;
+        }
+        else
+        {
+            PrintTickerMarker = 1;
+            PrintTickerCounter = 0;
+        }
+    }
     return 0;
 }
 static int runSubscribeThread(struct lthread * self)
@@ -120,14 +146,49 @@ void sendAndReceiveShort(exacto_sensors_list_t sns, const uint8_t address, const
 }
 void printReceivedData()
 {
-    printf("Get some data: ");
+    // printf("\33[2K\r");
+    // printf("\33[2K\r");
+    printf("\033[A\33[2K\rGet some data: ");
     for (uint8_t i = 0; i < PackageToGett.datalen; i++)
     {
         uint8_t ctrl_value = PackageToGett.data[i];
-        printf("[ %#04x = %d ]\t", ctrl_value, ctrl_value);
+        printf("[%#04x = %d]\t", ctrl_value, ctrl_value);
     }
-    printf("\n");
+    printf("Counter: %d\n", SensorTickerCounter);
+    
+    // printf("\n");
  
+}
+void sendAndReceiveCutted(exacto_sensors_list_t sns, const uint8_t address, uint8_t datalen )
+{
+    PackageToSend.data[0] = address | 0x80;
+    PackageToSend.datalen = 1;
+    PackageToSend.result = EXACTO_WAITING;
+    PackageToSend.type = SPI_DT_TRANSMIT_RECEIVE;
+
+    enableExactoSensor(sns);
+    sendSpi1Half(&PackageToSend);
+    CheckDataFormGettThread.datalen = datalen;
+    PackageToGett.datalen = datalen;
+    Marker = 0;
+    while(!Marker)
+    {
+        lthread_launch(&CheckDataFromSendThread.thread);
+    }
+    lthread_launch(&SetPackageToGettToNullThread);
+    Marker = 0;
+    uint16_t counter = 0;
+    while(!Marker)
+    {
+        lthread_launch(&CheckDataFormGettThread.thread);
+        counter++;
+        if (counter > 1000)
+        {
+            printf("Failed\n");
+            return;
+        }
+    }
+    disableExactoSensor(sns);
 }
 void sendAndReceive(exacto_sensors_list_t sns, const uint8_t address, uint8_t datalen )
 {
@@ -188,12 +249,17 @@ void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t
 }
 int main(int argc, char *argv[]) {
 
+    //===========================================================================================
+
+
+    //===========================================================================================
+
     lthread_init(&UploadDataThread, runUploadDataThread);
 
     // const uint8_t adr_mask = 0x7F;
 
     const uint8_t lsm303ah_3wire_adr = 0x21;
-    const uint8_t lsm303ah_3wire_val = 0x05;
+    const uint8_t lsm303ah_3wire_val = 0x07;
     const uint8_t lsm303ah_whoami_xl_adr = 0x0f;
     // const uint8_t lsm303ah_whoami_xl_val = 0x43;
 
@@ -208,9 +274,15 @@ int main(int argc, char *argv[]) {
     const uint8_t ism330dlc_whoami_adr = 0x0F;
 
 
-    const uint8_t lsm303ah_statusA = 0x26;
-    // const uint8_t lsm303ah_dataStart = 0x27;
+    const uint8_t lsm303ah_statusA = 0x28;
+    // const uint8_t lsm303ah_dataStart = 0x28;
     // const uint8_t ism330dlc_whoami_val = 0x6A;
+
+
+    const uint8_t lsm303ah_ctrl1 = 0x20;
+
+    const uint8_t lsm303ah_ctrl1_value = 0x39; // 0xb4; //10110100
+
 
     // uint8_t data_mas[2] = {0};
     
@@ -233,13 +305,13 @@ int main(int argc, char *argv[]) {
     printf("Check whoami lsm303 mg value\n");
     // sleep(1);
     //check mg data
-    for (uint8_t i = 0; i < 9; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, lsm303ah_whoami_mg_adr, 3);
     }
     // sleep(1);
     printf("Check whoami lsm303 xl and mg value\n");
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, lsm303ah_whoami_xl_adr, 3);
         sendAndReceive(LSM303AH, lsm303ah_whoami_mg_adr, 3);
@@ -248,9 +320,22 @@ int main(int argc, char *argv[]) {
     printf("Setup ism330 sensor\n");
     sendOptions(ISM330DLC, ism330dlc_3wire_adr, ism330dlc_3wire_val);
     printf("Check whoami lsm303 mg value\n");
-    for (uint8_t i = 0; i < 9; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(ISM330DLC, ism330dlc_whoami_adr, 3);
+    }
+
+    printf("Send init params for accelerometer\n");
+    sendOptions(LSM303AH, lsm303ah_ctrl1, lsm303ah_ctrl1_value);
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        sendAndReceive(LSM303AH, lsm303ah_ctrl1, 3);
+    }
+    printf("Check init params for accelerometer\n");
+    sendOptions(LSM303AH, lsm303ah_ctrl1, lsm303ah_ctrl1_value);
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        sendAndReceive(LSM303AH, lsm303ah_3wire_adr, 3);
     }
 
     lthread_init(&SubscribeThread, runSubscribeThread);
@@ -258,16 +343,21 @@ int main(int argc, char *argv[]) {
 
     while (!EndCicleMarker)
     {
-        while (!SendMarker){
-
-        }
+        while (!SendMarker){    }
         
-        printf("Print: %d\n", SensorTickerCounter);
 
-        sendAndReceiveShort(LSM303AH,lsm303ah_statusA,8 );
-        printReceivedData();
+        // sendAndReceiveShort(LSM303AH,lsm303ah_statusA,8 );
+        sendAndReceiveCutted(LSM303AH, lsm303ah_statusA, 8);
+        if (PrintTickerMarker)
+        {
+            printReceivedData();
+            PrintTickerMarker = 0;
+            setDataToExactoDataStorage(DataToBuffer, 8); 
+            transmitExactoDataStorage();
 
-        // usleep(100000);
+            
+        }
+
         SendMarker = 0;
     }
     

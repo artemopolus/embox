@@ -298,6 +298,7 @@ void set2receiveDMA(spi1_half_dma_buffer_t *output)
             {
                 output->data[i] = 0;
             }
+            output->datalen = output->buffer->datalen;
             // if (tr)
             //     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
             if (rc)
