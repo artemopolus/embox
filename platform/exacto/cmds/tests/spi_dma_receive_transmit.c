@@ -16,9 +16,11 @@ uint8_t MarkerThread = 0;
 
 uint8_t MarkerTx = 0;
 uint8_t MarkerRx = 0;
-
-uint8_t DataToBuffer[] = {0, 7, 2, 10, 1};
-uint8_t ReceivedData[] = {0, 0, 0, 0, 0};
+#define DATA_MESSAGE_SIZE 16
+uint8_t DataToBuffer[] = {3, 7, 2, 10, 1,
+                            0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0};
+uint8_t ReceivedData[DATA_MESSAGE_SIZE] = { 0};
 
 struct lthread PrintThread;
 struct lthread MarkerCheckerThread;
@@ -47,7 +49,7 @@ static int checkReceiveRun(struct lthread * self)
 static int printBufferData(struct  lthread * self)
 {
     printf("Received buffer: ");
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < DATA_MESSAGE_SIZE; i++)
     {
         printf("%d ", ReceivedData[i]);
     }
@@ -57,13 +59,13 @@ static int printBufferData(struct  lthread * self)
 
 static int downloadDataRun(struct lthread * self)
 {
-    getDataFromExactoDataStorage(ReceivedData, 5);
+    getDataFromExactoDataStorage(ReceivedData, 16);
     return 0;
 }
 
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, 5); 
+    setDataToExactoDataStorage(DataToBuffer, 16); 
     return 0;
 }
 static int sendDataThreadRun(struct lthread * self)
@@ -120,9 +122,9 @@ int main(int argc, char *argv[]) {
         printf("Try %d\n", call_counter);
         lthread_launch(&UpdateDataToBufferThread);
         lthread_launch(&SendDataThread);
-        printf("Tx\n");
+        printf("Wait Tx\n");
         uint16_t counter = 0;
-        const uint16_t counter_max = 500;
+        const uint16_t counter_max = 10;
         while (!MarkerTx)
         {
             lthread_launch(&CheckTransmitThread);
@@ -141,7 +143,7 @@ int main(int argc, char *argv[]) {
                 printf("\33[2K\r");
             }
         }
-        printf("Rx\n");
+        printf("\nWait Rx\n");
         counter = 0;
 
         while (!MarkerRx)

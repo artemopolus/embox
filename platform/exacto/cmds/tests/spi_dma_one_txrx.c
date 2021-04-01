@@ -9,45 +9,27 @@
 #define MAX_CALL_COUNT 10
 
 
+#define TRANSMIT_MESSAGE_SIZE 16
 
-thread_control_t MainThread;
 
-uint8_t MarkerThread = 0;
 
-uint8_t MarkerTx = 0;
-uint8_t MarkerRx = 0;
+uint8_t DataToBuffer[] = {5, 7, 2, 3, 1,
+                          0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0};
+uint8_t ReceivedData[TRANSMIT_MESSAGE_SIZE] = { 0};
 
-uint8_t DataToBuffer[] = {0, 7, 2, 10, 1};
-uint8_t ReceivedData[] = {0, 0, 0, 0, 0};
 
-struct lthread PrintThread;
-struct lthread MarkerCheckerThread;
 
-struct lthread UpdateDataToBufferThread;
-struct lthread SendDataThread;
-
-struct lthread DownLoadDataFromBufferThread;
 
 struct lthread PrintDataFromBufferThread;
 
-struct lthread CheckTransmitThread;
-struct lthread CheckReceiveThread;
 
-static int checkTransmitRun(struct lthread * self )
-{
-    MarkerTx = checkTxSender();
-    return 0;
-}
-static int checkReceiveRun(struct lthread * self)
-{
-    MarkerRx = checkRxGetter();
-    return 0;
-}
+
 
 static int printBufferData(struct  lthread * self)
 {
     printf("Received buffer: ");
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < 16; i++)
     {
         printf("%d ", ReceivedData[i]);
     }
@@ -55,73 +37,46 @@ static int printBufferData(struct  lthread * self)
     return 0;
 }
 
-static int downloadDataRun(struct lthread * self)
-{
-    getDataFromExactoDataStorage(ReceivedData, 5);
-    return 0;
-}
-static int updateDataToBufferThreadRun(struct lthread * self)
-{
-    setDataToExactoDataStorage(DataToBuffer, 5); 
-    return 0;
-}
 
-static int sendDataThreadRun(struct lthread * self)
-{
-    transmitExactoDataStorage();
-    return 0;
-}
-static int printThreadRun(struct lthread * self)
-{
-    printf("Test spi done\n");
-    return 0;
-}
-static int checkMarkerThreadRun(struct lthread * self)
-{
-    if (MainThread.result == THR_CTRL_OK)
-    {
-        MarkerThread = 1;
-    }
-    return 0;
-}
+
+
 
 int main(int argc, char *argv[]) {
-    MarkerThread = 0;
     printf("Start Full Duplex SPI\n");
-    lthread_init(&MarkerCheckerThread, checkMarkerThreadRun);
-    printf("Reset ALL\n");
-    resetExactoDataStorage();
-    printf("Init thread:\n-main\n");
-    initThreadExactoDataStorage(&MainThread);
-    printf("-printf\n");
-    lthread_init(&PrintThread, printThreadRun);
-    printf("-sending\n");
-    lthread_init(&SendDataThread, sendDataThreadRun);
-    printf("Init buffer: \n-upload\n");
-    lthread_init(&UpdateDataToBufferThread, updateDataToBufferThreadRun);
-    printf("-download\n");
-    lthread_init(&DownLoadDataFromBufferThread, downloadDataRun);
-    printf("-printing\n");
     lthread_init(&PrintDataFromBufferThread, printBufferData);
-    lthread_launch(&PrintDataFromBufferThread);
+    printf("Reset ALL\n");
+    // resetExactoDataStorage();
+    printf("Init buffer: \n-upload\n");
     printf("Upload data to buffer\n");
     printf("Data[ buffer] = > SPI[TX]\n");
-
-    printf("Init threat for RX TX values control\n");
-    lthread_init(&CheckReceiveThread, &checkReceiveRun);
-    lthread_init(&CheckTransmitThread, &checkTransmitRun);
-
     printf("Run cycle for checking:\n");
-        printf("Try \n" );
-        lthread_launch(&UpdateDataToBufferThread);
-        lthread_launch(&SendDataThread);
+    printf("Try \n" );
+
+    uint8_t a = 0;
+    while(a < 10)
+    {
+            usleep(1000000);
+
+
+        setDataToExactoDataStorage(DataToBuffer, 16); 
+        transmitExactoDataStorage();
         printf("Tx\n");
         receiveExactoDataStorage();
         printf("Download data from data storage\n");
-        lthread_launch(&DownLoadDataFromBufferThread);
-        lthread_launch(&PrintDataFromBufferThread);
+        getDataFromExactoDataStorage(ReceivedData, 16);
     
-    lthread_launch(&PrintThread);
+    
+        lthread_launch(&PrintDataFromBufferThread);
+        a++;
+    }
+
+    uint8_t rx_pin = 0, tx_pin = 0;
+
+
+    rx_pin = checkRxGetter();
+    tx_pin = checkTxSender();
+
+    printf("Tx: %d Rx: %d \n", tx_pin, rx_pin);
 
 
     printf("Programm reach end\n");

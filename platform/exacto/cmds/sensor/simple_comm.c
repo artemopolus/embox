@@ -47,7 +47,13 @@ uint16_t PrintTickerCounter = 0;
 #define TRANSMIT_MESSAGE_SIZE 16
 
 
-uint8_t DataToBuffer[TRANSMIT_MESSAGE_SIZE] = {0};
+// uint8_t DataToBuffer[TRANSMIT_MESSAGE_SIZE] = {0};
+uint8_t DataToBuffer[] = {5, 7, 2, 3, 1,
+                          0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0};
+
+
+uint8_t BufferToData[TRANSMIT_MESSAGE_SIZE] = {0};
 
 
 //========================================================================
@@ -341,6 +347,8 @@ int main(int argc, char *argv[]) {
     lthread_init(&SubscribeThread, runSubscribeThread);
     lthread_launch(&SubscribeThread);
 
+    resetExactoDataStorage();
+
     while (!EndCicleMarker)
     {
         while (!SendMarker){    }
@@ -352,10 +360,12 @@ int main(int argc, char *argv[]) {
         {
             printReceivedData();
             PrintTickerMarker = 0;
-            setDataToExactoDataStorage(DataToBuffer, 8); 
+            setDataToExactoDataStorage(DataToBuffer, TRANSMIT_MESSAGE_SIZE); 
             transmitExactoDataStorage();
 
-            
+            receiveExactoDataStorage();
+            getDataFromExactoDataStorage(BufferToData, TRANSMIT_MESSAGE_SIZE);
+ 
         }
 
         SendMarker = 0;
