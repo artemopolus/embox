@@ -6,4 +6,6 @@
 extern uint8_t SPI2_FULL_DMA_setdatalength( uint8_t datalength );
 extern struct mutex SPI2_FULL_DMA_wait_rx_data(void);
 extern uint8_t SPI2_FULL_DMA_is_full(void);
+extern void setupSPI2_FULL_DMA();
+extern void turnOffSPI2_FULL_DMA();
 #endif //SPI2_GENERATED_H

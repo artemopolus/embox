@@ -1,0 +1,40 @@
+package exacto.cmds.mliner
+
+@AutoCmd
+@Cmd(name="enabler", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+module enabler{
+    source "enabler.c"
+
+	depends exacto.apollon.spi.spi2slave
+	depends exacto.apollon.gpio.gpio_spi
+}
+@AutoCmd
+@Cmd(name="disabler", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+module disabler{
+    source "disabler.c"
+
+	depends exacto.apollon.spi.spi2slave
+}
+@AutoCmd
+@Cmd(name="disable_spi_master", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+module disable_spi_master{
+    source "disable_spi_master.c"
+	depends exacto.afina.spi.spi1master
+
+}
+@AutoCmd
+@Cmd(name="enable_spi_master", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+module enable_spi_master{
+    source "enable_spi_master.c"
+	depends exacto.afina.spi.spi1master
+	depends exacto.afina.gpio.gpio_spi
+
+}

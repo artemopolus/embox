@@ -38,6 +38,8 @@ module spi_dma_receive_transmit {
     //depends exacto.apollon.spi.spi2
 	depends exacto.cmds.tests.spi_dev
 	depends exacto.commander.data_storage
+	depends exacto.apollon.spi.spi2slave
+	depends exacto.apollon.gpio.gpio_spi
 	
 	//depends third_party.bsp.stmf1cube.cube
 }
@@ -60,6 +62,8 @@ module spi_dma_one_txrx {
 	depends embox.kernel.lthread.sync.mutex
 	depends exacto.cmds.tests.spi_dev
 	depends exacto.commander.data_storage
+	depends exacto.afina.spi.spi1master
+	depends exacto.afina.gpio.gpio_spi
 }
 abstract module spi_dev{
 

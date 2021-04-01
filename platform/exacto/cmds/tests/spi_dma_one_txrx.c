@@ -5,6 +5,8 @@
   
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
+#include "spi/spi1.h"
+#include "gpio/gpio.h"
 
 #define MAX_CALL_COUNT 10
 
@@ -43,6 +45,8 @@ static int printBufferData(struct  lthread * self)
 
 int main(int argc, char *argv[]) {
     printf("Start Full Duplex SPI\n");
+    ex_enableGpio();
+    enableMasterSpiDma(); 
     lthread_init(&PrintDataFromBufferThread, printBufferData);
     printf("Reset ALL\n");
     // resetExactoDataStorage();
@@ -80,6 +84,9 @@ int main(int argc, char *argv[]) {
 
 
     printf("Programm reach end\n");
+    ex_disableGpio();
+    disableMasterSpiDma();
+
     return 0;
 }
 

@@ -152,12 +152,29 @@ static int SPI2_FULL_DMA_init(void)
     ExOutputStorage[THR_SPI_RX].isready = 0;
     /* embox specific section  */
     //enable hardware for SPI and DMA
+    // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+    // LL_SPI_EnableDMAReq_RX(SPI2);
+    // LL_SPI_EnableDMAReq_TX(SPI2);
+    // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);   //transmit
+    // LL_SPI_Enable(SPI2);
+    return 0;
+}
+void setupSPI2_FULL_DMA()
+{
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);   //transmit
     LL_SPI_Enable(SPI2);
-    return 0;
+
+}
+void turnOffSPI2_FULL_DMA()
+{
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
+    LL_SPI_Disable(SPI2);
+    LL_SPI_DisableDMAReq_RX(SPI2);
+    LL_SPI_DisableDMAReq_TX(SPI2);
 }
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
 {

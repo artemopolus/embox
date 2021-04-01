@@ -5,6 +5,8 @@
   
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
+#include "spi/spi2_generated.h"
+#include "gpio/gpio.h"
 
 #define MAX_CALL_COUNT 10
 
@@ -89,6 +91,18 @@ static int checkMarkerThreadRun(struct lthread * self)
 
 int main(int argc, char *argv[]) {
     MarkerThread = 0;
+    printf("Waiting for spi:");
+    while(1)
+    {
+        usleep(10000);
+        if (ex_checkGpio())
+        {
+            break;
+        }
+    }
+    setupSPI2_FULL_DMA();
+    printf("Done\n");
+
     printf("Start Full Duplex SPI\n");
     lthread_init(&MarkerCheckerThread, checkMarkerThreadRun);
     printf("Reset ALL\n");
@@ -128,7 +142,7 @@ int main(int argc, char *argv[]) {
         while (!MarkerTx)
         {
             lthread_launch(&CheckTransmitThread);
-            usleep(50000);
+            usleep(5000);
             if (pt < pt_max)
             {
                 pt++;
@@ -149,7 +163,7 @@ int main(int argc, char *argv[]) {
         while (!MarkerRx)
         {
             lthread_launch(&CheckReceiveThread);
-            usleep(50000);
+            usleep(5000);
             if (pt < pt_max)
             {
                 pt++;
@@ -177,6 +191,8 @@ int main(int argc, char *argv[]) {
     }
     
     lthread_launch(&PrintThread);
+
+    turnOffSPI2_FULL_DMA();
 
 
     printf("Programm reach end\n");

@@ -189,15 +189,34 @@ static int SPI1_FULL_DMA_init(void)
     ExSpi.isready = 1;
     /* embox specific section  */
 
-    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
     //enable hardware for SPI and DMA
+    // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
+    // LL_SPI_EnableDMAReq_RX(SPI1);
+    // LL_SPI_EnableDMAReq_TX(SPI1);
+    // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+    // LL_SPI_Enable(SPI1);
+    //SPI1_FULL_DMA_setdatalength(SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
+    return 0;
+}
+void enableMasterSpiDma()
+{
+    LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
     LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
     LL_SPI_Enable(SPI1);
-    //SPI1_FULL_DMA_setdatalength(SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
-    return 0;
+
 }
+void disableMasterSpiDma()
+{
+    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0); //enable receive
+    LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+    LL_SPI_Disable(SPI1);
+    LL_SPI_DisableDMAReq_RX(SPI1);
+    LL_SPI_DisableDMAReq_TX(SPI1);
+
+}
+
 /**
  * @brief Реакция на окончание передачи данных
  * 
