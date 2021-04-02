@@ -1,6 +1,21 @@
 package exacto.cmds.sensor
 
 @AutoCmd
+@Cmd(name="sns_reader", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module sns_reader{
+    source "sns_reader.c"
+	depends embox.kernel.lthread.lthread
+	
+	depends exacto.apollon.spi.spi1
+	depends exacto.commander.data_storage
+	depends exacto.commander.sensors
+	depends exacto.apollon.tim.tim3
+	
+	depends third_party.bsp.stmf1cube.cube
+}
+@AutoCmd
 @Cmd(name="sensor_smpl_comm", help=" Test for sending test array throw spi dma ", man='''
 AUTHOR Kuznetcov
 ''')
