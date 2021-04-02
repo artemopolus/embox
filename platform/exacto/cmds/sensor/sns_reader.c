@@ -9,7 +9,7 @@
 #include "spi/spi1_generated.h"
 #include "tim/tim.h"
 
-#define PRINT_ON
+// #define PRINT_ON
 
 //===================================
 uint8_t SnsStatus = 0x00f;
