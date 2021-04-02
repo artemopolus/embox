@@ -115,4 +115,11 @@ module tim_printer{
 	//depends exacto.afina.tim.tim3
 	depends exacto.cmds.tests.timbase
 }
-
+@AutoCmd
+@Cmd(name="test_buffer_fifo_test", help=" Test for buffer", man='''
+AUTHOR Kuznetcov
+''')
+module buffer_fifo_test{
+	source "buffer_fifo_test.c"
+	depends exacto.commander.buffer	
+}

@@ -23,6 +23,8 @@ uint8_t MlineMarkerSend = 0;
 //0x04 -- SendMarkerOn
 struct lthread MlineSubscribeThread;
 
+uint8_t MlineSpiEnableMarker = 0;
+
 
 thread_control_t MainThread;
 
@@ -34,18 +36,14 @@ uint8_t MarkerRx = 0;
 uint8_t DataToBuffer[DATA_MESSAGE_SIZE] = { 0};
 uint8_t ReceivedData[DATA_MESSAGE_SIZE] = { 0};
 
-struct lthread PrintThread;
 struct lthread MarkerCheckerThread;
 
-struct lthread UpdateDataToBufferThread;
-struct lthread SendDataThread;
 
 struct lthread DownLoadDataFromBufferThread;
 
 struct lthread PrintDataFromBufferThread;
 
-struct lthread CheckTransmitThread;
-struct lthread CheckReceiveThread;
+void executeSpiTxRxStage();
 
 static int runMlineSensorTickerThread(struct lthread * self)
 {
@@ -57,7 +55,8 @@ static int runMlineSensorTickerThread(struct lthread * self)
                     }
         else
         {
-            MlineMarkerSend = 1;
+            // MlineMarkerSend = 1;
+            executeSpiTxRxStage();
             MlineEventSendTicker = 0;
 
         }
@@ -71,16 +70,7 @@ static int runMlineSubscribeThread(struct lthread * self)
         MlineMarkerSubscribe = 1;
     return 0;
 }
-static int checkTransmitRun(struct lthread * self )
-{
-    MarkerTx = checkTxSender();
-    return 0;
-}
-static int checkReceiveRun(struct lthread * self)
-{
-    MarkerRx = checkRxGetter();
-    return 0;
-}
+
 
 static int printBufferData(struct  lthread * self)
 {
@@ -91,7 +81,7 @@ static int printBufferData(struct  lthread * self)
     {
         printf("%#04x|", ReceivedData[i]);
     }
-    printf("\nCounter: %d\n", MlineSensorTickerCounter);
+    printf("\nCounter: %d SpiOn: %d\n", MlineSensorTickerCounter, MlineSpiEnableMarker);
 #endif
     return 0;
 }
@@ -103,23 +93,9 @@ static int downloadDataRun(struct lthread * self)
     return 0;
 }
 
-static int updateDataToBufferThreadRun(struct lthread * self)
-{
-    setDataToExactoDataStorage(DataToBuffer, DATA_MESSAGE_SIZE); 
-    return 0;
-}
-static int sendDataThreadRun(struct lthread * self)
-{
-    transmitExactoDataStorage();
-    return 0;
-}
-static int printThreadRun(struct lthread * self)
-{
-#ifdef SPI_TXRX_PRINT_ON
-    printf("Test spi done\n");
-#endif
-    return 0;
-}
+
+
+
 static int checkMarkerThreadRun(struct lthread * self)
 {
     if (MainThread.result == THR_CTRL_OK)
@@ -127,6 +103,40 @@ static int checkMarkerThreadRun(struct lthread * self)
         MarkerThread = 1;
     }
     return 0;
+}
+
+void executeSpiTxRxStage()
+{
+    lthread_launch(&DownLoadDataFromBufferThread);
+    lthread_launch(&PrintDataFromBufferThread);
+
+    if (ex_checkGpio())
+    {
+        if (!MlineSpiEnableMarker)
+        {
+            MlineSpiEnableMarker = 1;
+            setupSPI2_FULL_DMA();
+        }
+            transmitExactoDataStorage();
+        if (checkTxSender())
+        {
+
+        }
+        if (checkRxGetter())
+        {
+            // lthread_launch(&DownLoadDataFromBufferThread);
+            // lthread_launch(&PrintDataFromBufferThread);
+            receiveExactoDataStorage();
+        }
+    }
+    else
+    {
+        if (MlineSpiEnableMarker)
+        {
+            MlineSpiEnableMarker = 0;
+            turnOffSPI2_FULL_DMA();
+        }
+    } 
 }
 
 int main(int argc, char *argv[]) {
@@ -146,15 +156,12 @@ int main(int argc, char *argv[]) {
 #ifdef SPI_TXRX_PRINT_ON
     printf("-printf\n");
 #endif
-    lthread_init(&PrintThread, printThreadRun);
 #ifdef SPI_TXRX_PRINT_ON
     printf("-sending\n");
 #endif
-    lthread_init(&SendDataThread, sendDataThreadRun);
 #ifdef SPI_TXRX_PRINT_ON
     printf("Init buffer: \n-upload\n");
 #endif
-    lthread_init(&UpdateDataToBufferThread, updateDataToBufferThreadRun);
 #ifdef SPI_TXRX_PRINT_ON
     printf("-download\n");
 #endif
@@ -170,15 +177,10 @@ int main(int argc, char *argv[]) {
 
     printf("Init threat for RX TX values control\n");
 #endif
-    lthread_init(&CheckReceiveThread, &checkReceiveRun);
-    lthread_init(&CheckTransmitThread, &checkTransmitRun);
 
 #ifdef SPI_TXRX_PRINT_ON
     printf("Run cycle for checking:\n");
 #endif
-    uint8_t pt = 0;
-    const uint8_t pt_max = 50;
-    uint32_t call_counter = 0;
 
 //=================================================================================================
 #ifdef SPI_TXRX_PRINT_ON
@@ -199,118 +201,33 @@ int main(int argc, char *argv[]) {
     printf("Starting observing of sensor data:");
     printf("\nReceived buffer:\n\n\n ");
 #endif
-    while(!MlineMarkerEnd)
-    {
-        while(!MlineMarkerSend) {}
-
-        lthread_launch(&DownLoadDataFromBufferThread);
-
-        lthread_launch(&PrintDataFromBufferThread);
-        MlineMarkerSend = 0;
-    }
-
-    MarkerThread = 0;
-#ifdef SPI_TXRX_PRINT_ON
-    printf("Waiting for spi:");
-#endif
     while(1)
     {
-        usleep(10000);
-        if (ex_checkGpio())
-        {
-            break;
-        }
+        // while(!MlineMarkerSend) {}
+
+        // lthread_launch(&DownLoadDataFromBufferThread);
+
+        // lthread_launch(&PrintDataFromBufferThread);
+
+        // if (ex_checkGpio())
+        // {
+        //     lthread_launch(&SendDataThread);
+        //     if (checkTxSender())
+        //     {
+
+        //     }
+        //     if (checkRxGetter())
+        //     {
+        //         lthread_launch(&DownLoadDataFromBufferThread);
+        //         lthread_launch(&PrintDataFromBufferThread);
+
+        //     }
+        //     receiveExactoDataStorage();
+        // }
+
+        // MlineMarkerSend = 0;
     }
-    setupSPI2_FULL_DMA();
-#ifdef SPI_TXRX_PRINT_ON
-    printf("Done\n");
-#endif
 
-
-//=================================================================================================
-
-    while(call_counter < MAX_CALL_COUNT)
-    {
-#ifdef SPI_TXRX_PRINT_ON
-        printf("Try %d\n", call_counter);
-#endif
-        lthread_launch(&UpdateDataToBufferThread);
-        lthread_launch(&SendDataThread);
-#ifdef SPI_TXRX_PRINT_ON
-        printf("Wait Tx\n");
-#endif
-        uint16_t counter = 0;
-        const uint16_t counter_max = 10;
-        while (!MarkerTx)
-        {
-            lthread_launch(&CheckTransmitThread);
-            usleep(5000);
-            if (pt < pt_max)
-            {
-                pt++;
-                printf(".");
-            }
-            else{
-                pt = 0;
-                if (counter > counter_max)
-                    break;
-                else
-                    counter++;
-#ifdef SPI_TXRX_PRINT_ON
-                printf("\33[2K\r");
-#endif
-
-            }
-        }
-#ifdef SPI_TXRX_PRINT_ON
-        printf("\nWait Rx\n");
-#endif
-        counter = 0;
-
-        while (!MarkerRx)
-        {
-            lthread_launch(&CheckReceiveThread);
-            usleep(5000);
-            if (pt < pt_max)
-            {
-                pt++;
-                printf(".");
-            }
-            else{
-                pt = 0;
-                if (counter > counter_max)
-                    break;
-                else
-                    counter++;
-#ifdef SPI_TXRX_PRINT_ON
-                printf("\33[2K\r");
-#endif
-            }
-        }
-        
-        MarkerTx = 0;
-        MarkerRx = 0;
-#ifdef SPI_TXRX_PRINT_ON
-        printf("Copy data from RX\n");
-#endif
-        receiveExactoDataStorage();
-#ifdef SPI_TXRX_PRINT_ON
-        printf("Download data from data storage\n");
-#endif
-        lthread_launch(&DownLoadDataFromBufferThread);
-        lthread_launch(&PrintDataFromBufferThread);
-        usleep(1000000);
-        call_counter++;
-    }
-    
-    lthread_launch(&PrintThread);
-
-    turnOffSPI2_FULL_DMA();
-
-#ifdef SPI_TXRX_PRINT_ON
-
-    printf("Programm reach end\n");
-#endif
     return 0;
 }
 

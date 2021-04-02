@@ -196,12 +196,17 @@ uint8_t clearExactoDataStorage()
     setemp_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
     return 0;
 }
-uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount)
+thread_control_result_t getStateExactoDataStorage()
+{
+    return ExOutputStorage[THR_SPI_TX].result;
+}
+uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result)
 {
     for (uint8_t i = 0; i < datacount; i++)
     {
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
     }
+    ExOutputStorage[THR_SPI_TX].result = result;
     return 0;
 }
 uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length)

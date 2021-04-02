@@ -22,6 +22,7 @@
 typedef enum t_c_r_t{
     THR_CTRL_OK = 0,
     THR_CTRL_WAIT,
+    THR_CTRL_READY,
     THR_CTRL_UNKNOWN_ERROR,
     THR_CTRL_NO_RESULT = 0xFF
 }thread_control_result_t;
@@ -71,7 +72,8 @@ extern uint8_t transmitExactoDataStorage();
 extern uint8_t receiveExactoDataStorage();
 extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);
 extern uint8_t clearExactoDataStorage();
-extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount);
+extern thread_control_result_t getStateExactoDataStorage();
+extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result);
 extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t resetExactoDataStorage();

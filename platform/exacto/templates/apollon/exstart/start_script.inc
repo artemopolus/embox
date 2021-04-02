@@ -1,2 +1,2 @@
-"help"//,
-//"service sns_reader"
+"help",
+"spi_txrx"

@@ -22,7 +22,7 @@
 #include "commander/exacto_data_storage.h"
 
 
-#define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 16
+#define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 64
 typedef struct
 {
     uint8_t dt_buffer[SPI2_FULL_DMA_RXTX_BUFFER_SIZE];
@@ -223,25 +223,28 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
+    if (ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)
+        return 0;
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
     //const uint32_t _datacount = _trg_thread->datalen;
-    const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
+    const uint32_t _datacount = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
     if (_datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
     if (SPI2_FULL_DMA_tx_buffer.is_full)
         return 1;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
-    uint8_t value = 0;
-    for (uint8_t i = 0; i < _datacount; i++)
-    {
+    // uint8_t value = 0;
+    // for (uint8_t i = 0; i < _datacount; i++)
+    // {
         /* копирование данных */
         //grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
-        grbfst_exbu8(&_trg_thread->datastorage, &value);
-        SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = value;
-    }
+        // grbfst_exbu8(&_trg_thread->datastorage, &value);
+        // SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+    // }
+    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
     _trg_thread->isready = 0;
-    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, _datacount);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     return 0;
 }

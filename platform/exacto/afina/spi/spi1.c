@@ -25,7 +25,7 @@
  * @brief опредееляет количество данных, выделяемых в DMA
  * 
  */
-#define SPI1_FULL_DMA_RXTX_BUFFER_SIZE 16
+#define SPI1_FULL_DMA_RXTX_BUFFER_SIZE 64
 /**
  * @brief стркутура для хранения легкого потока с дополнительными данными
  * 
