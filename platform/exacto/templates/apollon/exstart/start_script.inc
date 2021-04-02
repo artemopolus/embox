@@ -1,2 +1,2 @@
 "help"//,
-//"test_spi_receive"
+//"service sns_reader"

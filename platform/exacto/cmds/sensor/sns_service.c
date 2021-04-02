@@ -8,8 +8,9 @@
 #include "commander/exacto_sensors.h"
 #include "spi/spi1_generated.h"
 #include "tim/tim.h"
+#include <embox/unit.h>
 
-#define PRINT_ON
+// #define PRINT_ON
 
 //===================================
 uint8_t SnsStatus = 0x00f;
@@ -376,7 +377,9 @@ void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t
     disableExactoSensor(sns);
  
 }
-int main(int argc, char *argv[]) {
+EMBOX_UNIT_INIT(initSnsService);
+static int initSnsService(void)
+{
 
     //===========================================================================================
 
@@ -499,16 +502,7 @@ int main(int argc, char *argv[]) {
 
     resetExactoDataStorage();
 
-    while (1)
-    {
-        
-            
-    }
-    
-#ifdef PRINT_ON
 
-    printf("Done\n");
-#endif
 
 
     return 0;
