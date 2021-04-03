@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
             usleep(1000000);
 
 
-        setDataToExactoDataStorage(DataToBuffer, 16); 
+        setDataToExactoDataStorage(DataToBuffer, 16, THR_CTRL_OK); 
         transmitExactoDataStorage();
         printf("Tx\n");
         receiveExactoDataStorage();

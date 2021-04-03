@@ -107,7 +107,7 @@ static int downloadDataRun(struct lthread * self)
 }
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, BUFFER_LENGTH); 
+    setDataToExactoDataStorage(DataToBuffer, BUFFER_LENGTH, THR_CTRL_OK); 
     return 0;
 }
 
