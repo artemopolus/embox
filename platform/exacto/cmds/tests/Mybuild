@@ -123,3 +123,13 @@ module buffer_fifo_test{
 	source "buffer_fifo_test.c"
 	depends exacto.commander.buffer	
 }
+@AutoCmd
+@Cmd(name="test_lights", help=" Test for lights ", man='''
+AUTHOR Kuznetcov
+''')
+module lights {
+	source "lights.c"
+
+	depends embox.compat.posix.util.sleep
+	depends exacto.afina.gpio.gpio_spi
+}
