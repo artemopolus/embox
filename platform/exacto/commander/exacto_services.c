@@ -4,7 +4,7 @@ uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * servic
  thread_type_t type ,int (*run)(struct lthread *))
 {
     uint8_t i = info->current_count;
-    if (i == (info->max_count -1))
+    if (i == (info->max_count))
         return 1;
     service[i].isenabled = 1;
     service[i].type = type;

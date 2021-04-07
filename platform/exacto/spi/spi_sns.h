@@ -26,6 +26,7 @@ typedef struct{
 extern uint8_t ex_getSpiSnsOption(const uint8_t address);
 extern uint8_t ex_setSpiSnsOption(const uint8_t address, const uint8_t value);
 extern uint8_t ex_sendSpiSns(ex_spi_pack_t *  input);
-extern uint8_t ex_waitSpiSns(ex_spi_pack_t *  output);
+extern uint8_t ex_gettSpiSns(ex_spi_pack_t * output);
 extern uint8_t ex_runReceiver();
+extern uint8_t ex_runTransmiter();
 #endif //SPI_SNS_H

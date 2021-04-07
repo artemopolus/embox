@@ -60,16 +60,11 @@ static spi1_half_dma_buffer_t RxSPI1HalfBuffer = {
 
 struct lthread RxSpi1HalfIrqThread;
 struct lthread TxSpi1HalfIrqThread;
-struct lthread InitRxBufferThread;
-struct lthread InitTxBufferThread;
 
 //irq
 static irq_return_t runRxSp1HalfDmaHandler(unsigned int irq_nr, void *data);
 static irq_return_t runTxSp1HalfDmaHandler(unsigned int irq_nr, void *data);
 
-static int syncSpi1HalfRun(struct lthread * self);
-static int initRxBuffer(struct lthread *self);
-static int initTxBuffer(struct lthread * self);
 EMBOX_UNIT_INIT(initSpi1HalfDMA);
 static int initSpi1HalfDMA(void)
 {
@@ -164,10 +159,7 @@ static int initSpi1HalfDMA(void)
     // lthread_init(&TxSpi1HalfIrqThread, txSpi1HalfRun);
     // lthread_init(&RxSpi1HalfIrqThread, rxSpi1HalfRun);
     // lthread_init(&TxSpi1HalfRunThread, updateTxRun);
-    lthread_init(&TxSPI1HalfBuffer.thread, syncSpi1HalfRun);
-    lthread_init(&RxSPI1HalfBuffer.thread, syncSpi1HalfRun);
-    lthread_init(&InitRxBufferThread, initRxBuffer);
-    lthread_init(&InitTxBufferThread, initTxBuffer);
+    
     
     
     ex_initSubscribeEvents( ExSnsServicesInfo, ExSnsServices);  
@@ -204,27 +196,32 @@ static irq_return_t runTxSp1HalfDmaHandler(unsigned int irq_nr, void *data)
 }
 STATIC_IRQ_ATTACH(13, runTxSp1HalfDmaHandler, NULL);
 
+void checkChannelsForDisable()
+{
+    if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_3)) //transmit
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
+    if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2))
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
 
+}
 // static int txSpi1HalfRun(struct lthread *self)
 uint8_t ex_runReceiver()
 {
-    // TxSPI1HalfBuffer.result = EXACTO_OK;
-    // if (TxSPI1HalfBuffer.type == EX_SPI_DT_TRANSMIT_RECEIVE)
-    // {
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+    // while(!LL_SPI_IsActiveFlag_TXE(SPI1)){}
+    // while(LL_SPI_IsActiveFlag_BSY(SPI1)){}
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+    checkChannelsForDisable();
     LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
-    // }
     return 0;
 }
-// static int rxSpi1HalfRun(struct lthread *self)
 uint8_t ex_runTransmiter()
 {
-    // RxSPI1HalfBuffer.result = EXACTO_OK;
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-        // LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
-        // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+    checkChannelsForDisable();
     LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit 
     return 0;
@@ -242,26 +239,10 @@ void initSpi1HalfBuffer(spi1_half_dma_buffer_t * buffer)
     }
     
 }
-static int initRxBuffer(struct lthread *self)
-{
-   initSpi1HalfBuffer(&RxSPI1HalfBuffer);
-   return 0; 
-}
-static int initTxBuffer(struct lthread * self)
-{
-    initSpi1HalfBuffer(&TxSPI1HalfBuffer);
-    return 0;
-}
-
-
 
 uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 {
-    lthread_launch(&TxSPI1HalfBuffer.thread);
-    if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_3)) //transmit
-        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
-    if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2))
-        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    checkChannelsForDisable();
     for (uint8_t i = 0; i < input->datalen; i++)
     {
         TxSPI1HalfBuffer.data[i] = input->data[i];
@@ -271,24 +252,17 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
     LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
     return 0;
 }
-uint8_t ex_waitSpiSns(ex_spi_pack_t *output)
+uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
 {
-    uint8_t rc = 0;
-    if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2)) //receive
+    // if (LL_DMA_IsEnabledChannel(DMA1, LL_DMA_CHANNEL_2)) //receive
+    // {
+    //     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    // }
+    for (uint8_t i = 0; i < RxSPI1HalfBuffer.datalen; i++)
     {
-        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-        rc = 1;
-    }
-    for (uint8_t i = 0; i < output->datalen; i++)
-    {
-        output->data[i] = output->data[i];
+        output->data[i] = RxSPI1HalfBuffer.data[i];
     }
     output->result = EXACTO_OK;
-    for (uint8_t i = 0; i < output->datalen; i++)
-    {
-        output->data[i] = 0;
-    }
-    if (rc)
-        LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
+    output->datalen = RxSPI1HalfBuffer.datalen;
     return 0;
 }
