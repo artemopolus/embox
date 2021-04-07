@@ -9,11 +9,40 @@
 #include "spi/spi_sns.h"
 #include "tim/tim.h"
 #include <embox/unit.h>
+// #include <stm32f1xx_hal.h>
+#include <hal/reg.h>
+// #include <asm/arm_m_regs.h>
 
 #define PRINT_ON
 #define PRINT_TICKER_MAX 9 
 #define TRANSMIT_MESSAGE_SIZE 64
 
+#define DEMCR        0xE000EDFC
+#define DEMCR_TRCENA    0x01000000
+#define DWT_LAR      0xE0001FB0
+#define DWT_LAR_KEY  0xC5ACCE55
+#define DWT_CYCCNT   0xE0001004
+#define DWT_CTRL     0xE0001000
+# define CYCCNTENA   (1 << 0)
+
+static void dwt_cyccnt_reset(void) {
+	REG32_ORIN(DEMCR, DEMCR_TRCENA);
+
+	REG32_STORE(DWT_LAR, DWT_LAR_KEY);
+
+	REG32_STORE(DWT_CYCCNT, 0);
+}
+static inline uint32_t dwt_cyccnt_start(void) {
+	REG32_ORIN(DWT_CTRL, CYCCNTENA);
+
+	return REG32_LOAD(DWT_CYCCNT);
+}
+
+static inline uint32_t dwt_cyccnt_stop(void) {
+	REG32_CLEAR(DWT_CTRL, CYCCNTENA);
+
+	return REG32_LOAD(DWT_CYCCNT);
+}
 //===================================
 uint8_t SnsStatus = 0x00f;
 // 0x01 - lsm303
@@ -239,6 +268,14 @@ int initSnsService(void)
     return 0;
 }
 int main(int argc, char *argv[]) {
+	uint32_t start, stop, res;
+	dwt_cyccnt_reset();
+	start = dwt_cyccnt_start();
     initSnsService();
+	stop = dwt_cyccnt_stop();
+	res = stop - start;
+
+    printf("ticks:%d\n", res);
+
     return 0;
 }
