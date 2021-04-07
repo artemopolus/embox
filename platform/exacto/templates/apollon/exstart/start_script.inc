@@ -1,2 +1,3 @@
 "help",
-"spi_txrx"
+"sns_reader_smpl"
+//"spi_txrx"

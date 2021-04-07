@@ -41,3 +41,14 @@ module sensors {
 	depends embox.kernel.lthread.sync.mutex
 	
 }
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module sns_apollon_lib {
+	source "exacto_sns_ctrl.c"
+	@IncludeExport(path="commander")
+	source "exacto_sns_ctrl.h"
+
+	depends exacto.spi.sns_apollon
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+}
