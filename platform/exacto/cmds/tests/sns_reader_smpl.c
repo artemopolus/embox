@@ -303,6 +303,15 @@ static int runSendThread(struct lthread * self)
     {
         ex_gettSpiSns(&PackageToGett);
     }
+    disableExactoSensor(CurrentTargetSensor);
+    if (StartTickerIsEnabled)
+    {
+       	StopTicker = dwt_cyccnt_stop();
+	    ResultTicker = StopTicker - StartTicker;
+        StartTickerIsEnabled = 0;
+        
+ 
+    }
     return 0;
 }
 
@@ -374,11 +383,12 @@ int initSnsService(void)
     sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
     sendOptions(ISM330DLC, 0x12, 0x0c);
     resetExactoDataStorage();
-    while(!SRS_MarkerTransmit) {}
+    // while(!SRS_MarkerTransmit) {}
+    StartTickerIsEnabled = 1;
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR);
-        while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
+        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
         printReceivedData();
     }
     for (uint8_t i = 0; i < 3; i++)
