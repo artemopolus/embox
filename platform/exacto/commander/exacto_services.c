@@ -33,3 +33,46 @@ void ex_initSubscribeEvents(ex_service_info_t info, ex_subs_service_t * service)
    }
 
 }
+uint8_t ex_initServiceMsg( ex_service_transport_msg_t * msg)
+{
+    for (uint8_t i = 0; i < EX_SERVICE_TRANSPORT_MSG_SZ; i++)
+    {
+        msg->data[i] = 0;
+    }
+    msg->isfull = 0; 
+    msg->datalen = 0;
+    return 0;
+}
+uint8_t ex_uploadDataToServiceMsg( ex_service_transport_msg_t * msg, uint8_t * data, const uint16_t datalen)
+{
+    if (datalen > EX_SERVICE_TRANSPORT_MSG_SZ)
+        return 1;
+    for (uint8_t i = 0; i < datalen; i++)
+    {
+        msg->data[i] = data[i];
+    }
+    msg->datalen = datalen;
+    msg->isfull = 1; 
+    return 0;
+}
+uint8_t ex_downloadDataFromServiceMsg( ex_service_transport_msg_t * msg, uint8_t * dst, const uint16_t dstlen)
+{
+    if (!msg->isfull)
+        return 1;
+    for (uint8_t i = 0; ((i < dstlen)&&(i < EX_SERVICE_TRANSPORT_MSG_SZ)); i++)
+    {
+        dst[i] = msg->data[i];
+    }
+    msg->isfull = 0;
+    return 0;
+}
+uint8_t ex_checkServiceMsg(ex_service_transport_msg_t * msg)
+{
+    return msg->isfull;
+}
+uint16_t ex_getLenServiceMsg(ex_service_transport_msg_t * msg)
+{
+    if (!msg->isfull)
+        return 0;
+    return msg->datalen;
+}
