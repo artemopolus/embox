@@ -92,7 +92,7 @@ static int initSpi1HalfDMA(void)
     /* SPI1_RX Init */
     LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_2, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
 
-    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_2, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_2, LL_DMA_PRIORITY_HIGH);
 
     LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_2, LL_DMA_MODE_NORMAL);
 
@@ -107,7 +107,7 @@ static int initSpi1HalfDMA(void)
     /* SPI1_TX Init */
     LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_3, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
 
-    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_3, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_3, LL_DMA_PRIORITY_HIGH);
 
     LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_3, LL_DMA_MODE_NORMAL);
 
@@ -127,7 +127,7 @@ static int initSpi1HalfDMA(void)
     SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
     SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
+    SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV8;
     SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
     SPI_InitStruct.CRCPoly = 10;
@@ -209,21 +209,22 @@ uint8_t ex_runReceiver()
 {
     // while(!LL_SPI_IsActiveFlag_TXE(SPI1)){}
     // while(LL_SPI_IsActiveFlag_BSY(SPI1)){}
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
     // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
-    checkChannelsForDisable();
+    // checkChannelsForDisable();
+    // LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
+    // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
     LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
-    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
     return 0;
 }
 uint8_t ex_runTransmiter()
 {
     // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
     // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
-    checkChannelsForDisable();
+    // checkChannelsForDisable();
+    // LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
     LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit 
+    // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit 
     return 0;
 }
 void initSpi1HalfBuffer(spi1_half_dma_buffer_t * buffer)
@@ -242,14 +243,20 @@ void initSpi1HalfBuffer(spi1_half_dma_buffer_t * buffer)
 
 uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 {
-    checkChannelsForDisable();
+    // checkChannelsForDisable();
+    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
+    
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
     for (uint8_t i = 0; i < input->datalen; i++)
     {
         TxSPI1HalfBuffer.data[i] = input->data[i];
     }
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_3, input->datalen);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3); //transmit
-    LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
+    
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, RxSPI1HalfBuffer.datalen);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2); // receive
     return 0;
 }
 uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
