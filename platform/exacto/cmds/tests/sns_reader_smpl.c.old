@@ -295,14 +295,7 @@ static int runSendThread(struct lthread * self)
 	    dwt_cyccnt_reset();
 	    StartTicker = dwt_cyccnt_start();
     }
-    if (PackageToSend.type == EX_SPI_DT_TRANSMIT)
-    {
-        ex_sendSpiSns(&PackageToSend);
-    }
-    else if (PackageToSend.type == EX_SPI_DT_TRANSMIT_RECEIVE)
-    {
-        ex_gettSpiSns(&PackageToGett);
-    }
+    ex_sendSpiSns(&PackageToSend);
     return 0;
 }
 
@@ -351,8 +344,6 @@ void sendAndReceive(exacto_sensors_list_t sns, const uint8_t address)
     PackageToSend.datalen = 1;
     PackageToSend.result = EXACTO_WAITING;
     PackageToSend.type = EX_SPI_DT_TRANSMIT_RECEIVE;
-    PackageToGett.cmd = address | 0x80;
-    PackageToGett.datalen = 1;
     CurrentTargetSensor = sns;
     lthread_launch(&SendThread);
 

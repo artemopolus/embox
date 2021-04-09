@@ -20,11 +20,10 @@ typedef enum{
 typedef struct{
     uint8_t data[EX_SPI_PACK_SZ];
     uint8_t datalen;
+    uint8_t cmd;
     ex_spi_data_type_t type;
     exacto_process_result_t result;
 }ex_spi_pack_t;
-extern uint8_t ex_getSpiSnsOption(const uint8_t address);
-extern uint8_t ex_setSpiSnsOption(const uint8_t address, const uint8_t value);
 extern uint8_t ex_sendSpiSns(ex_spi_pack_t *  input);
 extern uint8_t ex_gettSpiSns(ex_spi_pack_t * output);
 extern uint8_t ex_runReceiver();
