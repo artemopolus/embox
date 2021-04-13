@@ -419,6 +419,8 @@ int initSnsService(void)
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
+
+
         printReceivedData();
     }
     return 0;
