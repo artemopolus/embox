@@ -12,6 +12,8 @@
 // #include <stm32f1xx_hal.h>
 #include <hal/reg.h>
 // #include <asm/arm_m_regs.h>
+#include "sensors/ism330dlc_reg.h"
+#include "sensors/lsm303ah_reg.h"
 
 #define PRINT_ON
 #define PRINT_TICKER_MAX 9 
@@ -365,7 +367,7 @@ int initSnsService(void)
     lthread_init(&DownloadCmdToSendThread, runDownloadCmdToSendThread);
     lthread_launch(&SubscribeThread);
     sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
-    sendOptions(ISM330DLC, 0x12, 0x0c);
+    sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x0c);
     resetExactoDataStorage();
     // while(!SRS_MarkerTransmit) {}
     // StartTickerIsEnabled = 1;
@@ -383,7 +385,7 @@ int initSnsService(void)
 #endif
     for (uint8_t i = 0; i < 3; i++)
     {
-        sendAndReceive(ISM330DLC, 0x0f, 2);
+        sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
         // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
         printReceivedData();
     }
@@ -395,6 +397,28 @@ int initSnsService(void)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
         // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
+        printReceivedData();
+    }
+
+    sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, 0x44); //0100 01 0 0
+
+#ifdef PRINT_ON
+    printf("ism330 data read\n");
+#endif
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
+        printReceivedData();
+    }
+
+    sendOptions(LSM303AH, LSM303AH_CTRL1_A, 0x39);
+
+#ifdef PRINT_ON
+    printf("lsm303 data read\n");
+#endif
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
         printReceivedData();
     }
     return 0;

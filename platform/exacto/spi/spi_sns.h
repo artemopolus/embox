@@ -5,7 +5,7 @@
 #include "commander/exacto_services.h"
 
 #define EX_SPI_SERVICES_COUNT 2
-#define EX_SPI_PACK_SZ 16
+#define EX_SPI_PACK_SZ 32 
 
 extern ex_subs_service_t ExSnsServices[EX_SPI_SERVICES_COUNT];
 extern ex_service_info_t ExSnsServicesInfo;

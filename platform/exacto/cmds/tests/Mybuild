@@ -145,6 +145,8 @@ module sns_reader_smpl{
 	depends exacto.commander.data_storage
 	depends exacto.commander.sns_apollon_lib
 	depends exacto.apollon.tim.tim3
+	depends exacto.sensors.ism330dlc
+	depends exacto.sensors.lsm303ah
 	
 	depends third_party.bsp.stmf1cube.cube
 }

@@ -30,6 +30,8 @@ typedef enum {
 #define LSM303AH_CTRL1_VAL 0x39
 #define LSM303AH_STATUS_A_ADR 0x28
 
+#define ISM330DLC_WHOAMI_ADR 0x0f
+
 
 extern void enableExactoSensor(exacto_sensors_list_t sensor);
 extern void disableExactoSensor(exacto_sensors_list_t sensor);

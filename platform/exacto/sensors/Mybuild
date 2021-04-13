@@ -1,0 +1,12 @@
+package exacto.sensors
+
+module ism330dlc 
+{
+	@IncludeExport(path="sensors")
+    source "ism330dlc_reg.h"
+}
+module lsm303ah 
+{
+	@IncludeExport(path="sensors")
+    source "lsm303ah_reg.h"
+}
