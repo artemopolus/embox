@@ -401,11 +401,13 @@ int initSnsService(void)
     }
 
     sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, 0x44); //0100 01 0 0
+    sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, 0x48); //0100 01 0 0
 
 #ifdef PRINT_ON
     printf("ism330 data read\n");
 #endif
-    for (uint8_t i = 0; i < 3; i++)
+    StartTickerIsEnabled = 1;
+    for (uint8_t i = 0; i < 6; i++)
     {
         sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
         printReceivedData();
@@ -416,11 +418,30 @@ int initSnsService(void)
 #ifdef PRINT_ON
     printf("lsm303 data read\n");
 #endif
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 6; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
 
 
+        printReceivedData();
+    }
+
+#ifdef PRINT_ON
+    printf("lsm303ah MG\n");
+#endif
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
+        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
+        printReceivedData();
+    }
+#ifdef PRINT_ON
+    printf("ism330\n");
+#endif
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
+        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
         printReceivedData();
     }
     return 0;
