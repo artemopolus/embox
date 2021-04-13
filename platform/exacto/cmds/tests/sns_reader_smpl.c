@@ -89,8 +89,6 @@ exacto_sensors_list_t CurrentTargetSensor = LSM303AH;
 uint8_t CurrentTargetSensor_isenabled  = 0;
 
 struct lthread SubscribeThread;
-struct lthread ReceiveDataEventThread;
-struct lthread TransmitDataEventThread;
 struct lthread SendThread;
 struct lthread DownloadCmdToSendThread;
 
@@ -155,47 +153,10 @@ static int runSensorTickerThread(struct lthread * self)
     // executeStage(); 
     return 0;
 }
-static int runReceiveDataEventThread(struct lthread * self)
-{
-    if (StartTickerIsEnabled)
-    {
-       	StopTicker = dwt_cyccnt_stop();
-	    ResultTicker = StopTicker - StartTicker;
-        StartTickerIsEnabled = 0;
-        
- 
-    }
-    disableExactoSensor(CurrentTargetSensor);
-    CurrentTargetSensor_isenabled = 0;
-    ex_gettSpiSns(&PackageToGett);
-    uploadRecevedData(0);
-    SRS_MarkerReceive = 1;
-    ex_runTransmiter();
- 
-    return 0;
-}
 
-static int runTransmitDataEventThread(struct lthread * self)
-{
-    SRS_MarkerTransmit = 1;
-    if (PackageToSend.type == EX_SPI_DT_TRANSMIT)
-    {
-        CurrentTargetSensor_isenabled = 0;
-        disableExactoSensor(CurrentTargetSensor);
-        return 0;
-    }
-    else if (PackageToSend.type == EX_SPI_DT_TRANSMIT_RECEIVE)
-    {
-        ex_runReceiver();
-        return 0;
-    }
-    return 0;
-}
 static int runSubscribeThread(struct lthread * self)
 {
     uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runSensorTickerThread);
-    result |= ex_subscribeOnEvent(&ExSnsServicesInfo, ExSnsServices, THR_SPI_TX, runTransmitDataEventThread);
-    result |= ex_subscribeOnEvent(&ExSnsServicesInfo, ExSnsServices, THR_SPI_RX, runReceiveDataEventThread);
     if (result == 0)
         MarkerSubscribe = 1;
     return 0;
@@ -211,7 +172,16 @@ uint8_t setPackageToGettToNull()
     PackageToGett.result = EXACTO_WAITING;    
     return 0;
 }
+void printDataValues(uint8_t * data, const uint16_t datalen)
+{
 
+    for (uint8_t i = 0; i < datalen; i++)
+    {
+        int16_t dst = 0;
+        convertUint8ToUint16(&data[i*2], &dst);
+        printf("%d\t", dst);
+    }
+}
 void printReceivedData()
 {
     #ifdef PRINT_ON
@@ -412,6 +382,11 @@ int initSnsService(void)
         sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
         printReceivedData();
     }
+
+#ifdef PRINT_ON
+    printf("Ticker counter result: %d\n", ResultTicker);
+#endif
+    
 
     sendOptions(LSM303AH, LSM303AH_CTRL1_A, 0x39);
 

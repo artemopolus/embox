@@ -62,3 +62,64 @@ void disableExactoSensor(exacto_sensors_list_t sensor)
     }
 
 }
+uint8_t isDataReady_xl(exacto_sensors_list_t sensor, const uint8_t value)
+{
+    switch (sensor)
+    {
+    case LSM303AH:
+        if(value & 0x01)
+            return 1; 
+        break;
+    case ISM330DLC:
+        if(value & 0x01)
+            return 1; 
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+uint8_t isDataReady_gr(exacto_sensors_list_t sensor, const uint8_t value)
+{
+    switch (sensor)
+    {
+    case LSM303AH:
+        break;
+    case ISM330DLC:
+        if(value & 0x02)
+            return 1; 
+        break;
+    default:
+        break;
+    }
+    return 0;
+    
+}
+uint8_t isDataReady_mg(exacto_sensors_list_t sensor, const uint8_t value)
+{
+    switch (sensor)
+    {
+    case LSM303AH:
+        if(value & 0x07)
+            return 1; 
+        break;
+    case ISM330DLC:
+            return 1; 
+        break;
+    default:
+        break;
+    }
+    return 0;
+
+}
+uint8_t isXlGrDataReady_ISM330DLC(const uint8_t value)
+{
+    if (value & 0x03)
+        return 1;
+    return 0;
+}
+void convertUint8ToUint16(uint8_t * src, int16_t * dst)
+{
+    int16_t first = (int16_t) src[1];
+    *dst = (first << 8) + (int16_t)src[0];
+}

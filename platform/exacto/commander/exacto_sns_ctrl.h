@@ -35,4 +35,11 @@ typedef enum {
 
 extern void enableExactoSensor(exacto_sensors_list_t sensor);
 extern void disableExactoSensor(exacto_sensors_list_t sensor);
+extern uint8_t isDataReady_xl(exacto_sensors_list_t sensor, const uint8_t value);
+extern uint8_t isDataReady_gr(exacto_sensors_list_t sensor, const uint8_t value);
+extern uint8_t isDataReady_mg(exacto_sensors_list_t sensor, const uint8_t value);
+
+extern uint8_t isXlGrDataReady_ISM330DLC(const uint8_t value);
+extern void convertUint8ToUint16(uint8_t * src, int16_t * dst);
+
 #endif //EXACTO_SENSORS_H
