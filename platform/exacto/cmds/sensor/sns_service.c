@@ -281,7 +281,7 @@ static int runSendAndUploadThread(struct lthread * self)
             if(isXlGrDataReady(sns, PackageToGett.data[0]))
             {
                 uploadRecevedData(pt, shift, datalen);
-                setDataToExactoDataStorage(PackageToGett.data, datalen, THR_CTRL_WAIT);
+                setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
                 enabled++;
             }
         }
