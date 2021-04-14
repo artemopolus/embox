@@ -241,7 +241,9 @@ void executeStage()
     switch (MarkerStage)
     {
     case 0:
-        
+        printf("Start receiving data from sensors\n");
+        printf("\n\n\n\n");
+        MarkerStage++; 
         break;
     case 1:
         ExecuteSendCounter ++;
@@ -264,6 +266,7 @@ static int runSendAndUploadThread(struct lthread * self)
 {
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
+    uint16_t enabled = 0;
     for (uint16_t i = 0; i < count; i++)
     {
         if(trg->sns[i].isenabled){
@@ -281,9 +284,14 @@ static int runSendAndUploadThread(struct lthread * self)
             if(isXlGrDataReady(sns, PackageToGett.data[0]))
             {
                 uploadRecevedData(pt, shift, datalen);
-                UploadSnsDataCounter++;
+                enabled++;
             }
         }
+    }
+    if (enabled == count)
+    {
+        UploadSnsDataCounter++;
+
     }
     return 0;
 }
@@ -420,7 +428,7 @@ int initSnsService(void)
         sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
         printReceivedData();
         printf("\n");
-        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[1].pt2buffer], 3);
+        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[1].shift], 6);
         printf("\n");
     }
 
@@ -439,7 +447,7 @@ int initSnsService(void)
         sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
         printReceivedData();
         printf("\n");
-        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[0].pt2buffer], 3);
+        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[0].shift], 3);
         printf("\n");
     }
 
@@ -449,25 +457,24 @@ int initSnsService(void)
 int main(int argc, char *argv[]) {
 	// uint32_t start, stop, res;
     initSnsService();
-    printf("\n\n\n\n");
 
 
-    // MarkerStage = 0;
+    MarkerStage = 0;
     // while (MarkerStage < 5)
     // {
     // }
     
     // printf("Ticker:%d\n", ResultTicker);
     // printf("\n\n\n\n");
-    // while(1)
-    // {
+    while(1)
+    {
     //     printf("\033[A\33[2K\r");
     //     printf("\033[A\33[2K\r");
     //     printf("MarkerStage: %d\n", MarkerStage);
     //     printf("Counter: %d\n",SensorTickerCounter);
     //     usleep(1000000);
 
-    // }
+    }
 
     return 0;
 }
