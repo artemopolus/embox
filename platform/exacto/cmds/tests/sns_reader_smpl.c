@@ -45,14 +45,6 @@ static inline uint32_t dwt_cyccnt_stop(void) {
 
 	return REG32_LOAD(DWT_CYCCNT);
 }
-//===================================
-uint8_t SnsStatus = 0x00f;
-// 0x01 - lsm303
-// 0x02 - mg
-// 0x04 - ism330
-// 0x08 - bmp280
-//===================================
-
 static ex_spi_pack_t PackageToSend = {
     .result = EXACTO_OK,
 };
@@ -78,18 +70,8 @@ typedef struct{
 uint32_t StartTicker, StopTicker, ResultTicker;
 uint8_t StartTickerIsEnabled = 0;
 
-uint8_t Marker = 0;
 
-uint8_t MarkerRxTx = 0;
 uint8_t MarkerStage = 0xFF;
-
-uint8_t SRS_MarkerReceive = 0;
-uint8_t SRS_MarkerTransmit = 0;
-
-
-uint8_t EndCicleMarker = 0;
-
-uint8_t SendMarker = 0;
 
 
 uint16_t SensorTickerCounter = 0;
@@ -162,8 +144,6 @@ void uploadRecevedData( const uint8_t pt, const uint16_t start, const uint16_t d
 static int runSensorTickerThread(struct lthread * self)
 {
     SensorTickerCounter++;
-    if (!SendMarker)
-        SendMarker = 1;
     
     executeStage(); 
     return 0;
@@ -297,8 +277,6 @@ static int runSendAndUploadThread(struct lthread * self)
 }
 static int runSendThread(struct lthread * self)
 {
-    SRS_MarkerTransmit = 0;
-    SRS_MarkerReceive = 0;
     CurrentTargetSensor_isenabled = 1;
     enableExactoSensor(CurrentTargetSensor);
     if (StartTickerIsEnabled){
