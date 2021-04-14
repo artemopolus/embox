@@ -366,7 +366,7 @@ int initSnsService(void)
     SendAndUploadThread.sns[1].address = ISM330DLC_STATUS_REG; 
     SendAndUploadThread.sns[1].datalen = 16;
     SendAndUploadThread.sns[1].pt2buffer = 6;
-    SendAndUploadThread.sns[1].shift = 2;
+    SendAndUploadThread.sns[1].shift = 4;
     // while(!SRS_MarkerTransmit) {}
     // StartTickerIsEnabled = 1;
 #ifdef PRINT_ON
