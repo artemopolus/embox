@@ -5,6 +5,7 @@
   
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
+#include "commander/exacto_sns_ctrl.h"
 #include "spi/spi2_generated.h"
 #include "gpio/gpio.h"
 #include "tim/tim.h"
@@ -77,9 +78,25 @@ static int printBufferData(struct  lthread * self)
 #ifdef SPI_TXRX_PRINT_ON
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
+    printf("\033[A\33[2K\r");
+    uint8_t length = DATA_MESSAGE_SIZE;
     for (uint8_t i = 0; i < DATA_MESSAGE_SIZE; i++)
     {
         printf("%#04x|", ReceivedData[i]);
+        if (i < (DATA_MESSAGE_SIZE - 4))
+        {
+            if ((ReceivedData[i]== 0x05)&&(ReceivedData[i+1]== 0x05)&&(ReceivedData[i+2]== 0x05)&&(ReceivedData[i+3]== 0x05))
+            {
+                length = i;
+            }
+        }
+    }
+    printf("\n");
+    for (uint8_t i = 4 ; i < length; i+=2)
+    {
+        int16_t value;
+        convertUint8ToUint16(&ReceivedData[i], &value);
+        printf("%d\t", value);
     }
     printf("\nCounter: %d SpiOn: %d\n", MlineSensorTickerCounter, MlineSpiEnableMarker);
 #endif
