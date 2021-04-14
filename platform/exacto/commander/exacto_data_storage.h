@@ -21,6 +21,7 @@
 
 typedef enum t_c_r_t{
     THR_CTRL_OK = 0,
+    THR_CTRL_INIT,
     THR_CTRL_WAIT,
     THR_CTRL_READY,
     THR_CTRL_UNKNOWN_ERROR,
@@ -54,6 +55,7 @@ typedef struct{
 }exactodatastorage;
 typedef enum{
     EXACTO_OK = 0,
+    EXACTO_INIT,
     EXACTO_WAITING,
     EXACTO_PROCESSING,
     EXACTO_DENY,
