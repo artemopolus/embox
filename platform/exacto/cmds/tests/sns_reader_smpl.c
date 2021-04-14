@@ -367,34 +367,39 @@ int initSnsService(void)
     SendAndUploadThread.sns[1].datalen = 16;
     SendAndUploadThread.sns[1].pt2buffer = 6;
     SendAndUploadThread.sns[1].shift = 4;
-    // while(!SRS_MarkerTransmit) {}
-    // StartTickerIsEnabled = 1;
 #ifdef PRINT_ON
     printf("lsm303ah XL\n");
 #endif
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
-        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
         printReceivedData();
     }
 #ifdef PRINT_ON
+    printf("whoami:");
+    if (PackageToGett.data[0]== LSM303AH_ID_XL)
+        printf("Done\n");
+    else
+        printf("Failed\n");
     printf("ism330\n");
 #endif
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
-        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
         printReceivedData();
     }
 
 #ifdef PRINT_ON
+    printf("whoami:");
+    if (PackageToGett.data[0]== ISM330DLC_ID)
+        printf("Done\n");
+    else
+        printf("Failed\n");
     printf("lsm303ah MG\n");
 #endif
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
-        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
         printReceivedData();
     }
 
@@ -402,6 +407,11 @@ int initSnsService(void)
     sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, 0x48); //0100 01 0 0
 
 #ifdef PRINT_ON
+    printf("whoami:");
+    if (PackageToGett.data[0]== LSM303AH_ID_MG)
+        printf("Done\n");
+    else
+        printf("Failed\n");
     printf("ism330 data read\n");
 #endif
     StartTickerIsEnabled = 1;
@@ -409,8 +419,8 @@ int initSnsService(void)
     {
         sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
         printReceivedData();
-        printf("\nConv: ");
-        printDataValues(&PackageToGett.data[2], 6);
+        printf("\n");
+        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[1].pt2buffer], 3);
         printf("\n");
     }
 
@@ -428,29 +438,12 @@ int initSnsService(void)
     {
         sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
         printReceivedData();
-        printf("\nConv: ");
-        printDataValues(&PackageToGett.data[1], 3);
+        printf("\n");
+        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[0].pt2buffer], 3);
         printf("\n");
     }
 
-#ifdef PRINT_ON
-    printf("lsm303ah MG\n");
-#endif
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
-        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
-        printReceivedData();
-    }
-#ifdef PRINT_ON
-    printf("ism330\n");
-#endif
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
-        // while((!SRS_MarkerTransmit)&&(!SRS_MarkerReceive)) {}
-        printReceivedData();
-    }
+
     return 0;
 }
 int main(int argc, char *argv[]) {
