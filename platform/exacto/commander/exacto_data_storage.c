@@ -196,6 +196,44 @@ uint8_t clearExactoDataStorage()
     setemp_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
     return 0;
 }
+void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, const uint16_t length)
+{
+    // HEADER
+    //[00] 0x17 
+    //[01] 0x17
+    //----------------------
+    //TYPE
+    //[02] 
+    //----------------------
+    //pointer on data start
+    //[03] 0x09 
+    //----------------------
+    //ADDRESS
+    //[04]
+    //[05]
+    //----------------------
+    //Datalen
+    //[06] 0x00
+    //[07] 0x00
+    //----------------------
+    //DATA PACKAGE
+    //[08] 0x00
+
+    const uint8_t pck_id = EXACTOLINK_PCK_ID;
+    const uint8_t addrH = (uint8_t) (address << 8);
+    const uint8_t addrL = (uint8_t) (address);
+    const uint8_t lenH = (uint8_t) (length << 8);
+    const uint8_t lenL = (uint8_t) (length);
+    const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, pck_id);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, pck_id);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, type);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data_start_point);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrH);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrL);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenH);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenL);
+}
 thread_control_result_t getStateExactoDataStorage()
 {
     return ExOutputStorage[THR_SPI_TX].result;
@@ -203,7 +241,10 @@ thread_control_result_t getStateExactoDataStorage()
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result)
 {
     if (result == THR_CTRL_INIT)
+    {
         clearExactoDataStorage();
+        setHeaderExactoDataStorage(1,1,64);
+    }
     for (uint8_t i = 0; i < datacount; i++)
     {
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);

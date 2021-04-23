@@ -80,6 +80,7 @@ static int printBufferData(struct  lthread * self)
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
     uint8_t length = DATA_MESSAGE_SIZE;
+    uint8_t start_point = 4;
     for (uint8_t i = 0; i < DATA_MESSAGE_SIZE; i++)
     {
         printf("%#04x|", ReceivedData[i]);
@@ -92,7 +93,9 @@ static int printBufferData(struct  lthread * self)
         }
     }
     printf("\n");
-    for (uint8_t i = 4 ; i < length; i+=2)
+    start_point = ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
+
+    for (uint8_t i = start_point  + 4; i < length; i+=2)
     {
         int16_t value;
         convertUint8ToUint16(&ReceivedData[i], &value);

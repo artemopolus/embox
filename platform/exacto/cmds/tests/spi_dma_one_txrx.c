@@ -11,13 +11,11 @@
 #define MAX_CALL_COUNT 10
 
 
-#define TRANSMIT_MESSAGE_SIZE 16
+#define TRANSMIT_MESSAGE_SIZE 64
 
 
 
-uint8_t DataToBuffer[] = {5, 7, 2, 3, 1,
-                          0, 0, 0, 0, 0,
-                          0, 0, 0, 0, 0, 0};
+uint8_t DataToBuffer[TRANSMIT_MESSAGE_SIZE] = {0};
 uint8_t ReceivedData[TRANSMIT_MESSAGE_SIZE] = { 0};
 
 
@@ -31,7 +29,7 @@ struct lthread PrintDataFromBufferThread;
 static int printBufferData(struct  lthread * self)
 {
     printf("Received buffer: ");
-    for (uint8_t i = 0; i < 16; i++)
+    for (uint8_t i = 0; i < TRANSMIT_MESSAGE_SIZE; i++)
     {
         printf("%d ", ReceivedData[i]);
     }
@@ -62,12 +60,12 @@ int main(int argc, char *argv[]) {
             usleep(1000000);
 
 
-        setDataToExactoDataStorage(DataToBuffer, 16, THR_CTRL_OK); 
+        setDataToExactoDataStorage(DataToBuffer, TRANSMIT_MESSAGE_SIZE, THR_CTRL_OK); 
         transmitExactoDataStorage();
         printf("Tx\n");
         receiveExactoDataStorage();
         printf("Download data from data storage\n");
-        getDataFromExactoDataStorage(ReceivedData, 16);
+        getDataFromExactoDataStorage(ReceivedData, TRANSMIT_MESSAGE_SIZE);
     
     
         lthread_launch(&PrintDataFromBufferThread);
