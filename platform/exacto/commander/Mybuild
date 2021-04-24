@@ -52,3 +52,11 @@ module sns_apollon_lib {
 	depends embox.kernel.lthread.sync.mutex
 	
 }
+module filemanager
+{
+	source "exacto_filemanager.c"
+	@IncludeExport(path="commander")
+	source "exacto_filemanager.h"
+
+}
+
