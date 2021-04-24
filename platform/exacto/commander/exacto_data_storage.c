@@ -262,6 +262,8 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
 }
 uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length)
 {
+    if (!ExOutputStorage[THR_SPI_RX].isready)
+        return 1;
     uint8_t value;
     for (uint8_t i = 0; ((grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))&&(i < receiver_length)); i++)
     {
