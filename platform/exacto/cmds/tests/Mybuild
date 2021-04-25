@@ -49,6 +49,7 @@ AUTHOR Kuznetcov
 ''')
 module print_to_sd{
 	source "print_to_sd.c"
+	depends exacto.commander.filemanager
 }
 @AutoCmd
 @Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''

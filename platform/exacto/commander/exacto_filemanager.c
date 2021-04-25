@@ -29,8 +29,8 @@ uint8_t ex_saveToLog(uint8_t * data, uint16_t datalen)
 }
 
 
-EMBOX_UNIT_INIT(initExactoFileManager);
-static int initExactoFileManager(void)
+// EMBOX_UNIT_INIT(initExactoFileManager);
+uint8_t initExactoFileManager(void)
 {
     DIR* dir = opendir("/mnt/LOG");
     if (!dir)
