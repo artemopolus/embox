@@ -32,14 +32,15 @@ uint8_t ex_saveToLog(uint8_t * data, uint16_t datalen)
 // EMBOX_UNIT_INIT(initExactoFileManager);
 uint8_t initExactoFileManager(void)
 {
-    DIR* dir = opendir("/mnt/LOG");
-    if (!dir)
-    {
-        mkdir("/mnt/LOG", 0777);
-        dir =  opendir("/mnt/LOG");
-        if (!dir)
-         return 1;
-    }
+    // DIR* dir = opendir("/mnt/LOG");
+    // if (!dir)
+    // {
+    //     mkdir("/mnt/LOG", 0777);
+    //     dir =  opendir("/mnt/LOG");
+    //     if (!dir)
+    //      return 1;
+    // }
+    // closedir(dir);
     for (int i = 0; i < 999999999; i++)
     {
         for (int y = 0; y < 12; y++)
@@ -59,12 +60,37 @@ uint8_t initExactoFileManager(void)
         }
         for (int y = 0; y < len; y++)
         {
-            ExFmPathToLog[EX_FM_PATH_TO_LOG_PT + 12 - y] = ExFmSessionName[len - y];
+            ExFmPathToLog[EX_FM_PATH_TO_LOG_PT + 11 - y] = ExFmSessionName[len - y - 1 ];
         }
         if (access(ExFmPathToLog, F_OK) != 0)
         {
+            printf("Find file\n");
+        }
+        else
+        {
+            printf("Write to log file:");
+            printf(ExFmPathToLog);
+            printf("\n");
             break;
         }
     }
-    return 0;
+    FILE * p_file;
+    printf("Try to open file\n");
+    // p_file = fopen(ExFmPathToLog, "w");
+    // p_file = fopen(ExFmPathToLog, "w+");
+    p_file = fopen("/mnt/f3.txt", "w+");
+    if (p_file != NULL)
+    {
+        printf("File is opened\n");
+        fprintf(p_file, "test");
+        fprintf(p_file, "%d", 12567);
+        // fprintf(p_file, "y");
+        // fprintf(p_file, "y");
+        fclose(p_file);
+    }
+    else
+    {
+        printf("Can't open file\n");
+    }
+return 0;
 }
