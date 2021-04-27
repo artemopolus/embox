@@ -24,10 +24,24 @@ uint8_t SpiDmaTimReceivedData[SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE] = { 0};
 
 uint8_t SpiDmaTimCounter = 0;
 uint8_t SpiDmaTimMarkerSubscribe = 0;
+uint8_t SpiDmaTimLedControl_isenabled = 0;
 
 struct lthread SpiDmaTimSubscribeThread;
 
 struct lthread SpiDmaTimCheckExactoStorageThread;
+
+struct lthread SpiDmaTimLedControlThread;
+
+static int runSpiDmaTimLedControlThread(struct lthread * self)
+{
+    if (SpiDmaTimLedControl_isenabled)
+        ex_enableLed(EX_LED_BLUE);
+    else
+    {
+        ex_disableLed(EX_LED_BLUE);
+    }
+    return 0;
+}
 
 static int runSpiDmaTimCheckExactoStorageThread(struct lthread * self)
 {
@@ -66,21 +80,26 @@ static int runPrintReceivedData(struct  lthread * self)
             printf("%d ", SpiDmaTimReceivedData[i]);
         }
         printf("\n");
-    }
-    else
-    {
-        printf("\033[A\33[2K\r");
-        printf("\033[A\33[2K\r");
-        printf("\033[A\33[2K\r");
-        printf("Basic counter: %d\n", SpiDmaTimCounter);
-        printf("Unknown package\n");
-        for (uint8_t i = 0; i < SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE; i++)
+        if (!SpiDmaTimLedControl_isenabled)
         {
-            printf("%d ", SpiDmaTimReceivedData[i]);
+            SpiDmaTimLedControl_isenabled = 1;
+            lthread_launch(&SpiDmaTimLedControlThread);
         }
-        printf("\n");
-  }
-          lthread_launch(&SpiDmaTimCheckExactoStorageThread);
+    }
+        else
+        {
+            printf("\033[A\33[2K\r");
+            printf("\033[A\33[2K\r");
+            printf("\033[A\33[2K\r");
+            printf("Basic counter: %d\n", SpiDmaTimCounter);
+            printf("Unknown package\n");
+            for (uint8_t i = 0; i < SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE; i++)
+            {
+                printf("%d ", SpiDmaTimReceivedData[i]);
+            }
+            printf("\n");
+        }  
+        lthread_launch(&SpiDmaTimCheckExactoStorageThread);
         SpiDmaTimCallIndex = 0;
     }
     return 0;
@@ -98,6 +117,7 @@ int main(int argc, char *argv[]) {
 
     lthread_init(&SpiDmaTimSubscribeThread, runSpiDmaTimSubcribeThread);
     lthread_init(&SpiDmaTimCheckExactoStorageThread, runSpiDmaTimCheckExactoStorageThread);
+    lthread_init(&SpiDmaTimLedControlThread, runSpiDmaTimLedControlThread);
     lthread_launch(&SpiDmaTimSubscribeThread);
 
     printf("Wait subscribing...\n\n\n\n\n");
