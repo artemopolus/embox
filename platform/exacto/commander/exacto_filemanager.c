@@ -9,17 +9,20 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include <fcntl.h>
+
 #define EX_FM_PATH_TO_FILE_PT 17
 #define EX_FM_PATH_TO_LOG_PT 12
 #define EX_FM_LEN 12
 
 
-//                            0123456789012345678901234567890123456
-char ExFmPathToFIle[] =   "/mnt/DATA/sessionYYMMDDHHMMSS.txt";
+//                         0123456789012345678901234567890123456
+char ExFm_File_Path[] =   "/mnt/DATA/sessionYYMMDDHHMMSS.txt";
 char ExFm_Log_Path[] =    "/mnt/LOG/logYYMMDDHHMMSS.txt";
 char ExFm_Session_Name[] = "YYMMDDHHMMSS";
 
 FILE * ExFm_Log_Pointer;
+int ExFm_File_Pointer;
 uint8_t ex_writeToLogChar(char * info)
 {
     if (ExFm_Log_Pointer == NULL)
@@ -30,6 +33,9 @@ uint8_t ex_writeToLogChar(char * info)
 
 uint8_t ex_saveToFile(uint8_t * data, uint16_t datalen)
 {
+	if (write (ExFm_File_Pointer, data, datalen)<=0) {
+        return 1;
+    }
     return 0;
 }
 uint8_t ex_saveToLog(uint8_t * data, uint16_t datalen)
@@ -63,6 +69,7 @@ uint8_t initExactoFileManager(void)
         {
             ExFm_Session_Name[y] = '\0';
             ExFm_Log_Path[y + EX_FM_PATH_TO_LOG_PT] = '0';
+            ExFm_File_Path[y + EX_FM_PATH_TO_FILE_PT] = '0';
         }
         itoa(i, ExFm_Session_Name, 10);
         int len = 12;
@@ -76,7 +83,9 @@ uint8_t initExactoFileManager(void)
         }
         for (int y = 0; y < len; y++)
         {
-            ExFm_Log_Path[EX_FM_PATH_TO_LOG_PT + 11 - y] = ExFm_Session_Name[len - y - 1 ];
+            char value = ExFm_Session_Name[len - y - 1 ];
+            ExFm_Log_Path[EX_FM_PATH_TO_LOG_PT + 11 - y] = value;
+            ExFm_File_Path[EX_FM_PATH_TO_FILE_PT + 11 - y] = value;
         }
         pointer = fopen(ExFm_Log_Path, "r");
         if (pointer != NULL)
@@ -102,10 +111,21 @@ uint8_t initExactoFileManager(void)
     //     fprintf(p_file, "%d", 12567);
     //     // fprintf(p_file, "y");
     //     // fprintf(p_file, "y");
+        ExFm_File_Pointer = creat(ExFm_File_Path,0);
+        if( 0 > ExFm_File_Pointer)
+        {
+            ex_writeToLogChar("Can't open Data file\n");
+            return 1;
+        }
+        else
+        {
+            ex_writeToLogChar("Data file is opened\n");
+        }
     }
     else
     {
         printf("Can't open file\n");
+        return 1;
     }
 return 0;
 }

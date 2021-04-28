@@ -10,6 +10,14 @@ int main(int argc, char *argv[]) {
 
     ex_writeToLogChar("Hello from test print sd\n");
 
+    uint8_t buffer0[] = "this is the first line of text\n";
+    uint8_t buffer1[] = "type typ type\n";
+
+    ex_saveToFile(buffer0, sizeof(buffer0));
+    ex_saveToFile(buffer1, sizeof(buffer1));
+
+
+
     //printf("I try to read data from sd\n");
 
     // FILE * p_file;
