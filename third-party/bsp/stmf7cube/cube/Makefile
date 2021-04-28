@@ -6,4 +6,6 @@ PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeF7/archive/$(P
 PKG_MD5     := 9586ec0996e154c21dbb31f92834c3aa
 # PKG_MD5		:= 5c331ee51a6bd4c8aa51a6dae56f6430
 
+PKG_PATCHES := sd_read.patch
+
 include $(EXTBLD_LIB)
