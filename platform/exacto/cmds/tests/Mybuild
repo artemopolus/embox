@@ -131,6 +131,7 @@ module spi_dma_tim_based{
 	depends exacto.commander.data_storage
 	depends exacto.afina.spi.spi1master
 	depends exacto.afina.gpio.gpio_spi
+	depends exacto.commander.filemanager
 }
 @AutoCmd
 @Cmd(name="test_buffer_fifo_test", help=" Test for buffer", man='''

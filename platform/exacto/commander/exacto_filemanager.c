@@ -16,8 +16,17 @@
 
 //                            0123456789012345678901234567890123456
 char ExFmPathToFIle[] =   "/mnt/DATA/sessionYYMMDDHHMMSS.txt";
-char ExFmPathToLog[] =    "/mnt/LOG/logYYMMDDHHMMSS.txt";
-char ExFmSessionName[] = "YYMMDDHHMMSS";
+char ExFm_Log_Path[] =    "/mnt/LOG/logYYMMDDHHMMSS.txt";
+char ExFm_Session_Name[] = "YYMMDDHHMMSS";
+
+FILE * ExFm_Log_Pointer;
+uint8_t ex_writeToLogChar(char * info)
+{
+    if (ExFm_Log_Pointer == NULL)
+        return 1;
+    fprintf(ExFm_Log_Pointer, info);
+    return 0;
+}
 
 uint8_t ex_saveToFile(uint8_t * data, uint16_t datalen)
 {
@@ -32,27 +41,34 @@ uint8_t ex_saveToLog(uint8_t * data, uint16_t datalen)
 // EMBOX_UNIT_INIT(initExactoFileManager);
 uint8_t initExactoFileManager(void)
 {
-    // DIR* dir = opendir("/mnt/LOG");
-    // if (!dir)
-    // {
-    //     mkdir("/mnt/LOG", 0777);
-    //     dir =  opendir("/mnt/LOG");
-    //     if (!dir)
-    //      return 1;
-    // }
-    // closedir(dir);
+    DIR* dir = opendir("/mnt/LOG");
+    if (!dir)
+    {
+        printf("Log dir is created\n");
+        mkdir("/mnt/LOG", 0777);
+        dir =  opendir("/mnt/LOG");
+        if (!dir)
+         return 1;
+    }
+    else
+    {
+        printf("Log dir is found\n");
+    }
+    closedir(dir);
+
+    FILE * pointer;
     for (int i = 0; i < 999999999; i++)
     {
         for (int y = 0; y < 12; y++)
         {
-            ExFmSessionName[y] = '\0';
-            ExFmPathToLog[y + EX_FM_PATH_TO_LOG_PT] = '0';
+            ExFm_Session_Name[y] = '\0';
+            ExFm_Log_Path[y + EX_FM_PATH_TO_LOG_PT] = '0';
         }
-        itoa(i, ExFmSessionName, 10);
+        itoa(i, ExFm_Session_Name, 10);
         int len = 12;
         for (int y = 0; y < 12; y++)
         {
-            if (ExFmSessionName[y] == '\0')
+            if (ExFm_Session_Name[y] == '\0')
             {
                 len = y;
                 break;
@@ -60,33 +76,32 @@ uint8_t initExactoFileManager(void)
         }
         for (int y = 0; y < len; y++)
         {
-            ExFmPathToLog[EX_FM_PATH_TO_LOG_PT + 11 - y] = ExFmSessionName[len - y - 1 ];
+            ExFm_Log_Path[EX_FM_PATH_TO_LOG_PT + 11 - y] = ExFm_Session_Name[len - y - 1 ];
         }
-        if (access(ExFmPathToLog, F_OK) != 0)
+        pointer = fopen(ExFm_Log_Path, "r");
+        if (pointer != NULL)
         {
-            printf("Find file\n");
+            printf("Find file %s\n", ExFm_Log_Path);
+            fclose(pointer);
         }
         else
         {
-            printf("Write to log file:");
-            printf(ExFmPathToLog);
-            printf("\n");
+            printf("Write to log file: %s\n", ExFm_Log_Path);
+            fclose(pointer);
             break;
         }
     }
-    FILE * p_file;
     printf("Try to open file\n");
-    // p_file = fopen(ExFmPathToLog, "w");
+    ExFm_Log_Pointer = fopen(ExFm_Log_Path, "w");
     // p_file = fopen(ExFmPathToLog, "w+");
-    p_file = fopen("/mnt/f9.txt", "w+");
-    if (p_file != NULL)
+    // p_file = fopen("/mnt/f9.txt", "w+");
+    if (ExFm_Log_Pointer != NULL)
     {
         printf("File is opened\n");
-        fprintf(p_file, "test yes yes yes");
-        fprintf(p_file, "%d", 12567);
-        // fprintf(p_file, "y");
-        // fprintf(p_file, "y");
-        fclose(p_file);
+        fprintf(ExFm_Log_Pointer, "Session is started\n");
+    //     fprintf(p_file, "%d", 12567);
+    //     // fprintf(p_file, "y");
+    //     // fprintf(p_file, "y");
     }
     else
     {

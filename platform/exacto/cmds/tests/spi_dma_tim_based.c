@@ -8,6 +8,7 @@
 #include "tim/tim.h"
   
 #include "commander/exacto_data_storage.h"
+#include "commander/exacto_filemanager.h"
 #include "spi/spi1.h"
 #include "gpio/gpio.h"
 
@@ -113,6 +114,9 @@ static int runSpiDmaTimSubcribeThread( struct lthread * self)
 }
 
 int main(int argc, char *argv[]) {
+    initExactoFileManager();
+    ex_enableLed(EX_LED_GREEN);
+
     printf("Start print function\n");
 
     lthread_init(&SpiDmaTimSubscribeThread, runSpiDmaTimSubcribeThread);
@@ -121,6 +125,7 @@ int main(int argc, char *argv[]) {
     lthread_launch(&SpiDmaTimSubscribeThread);
 
     printf("Wait subscribing...\n\n\n\n\n");
+    ex_writeToLogChar("Start waiting data from sensors\n");
 
     while (!SpiDmaTimMarkerSubscribe)
     {

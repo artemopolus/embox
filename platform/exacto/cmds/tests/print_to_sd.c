@@ -8,6 +8,8 @@ int main(int argc, char *argv[]) {
 
     printf("Try to write:\n");
 
+    ex_writeToLogChar("Hello from test print sd\n");
+
     //printf("I try to read data from sd\n");
 
     // FILE * p_file;
