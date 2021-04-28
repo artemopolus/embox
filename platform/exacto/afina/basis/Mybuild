@@ -23,15 +23,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	/* Cubse LCD call SDRAM_Init, we don't wont that, so tell Cube's LCD do not init SDRAM */
 	@DefineMacro("DATA_IN_ExtSDRAM")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/BSP/STM32746G-Discovery")
-	source "stm32746g_discovery.c",
-			"stm32746g_discovery_sdram.c",
-						"stm32746g_discovery_lcd.c",
-			"stm32746g_discovery_audio.c",
-			"stm32746g_discovery_camera.c",
-			"stm32746g_discovery_eeprom.c",
-			"stm32746g_discovery_qspi.c",
-			"stm32746g_discovery_eeprom.c",
-			"stm32746g_discovery_ts.c"
+	source "stm32746g_discovery.c"
 	
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/BSP/STM32746G-Discovery")
 	source "stm32f7_init_sd.c"

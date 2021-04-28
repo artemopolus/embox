@@ -242,8 +242,8 @@ uint8_t BSP_SD_ITConfig(void)
   HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &gpio_init_structure);
 
   /* Enable and set SD detect EXTI Interrupt to the lowest priority */
-  // HAL_NVIC_SetPriority((IRQn_Type)(SD_DETECT_EXTI_IRQn), 0x0F, 0x00);
-  // HAL_NVIC_EnableIRQ((IRQn_Type)(SD_DETECT_EXTI_IRQn));
+  HAL_NVIC_SetPriority((IRQn_Type)(SD_DETECT_EXTI_IRQn), 0x0F, 0x00);
+  HAL_NVIC_EnableIRQ((IRQn_Type)(SD_DETECT_EXTI_IRQn));
 
   return MSD_OK;
 }
@@ -281,6 +281,9 @@ uint8_t BSP_SD_ReadBlocks(uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBloc
   }
   else
   {
+    while(BSP_SD_GetCardState()!= MSD_OK)
+    {
+    }
     return MSD_OK;
   }
 }
@@ -301,6 +304,9 @@ uint8_t BSP_SD_WriteBlocks(uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBl
   }
   else
   {
+    while(BSP_SD_GetCardState()!= MSD_OK)
+    {
+    }
     return MSD_OK;
   }
 }
@@ -376,7 +382,7 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   GPIO_InitTypeDef gpio_init_structure;
 
   /* Enable SDIO clock */
-  __HAL_RCC_DMA2_CLK_ENABLE();
+  // __HAL_RCC_DMA2_CLK_ENABLE();
   __HAL_RCC_SDMMC1_CLK_ENABLE(); 
   
   /* Enable DMA2 clocks */
@@ -398,12 +404,16 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   HAL_GPIO_Init(GPIOC, &gpio_init_structure);
 
   /* GPIOD configuration */
+  gpio_init_structure.Mode      = GPIO_MODE_AF_PP;
+  gpio_init_structure.Pull      = GPIO_PULLUP;
+  // gpio_init_structure.Pull      = GPIO_NOPULL;
+  gpio_init_structure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
   gpio_init_structure.Pin = GPIO_PIN_2;
   HAL_GPIO_Init(GPIOD, &gpio_init_structure);
 
   /* NVIC configuration for SDIO interrupts */
-  // HAL_NVIC_SetPriority(SDMMC1_IRQn, 0x0E, 0);
-  // HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
+  HAL_NVIC_SetPriority(SDMMC1_IRQn, 0x0E, 0);
+  HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
     
   /* Configure DMA Rx parameters */
   dma_rx_handle.Init.Channel             = SD_DMAx_Rx_CHANNEL;
@@ -427,16 +437,16 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
       // Error_Handler();
     }
 
-    __HAL_LINKDMA(hsd,hdmarx,dma_rx_handle);
+    // __HAL_LINKDMA(hsd,hdmarx,dma_rx_handle);
   
   // /* Associate the DMA handle */
-  // __HAL_LINKDMA(hsd, hdmarx, dma_rx_handle);
+  __HAL_LINKDMA(hsd, hdmarx, dma_rx_handle);
   
   // /* Deinitialize the stream for new transfer */
-  // HAL_DMA_DeInit(&dma_rx_handle);
+  HAL_DMA_DeInit(&dma_rx_handle);
   
   // /* Configure the DMA stream */
-  // HAL_DMA_Init(&dma_rx_handle);
+  HAL_DMA_Init(&dma_rx_handle);
   
   /* Configure DMA Tx parameters */
   dma_tx_handle.Init.Channel             = SD_DMAx_Tx_CHANNEL;
@@ -466,18 +476,18 @@ __weak void BSP_SD_MspInit(SD_HandleTypeDef *hsd, void *Params)
   // __HAL_LINKDMA(hsd, hdmatx, dma_tx_handle);
   
   // /* Deinitialize the stream for new transfer */
-  // HAL_DMA_DeInit(&dma_tx_handle);
+  HAL_DMA_DeInit(&dma_tx_handle);
   
   // /* Configure the DMA stream */
-  // HAL_DMA_Init(&dma_tx_handle); 
+  HAL_DMA_Init(&dma_tx_handle); 
   
   /* NVIC configuration for DMA transfer complete interrupt */
-  // HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, 0x0F, 0);
-  // HAL_NVIC_EnableIRQ(SD_DMAx_Rx_IRQn);
+  HAL_NVIC_SetPriority(SD_DMAx_Rx_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(SD_DMAx_Rx_IRQn);
   
   /* NVIC configuration for DMA transfer complete interrupt */
-  // HAL_NVIC_SetPriority(SD_DMAx_Tx_IRQn, 0x0F, 0);
-  // HAL_NVIC_EnableIRQ(SD_DMAx_Tx_IRQn);
+  HAL_NVIC_SetPriority(SD_DMAx_Tx_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(SD_DMAx_Tx_IRQn);
 }
 
 /**

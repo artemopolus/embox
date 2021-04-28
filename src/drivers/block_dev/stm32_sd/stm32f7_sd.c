@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+// #include <stdio.h>
+#include <kernel/printk.h>
 
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
@@ -43,6 +45,7 @@ static volatile struct schedee *dma_tx_thread = NULL;
 static irq_return_t stm32_dma_rx_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
+	printk("rx1+++++\n");
 	HAL_DMA_IRQHandler(uSdHandle.hdmarx);
 	dma_rx_finish=1;
 	sched_wakeup((struct schedee *)dma_rx_thread);
@@ -53,9 +56,13 @@ STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32_dma_rx_irq, NULL);
 static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
+	printk("tx1+++++\n");
 	HAL_DMA_IRQHandler(uSdHandle.hdmatx);
+	printk("2+++++\n");
 	dma_tx_finish=1;
+	printk("3+++++\n");
 	sched_wakeup((struct schedee *)dma_tx_thread);
+	printk("4+++++\n");
 	return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
@@ -63,6 +70,7 @@ STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
 static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
+	printk("mmc1+++++\n");
 	HAL_SD_IRQHandler(&uSdHandle);
 	return IRQ_HANDLED;
 }

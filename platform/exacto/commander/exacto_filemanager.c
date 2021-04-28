@@ -78,11 +78,11 @@ uint8_t initExactoFileManager(void)
     printf("Try to open file\n");
     // p_file = fopen(ExFmPathToLog, "w");
     // p_file = fopen(ExFmPathToLog, "w+");
-    p_file = fopen("/mnt/f3.txt", "w+");
+    p_file = fopen("/mnt/f9.txt", "w+");
     if (p_file != NULL)
     {
         printf("File is opened\n");
-        fprintf(p_file, "test");
+        fprintf(p_file, "test yes yes yes");
         fprintf(p_file, "%d", 12567);
         // fprintf(p_file, "y");
         // fprintf(p_file, "y");
