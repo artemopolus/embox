@@ -33,6 +33,12 @@ uint8_t ex_writeToLogChar(char * info)
 
 uint8_t ex_saveToFile(uint8_t * data, uint16_t datalen)
 {
+    // for (uint16_t i = 0; i < datalen; i++)
+    // {
+    //     fprintf(ExFm_Log_Pointer, "%d", data[i]);
+    // }
+    // fprintf(ExFm_Log_Pointer, "\n");
+    
 	if (write (ExFm_File_Pointer, data, datalen)<=0) {
         return 1;
     }
@@ -114,11 +120,13 @@ uint8_t initExactoFileManager(void)
         ExFm_File_Pointer = creat(ExFm_File_Path,0);
         if( 0 > ExFm_File_Pointer)
         {
+            printf("Can't open Data file\n");
             ex_writeToLogChar("Can't open Data file\n");
             return 1;
         }
         else
         {
+            printf("Data file is opened\n");
             ex_writeToLogChar("Data file is opened\n");
         }
     }
