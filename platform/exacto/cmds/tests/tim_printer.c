@@ -4,24 +4,23 @@
 #include <errno.h>
 #include <string.h>
   
-#include <kernel/lthread/lthread.h>
-#include "commander/exacto_filemanager.h"
 #include <util/err.h>
-#include <embox/test.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/schedee_priority.h>
-#include <kernel/lthread/lthread.h>
-#include <kernel/thread.h>
-#include <kernel/time/ktime.h>
 #include <kernel/sched/sync/mutex.h>
-#include <kernel/lthread/sync/mutex.h>
+#include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sync/cond.h>
-#include <kernel/thread.h>
+#include <kernel/time/ktime.h>
+#include <kernel/lthread/sync/mutex.h>
+#include <kernel/lthread/lthread.h>
 #include <kernel/task.h>
 #include <sys/wait.h>
+
 #include "tim/tim.h"
+#include "commander/exacto_filemanager.h"
+
 
 uint8_t Counter = 0;
 
@@ -78,7 +77,7 @@ static int runPrinter(struct  lthread * self)
     else
     {
         DividerIndex = 0;
-    lthread_launch(&MainLightThread);
+        lthread_launch(&MainLightThread);
     }
     return 0;
 }
