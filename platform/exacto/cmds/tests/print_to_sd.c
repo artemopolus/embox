@@ -46,10 +46,9 @@ int main(int argc, char *argv[]) {
 
     ex_saveToFile(buffer0, sizeof(buffer0));
     ex_saveToFile(buffer1, sizeof(buffer1));
-
-	MainBasicThread = thread_create(THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
     lthread_init(&MainLightThread, runMainLightThread);
 
+	MainBasicThread = thread_create(THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
     thread_launch(MainBasicThread);
     thread_join(MainBasicThread, NULL);
 
