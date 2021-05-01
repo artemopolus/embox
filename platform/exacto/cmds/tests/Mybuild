@@ -121,6 +121,13 @@ module tim_printer{
 	depends embox.kernel.lthread.lthread
 	//depends exacto.afina.tim.tim3
 	depends exacto.cmds.tests.timbase
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.filemanager
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
 }
 @AutoCmd
 @Cmd(name="test_spi_dma_tim_based", help=" Test for tim based DMA SPI module receiving data ", man='''
@@ -138,6 +145,11 @@ module spi_dma_tim_based{
 	depends exacto.afina.spi.spi1master
 	depends exacto.afina.gpio.gpio_spi
 	depends exacto.commander.filemanager
+
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
 }
 @AutoCmd
 @Cmd(name="test_buffer_fifo_test", help=" Test for buffer", man='''

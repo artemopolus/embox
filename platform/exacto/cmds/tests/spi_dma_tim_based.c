@@ -5,6 +5,15 @@
 #include <string.h>
   
 #include <kernel/lthread/lthread.h>
+#include <kernel/sched.h>
+#include <kernel/sched/waitq.h>
+#include <kernel/sched/schedee_priority.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/thread.h>
+#include <kernel/time/ktime.h>
+#include <kernel/sched/sync/mutex.h>
+#include <kernel/lthread/sync/mutex.h>
+#include <kernel/thread/sync/mutex.h>
 #include "tim/tim.h"
   
 #include "commander/exacto_data_storage.h"
@@ -57,8 +66,8 @@ static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
 static int runSpiDmaTimSaveToSdThread(struct lthread * self)
 {
     // ex_saveToFile(SpiDmaTimReceivedData, (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1));
-    // uint8_t buffer1[] = "type typ type\n";
-    // ex_saveToFile(buffer1, sizeof(buffer1));
+    uint8_t buffer1[] = "type typ type\n";
+    ex_saveToFile(buffer1, sizeof(buffer1));
     // ex_writeToLogChar("test test test\n");
     return 0;
 }
@@ -172,10 +181,10 @@ int main(int argc, char *argv[]) {
 
     while(1)
     {
-        usleep(100000);
-        ex_writeToLogChar("Ping\n");
-        uint8_t buffer1[] = "type typ type\n";
-        ex_saveToFile(buffer1, sizeof(buffer1));
+        // usleep(100000);
+        // ex_writeToLogChar("Ping\n");
+        // uint8_t buffer1[] = "type typ type\n";
+        // ex_saveToFile(buffer1, sizeof(buffer1));
 
     }
     return 0;
