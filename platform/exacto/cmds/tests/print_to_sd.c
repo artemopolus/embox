@@ -16,10 +16,20 @@
 struct lthread MainLightThread;
 static struct thread *MainBasicThread;
 static void *runMainBasicThread(void *arg) {
+    printf("Basic full thread run\n");
+    uint8_t buffer0[] = "type typ type from common thread\n";
+
+    ex_saveToFile(buffer0, sizeof(buffer0));
+
+
 	return NULL;
 }
 static int runMainLightThread(struct lthread * self)
 {
+    printf("Light thread run\n");
+    uint8_t buffer0[] = "type typ type from light thread\n";
+
+    ex_saveToFile(buffer0, sizeof(buffer0));
     return 0;
 }
 
@@ -38,8 +48,14 @@ int main(int argc, char *argv[]) {
     ex_saveToFile(buffer1, sizeof(buffer1));
 
 	MainBasicThread = thread_create(THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
+    lthread_init(&MainLightThread, runMainLightThread);
+
+    thread_launch(MainBasicThread);
+    thread_join(MainBasicThread, NULL);
 
 
+
+    lthread_launch(&MainLightThread);
     //printf("I try to read data from sd\n");
 
     // FILE * p_file;
