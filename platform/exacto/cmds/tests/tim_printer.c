@@ -17,6 +17,7 @@
 #include <kernel/lthread/sync/mutex.h>
 #include <kernel/task.h>
 #include <kernel/time/ktime.h>
+#include <kernel/printk.h>
 
 
 
@@ -51,18 +52,21 @@ static void *runTmPrBasicThread(void *arg) {
         ex_saveToFile(buffer0, sizeof(buffer0));
         mutex_lock(&TmPrMutexTim);
         cond_wait(&TmPrSignalFromTim, &TmPrMutexTim);
+        mutex_unlock(&TmPrMutexTim);
     }
 	return NULL;
 }
 
 static int runTmPrMainLightThread(struct lthread * self)
 {
-    start:
-    mutex_retry:
+    // start:
+    // mutex_retry:
+    printk("Light thread run\n");
 	if (mutex_trylock_lthread(self, &TmPrMutexTim) == -EAGAIN) {
-        return lthread_yield(&&start, &&mutex_retry);
+        // return lthread_yield(&&start, &&mutex_retry);
+        return 0;
 	}
-    // printf("Light thread run\n");
+    printk("after mutex\n");
     cond_signal(&TmPrSignalFromTim);
 	// test_emit('d');
 	mutex_unlock_lthread(self, &TmPrMutexTim);
@@ -73,7 +77,6 @@ static int runTmPrMainLightThread(struct lthread * self)
 }
 static int runTmPrPrinter(struct  lthread * self)
 {
-    printf("Print: %d\n", TmPrCounter);
     TmPrCounter++;
     if (TmPrDividerIndex < MAX_DIVIDER)
     {
@@ -81,6 +84,7 @@ static int runTmPrPrinter(struct  lthread * self)
     }
     else
     {
+        printf("Print: %d\n", TmPrCounter);
         TmPrDividerIndex = 0;
         lthread_launch(&TmPrMainLightThread);
     }
@@ -106,12 +110,10 @@ int main(int argc, char *argv[]) {
 	mutex_init(&TmPrMutexTim);
 	cond_init(&TmPrSignalFromTim, NULL);
     
-    schedee_priority_set(&TmPrMainLightThread.schedee,l);
-    schedee_priority_set(&TmPrBasicThread->schedee,h);
+    schedee_priority_set(&TmPrMainLightThread.schedee,h);
+    schedee_priority_set(&TmPrBasicThread->schedee,l);
 
 
-    thread_launch(TmPrBasicThread);
-    thread_join(TmPrBasicThread, NULL);
 
     lthread_launch(&TmPrSubscribeThread);
 
@@ -121,6 +123,8 @@ int main(int argc, char *argv[]) {
     {
     }
     
+    thread_launch(TmPrBasicThread);
+    thread_join(TmPrBasicThread, NULL);
 
     while(1)
     {
