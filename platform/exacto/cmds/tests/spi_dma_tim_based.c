@@ -4,16 +4,19 @@
 #include <errno.h>
 #include <string.h>
   
-#include <kernel/lthread/lthread.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/schedee_priority.h>
-#include <kernel/lthread/lthread.h>
-#include <kernel/thread.h>
-#include <kernel/time/ktime.h>
 #include <kernel/sched/sync/mutex.h>
-#include <kernel/lthread/sync/mutex.h>
+#include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/sync/cond.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/sync/mutex.h>
+#include <kernel/task.h>
+#include <kernel/time/ktime.h>
+#include <kernel/printk.h>
+
 #include "tim/tim.h"
   
 #include "commander/exacto_data_storage.h"
@@ -46,6 +49,23 @@ struct lthread SpiDmaTimSaveToSdThread;
 
 struct lthread SpiDmaTimPrinterWindowThread;
 
+
+static struct thread *SpiDmaTim_PrintToSD_Thread;
+static cond_t SpiDmaTim_SignalForSD;
+static struct mutex SpiDmaTim_MutexForSD;
+
+static void *runSpiDmaTim_PrintToSD_Thread(void *arg) {
+    printf("Run printer to sd card");
+    while(1)
+    {
+        printf("Try to save to file\n");
+        ex_saveToFile(SpiDmaTimReceivedData, (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE+1));
+        mutex_lock(&SpiDmaTim_MutexForSD);
+        cond_wait(&SpiDmaTim_SignalForSD, &SpiDmaTim_MutexForSD);
+        mutex_unlock(&SpiDmaTim_MutexForSD);
+    }    
+    return NULL;
+}
 static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
 {
     printf("\033[A\33[2K\r");
@@ -65,10 +85,17 @@ static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
 
 static int runSpiDmaTimSaveToSdThread(struct lthread * self)
 {
-    // ex_saveToFile(SpiDmaTimReceivedData, (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1));
-    uint8_t buffer1[] = "type typ type\n";
-    ex_saveToFile(buffer1, sizeof(buffer1));
-    // ex_writeToLogChar("test test test\n");
+    // start:
+    // mutex_retry:
+    printk("Light thread run\n");
+	if (mutex_trylock_lthread(self, &SpiDmaTim_MutexForSD) == -EAGAIN) {
+        // return lthread_yield(&&start, &&mutex_retry);
+        return 0;
+	}
+    printk("after mutex\n");
+    cond_signal(&SpiDmaTim_SignalForSD);
+	mutex_unlock_lthread(self, &SpiDmaTim_MutexForSD);
+
     return 0;
 }
 
@@ -169,6 +196,13 @@ int main(int argc, char *argv[]) {
     lthread_init(&SpiDmaTimSaveToSdThread, runSpiDmaTimSaveToSdThread);
     lthread_init(&SpiDmaTimPrinterWindowThread, runSpiDmaTimPrinterWindowThread);
 
+	SpiDmaTim_PrintToSD_Thread = thread_create(THREAD_FLAG_SUSPENDED, runSpiDmaTim_PrintToSD_Thread, NULL);
+	mutex_init(&SpiDmaTim_MutexForSD);
+	cond_init(&SpiDmaTim_SignalForSD, NULL);
+    
+    schedee_priority_set(&SpiDmaTim_PrintToSD_Thread->schedee, 200);
+    schedee_priority_set(&SpiDmaTimSaveToSdThread.schedee,210);
+
     lthread_launch(&SpiDmaTimSubscribeThread);
 
     printf("Wait subscribing...\n\n\n\n\n");
@@ -178,6 +212,9 @@ int main(int argc, char *argv[]) {
     {
     }
     // printf("Start Full Duplex SPI\n");
+    thread_launch(SpiDmaTim_PrintToSD_Thread);
+    thread_join(SpiDmaTim_PrintToSD_Thread, NULL);
+
 
     while(1)
     {
