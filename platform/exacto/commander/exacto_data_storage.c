@@ -202,19 +202,19 @@ void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, cons
     //[00] 0x17 
     //[01] 0x17
     //----------------------
+    //Datalen
+    //[02] 0x00
+    //[03] 0x00
+    //----------------------
     //TYPE
-    //[02] 
+    //[04] 
     //----------------------
     //pointer on data start
-    //[03] 0x09 
+    //[05] 0x09 
     //----------------------
     //ADDRESS
-    //[04]
-    //[05]
-    //----------------------
-    //Datalen
-    //[06] 0x00
-    //[07] 0x00
+    //[06]
+    //[07]
     //----------------------
     //DATA PACKAGE
     //[08] 0x00
@@ -227,12 +227,12 @@ void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, cons
     const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, pck_id);
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, pck_id);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenH);
+    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenL);
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, type);
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data_start_point);
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrH);
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrL);
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenH);
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenL);
 }
 thread_control_result_t getStateExactoDataStorage()
 {
