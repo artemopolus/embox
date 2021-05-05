@@ -49,9 +49,10 @@ module spi_txrx {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	
-	depends exacto.cmds.tests.spi_dev
+	//depends exacto.cmds.tests.spi_dev
 	depends exacto.commander.data_storage
-	depends exacto.apollon.spi.spi2slave
+	//depends exacto.apollon.spi.spi2slave
+	depends exacto.spi.mliner_apollon
 	depends exacto.apollon.gpio.gpio_spi
 	depends exacto.apollon.tim.tim3
 	

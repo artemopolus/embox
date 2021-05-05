@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
 #include "commander/exacto_sns_ctrl.h"
-#include "spi/spi2_generated.h"
+#include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
 #include "tim/tim.h"
 
