@@ -13,7 +13,7 @@
 #include "stm32f1xx_ll_pwr.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_gpio.h"
-#include "spi2_generated.h"
+#include "spi_mliner.h"
 #include <errno.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
@@ -22,7 +22,7 @@
 #include "commander/exacto_data_storage.h"
 
 
-#define SPI2_FULL_DMA_RXTX_BUFFER_SIZE 64
+#define SPI2_FULL_DMA_RXTX_BUFFER_SIZE SPI_MLINER_BUFFER_SIZE
 typedef struct
 {
     uint8_t dt_buffer[SPI2_FULL_DMA_RXTX_BUFFER_SIZE];
