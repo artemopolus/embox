@@ -58,7 +58,7 @@ static void *runSpiDmaTim_PrintToSD_Thread(void *arg) {
     printf("Run printer to sd card");
     while(1)
     {
-        printf("Try to save to file\n");
+        // printf("Try to save to file\n");
         ex_saveToFile(SpiDmaTimReceivedData, (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE+1));
         mutex_lock(&SpiDmaTim_MutexForSD);
         cond_wait(&SpiDmaTim_SignalForSD, &SpiDmaTim_MutexForSD);
@@ -70,10 +70,11 @@ static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
 {
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
-    printf("\033[A\33[2K\r");
+    // printf("\033[A\33[2K\r");
+    // printf("\033[A\33[2K\r");
     printf("Basic counter: %d\n", SpiDmaTimCounter);
-    printf("exactolink\n");
-    printf("Received buffer: ");
+    // printf("exactolink\n");
+    printf("Received buffer(exactolink): ");
     for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
     {
         printf("%d ", SpiDmaTimReceivedData[i]);
@@ -87,12 +88,12 @@ static int runSpiDmaTimSaveToSdThread(struct lthread * self)
 {
     // start:
     // mutex_retry:
-    printk("Light thread run\n");
+    // printk("Light thread run\n");
 	if (mutex_trylock_lthread(self, &SpiDmaTim_MutexForSD) == -EAGAIN) {
         // return lthread_yield(&&start, &&mutex_retry);
         return 0;
 	}
-    printk("after mutex\n");
+    // printk("after mutex\n");
     cond_signal(&SpiDmaTim_SignalForSD);
 	mutex_unlock_lthread(self, &SpiDmaTim_MutexForSD);
 

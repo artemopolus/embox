@@ -338,7 +338,7 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
 
     // так же здесь распознавалку пакета нужно добавить
     //---------
-    for (uint8_t i = 1; i < _datacount; i++)                        //
+    for (uint8_t i = 2; i < _datacount; i++)                        //
         pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);
