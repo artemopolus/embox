@@ -140,7 +140,7 @@ module spi_dma_tim_based{
 	depends exacto.cmds.tests.timbase
 
 	depends embox.kernel.lthread.sync.mutex
-	depends exacto.cmds.tests.spi_dev
+	//depends exacto.cmds.tests.spi_dev
 	depends exacto.commander.data_storage
 	//depends exacto.afina.spi.spi1master
 	depends exacto.spi.mliner_afina

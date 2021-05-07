@@ -1,0 +1,26 @@
+package exacto.exactolink
+
+@BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/../exactoLink -I$(ROOT_DIR)/../exactoLink/BuffersManager -I$(ROOT_DIR)/../exactoLink/exactoMessages -I$(ROOT_DIR)/../exactoLink/RegLib")
+module base_cppflags {
+}
+@BuildDepends(base_cppflags)
+module basis_code {
+    source "crc_stm32f7.c"
+	@IncludeExport(path="")
+    source "crc.h"
+    source "DebugformattedOut.c"
+    source "MessageHandlers.c"
+	@IncludeExport(path="")
+    source "DebugformattedOut.h"
+	@IncludeExport(path="")
+    source "MessageHandlers.h"
+    source "/../../../../exactoLink/BuffersManager/BuffersManager.c"
+    source "/../../../../exactoLink/exactoMessages/exacto_MessageDataLsm303.c"
+    source "/../../../../exactoLink/exactoMessages/exacto_MessageDataIsm330.c"
+    source "/../../../../exactoLink/exactoMessages/exacto_MessageDataBmp280.c"
+    source "/../../../../exactoLink/exactoMessages/exacto_MessageSettingsBmp280.c"
+    source "/../../../../exactoLink/exactoMessages/exacto_MessageSettingsLsm303.c"
+    source "/../../../../exactoLink/exactoMessages/exacto_MessageSettingsIsm330.c"
+    source "/../../../../exactoLink/exactolink_pack.c"
+    @NoRuntime depends base_cppflags
+}
