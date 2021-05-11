@@ -92,12 +92,12 @@ static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
 
 static int runSpiDmaTimSaveToSdThread(struct lthread * self)
 {
-    // start:
-    // mutex_retry:
+    start:
+    mutex_retry:
     // printk("Light thread run\n");
 	if (mutex_trylock_lthread(self, &SpiDmaTim_MutexForSD) == -EAGAIN) {
-        // return lthread_yield(&&start, &&mutex_retry);
-        return 0;
+        return lthread_yield(&&start, &&mutex_retry);
+        // return 0;
 	}
     // printk("after mutex\n");
     cond_signal(&SpiDmaTim_SignalForSD);
