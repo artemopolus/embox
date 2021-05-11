@@ -79,6 +79,8 @@ static int printBufferData(struct  lthread * self)
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
+    printf("\033[A\33[2K\r");
+    printf("\033[A\33[2K\r");
     uint8_t length = DATA_MESSAGE_SIZE;
     uint8_t start_point = 4;
     for (uint8_t i = 0; i < DATA_MESSAGE_SIZE; i++)
@@ -95,10 +97,10 @@ static int printBufferData(struct  lthread * self)
     printf("\n");
     start_point = ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
 
-    uint64_t ExDtBfCounter;
+    uint64_t ExDtBfCounter = 0;
 
-    convertUint8ToUint64(&ReceivedData[0],&ExDtBfCounter);
-
+    convertUint8ToUint64(&ReceivedData[start_point],&ExDtBfCounter);
+    printf("\nData output: %d\n", length);
     for (uint8_t i = start_point  + 4; i < length; i+=2)
     {
         int16_t value;
