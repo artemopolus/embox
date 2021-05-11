@@ -95,13 +95,17 @@ static int printBufferData(struct  lthread * self)
     printf("\n");
     start_point = ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
 
+    uint64_t ExDtBfCounter;
+
+    convertUint8ToUint64(&ReceivedData[0],&ExDtBfCounter);
+
     for (uint8_t i = start_point  + 4; i < length; i+=2)
     {
         int16_t value;
-        convertUint8ToUint16(&ReceivedData[i], &value);
+        convertUint8ToInt16(&ReceivedData[i], &value);
         printf("%d\t", value);
     }
-    printf("\nCounter: %d SpiOn: %d\n", MlineSensorTickerCounter, MlineSpiEnableMarker);
+    printf("\nCounter: %d ExDtBfCounter: %d SpiOn: %d\n", MlineSensorTickerCounter, ExDtBfCounter, MlineSpiEnableMarker);
 #endif
     return 0;
 }

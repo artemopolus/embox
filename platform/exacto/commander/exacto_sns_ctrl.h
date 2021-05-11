@@ -41,6 +41,7 @@ extern uint8_t isDataReady_mg(exacto_sensors_list_t sensor, const uint8_t value)
 
 extern uint8_t isXlGrDataReady_ISM330DLC(const uint8_t value);
 extern uint8_t isXlGrDataReady(exacto_sensors_list_t sensor, const uint8_t value);
-extern void convertUint8ToUint16(uint8_t * src, int16_t * dst);
+extern void convertUint8ToInt16(uint8_t * src, int16_t * dst);
+extern void convertUint8ToUint64(uint8_t * src, uint64_t * dst);
 
 #endif //EXACTO_SENSORS_H
