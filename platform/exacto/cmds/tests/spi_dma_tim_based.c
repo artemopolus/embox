@@ -21,10 +21,12 @@
   
 #include "commander/exacto_data_storage.h"
 #include "commander/exacto_filemanager.h"
+#include "sensors/exacto_datatools.h"
 #include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
 
 #define SPI_DMA_TIM_MAX_CALL_COUNT 10
+#define SPI_DMA_TIM_SPI_CHECKER_DIVIDER 10
 #define SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE 64
 
 uint8_t SpiDmaTimCallIndex = 0;
@@ -36,6 +38,7 @@ uint8_t SpiDmaTimReceivedData[SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1] = { 0};
 
 
 uint8_t SpiDmaTimCounter = 0;
+uint8_t SpiDmaTimCheckDivCounter = 0;
 uint8_t SpiDmaTimMarkerSubscribe = 0;
 uint8_t SpiDmaTimLedControl_isenabled = 0;
 
@@ -72,7 +75,10 @@ static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
     printf("\033[A\33[2K\r");
     // printf("\033[A\33[2K\r");
     // printf("\033[A\33[2K\r");
-    printf("Basic counter: %d\n", SpiDmaTimCounter);
+    uint64_t counter = 0;
+    uint8_t start_point = SpiDmaTimReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
+    ex_convertUint8ToUint64(&SpiDmaTimReceivedData[start_point], &counter);
+    printf("Basic counter: %d Received counter: %d\n", SpiDmaTimCounter, counter);
     // printf("exactolink\n");
     printf("Received buffer(exactolink): ");
     for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
@@ -115,10 +121,10 @@ static int runSpiDmaTimCheckExactoStorageThread(struct lthread * self)
 {
     disableMasterSpiDma();
     ex_disableGpio();
-     ex_enableGpio();
+    ex_enableGpio();
     enableMasterSpiDma(); 
 
-   setDataToExactoDataStorage(SpiDmaTimDataToBuffer, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE , THR_CTRL_OK); 
+    setDataToExactoDataStorage(SpiDmaTimDataToBuffer, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE , THR_CTRL_OK); 
     transmitExactoDataStorage();
     receiveExactoDataStorage();
     getDataFromExactoDataStorage(SpiDmaTimReceivedData, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE );
@@ -128,35 +134,39 @@ static int runSpiDmaTimCheckExactoStorageThread(struct lthread * self)
 static int runPrintReceivedData(struct  lthread * self)
 {
     SpiDmaTimCounter++;
-    
+
+    if (SpiDmaTimCheckDivCounter < SPI_DMA_TIM_SPI_CHECKER_DIVIDER)
+    {
+        SpiDmaTimCheckDivCounter++;
+    }
+    else
+    {
+        lthread_launch(&SpiDmaTimCheckExactoStorageThread);
+        SpiDmaTimCheckDivCounter = 0;
+        if (SpiDmaTimReceivedData[0] == EXACTOLINK_PCK_ID)
+        {
+            uint64_t counter = 0;
+            ex_convertUint8ToUint64(&SpiDmaTimReceivedData[0], &counter);
+            lthread_launch(&SpiDmaTimSaveToSdThread);
+        }
+    }
+ 
 
     if (SpiDmaTimCallIndex < SPI_DMA_TIM_MAX_CALL_COUNT)
     {
         SpiDmaTimCallIndex++;
     }
-    else{
-    if (SpiDmaTimReceivedData[0] == EXACTOLINK_PCK_ID)
+    else
     {
-        // printf("\033[A\33[2K\r");
-        // printf("\033[A\33[2K\r");
-        // printf("\033[A\33[2K\r");
-        // printf("Basic counter: %d\n", SpiDmaTimCounter);
-        // printf("exactolink\n");
-        // printf("Received buffer: ");
-        // for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
-        // {
-        //     printf("%d ", SpiDmaTimReceivedData[i]);
-        // }
-        // // ex_saveToFile(SpiDmaTimReceivedData, (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1));
-        // printf("\n");
-        lthread_launch(&SpiDmaTimPrinterWindowThread);
-        lthread_launch(&SpiDmaTimSaveToSdThread);
-        if (!SpiDmaTimLedControl_isenabled)
+        if (SpiDmaTimReceivedData[0] == EXACTOLINK_PCK_ID)
         {
-            SpiDmaTimLedControl_isenabled = 1;
-            lthread_launch(&SpiDmaTimLedControlThread);
+            lthread_launch(&SpiDmaTimPrinterWindowThread);
+            if (!SpiDmaTimLedControl_isenabled)
+            {
+                SpiDmaTimLedControl_isenabled = 1;
+                lthread_launch(&SpiDmaTimLedControlThread);
+            }
         }
-    }
         else
         {
             printf("\033[A\33[2K\r");
@@ -170,7 +180,6 @@ static int runPrintReceivedData(struct  lthread * self)
             }
             printf("\n");
         }  
-        lthread_launch(&SpiDmaTimCheckExactoStorageThread);
         SpiDmaTimCallIndex = 0;
     }
     return 0;

@@ -10,3 +10,9 @@ module lsm303ah
 	@IncludeExport(path="sensors")
     source "lsm303ah_reg.h"
 }
+module datatools
+{
+    source "exacto_datatools.c"
+	@IncludeExport(path="sensors")
+    source "exacto_datatools.h"
+}

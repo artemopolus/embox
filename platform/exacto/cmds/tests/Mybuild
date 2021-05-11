@@ -146,6 +146,7 @@ module spi_dma_tim_based{
 	depends exacto.spi.mliner_afina
 	depends exacto.afina.gpio.gpio_spi
 	depends exacto.commander.filemanager
+	depends exacto.sensors.datatools
 
 
 	depends embox.kernel.thread.core
