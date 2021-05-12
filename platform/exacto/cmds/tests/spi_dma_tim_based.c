@@ -57,8 +57,52 @@ static struct thread *SpiDmaTim_PrintToSD_Thread;
 static cond_t SpiDmaTim_SignalForSD;
 static struct mutex SpiDmaTim_MutexForSD;
 
+static struct thread *  SpiDmaTim_WindowPrinter_Thread;
+static cond_t           SpiDmaTim_WindowPrinter_Signal;
+static struct mutex     SpiDmaTim_WindowPrinter_Mutex;
+struct lthread          SpiDmaTim_WinPrintRemainder_Lthread;
+ 
+static void * runSpiDmaTim_WindowPrinter_Thread(void * arg)
+{
+    while(1)
+    {
+        if (SpiDmaTimReceivedData[0] == EXACTOLINK_PCK_ID)
+        {
+            printf("\033[A\33[2K\r");
+            printf("\033[A\33[2K\r");
+            // printf("\033[A\33[2K\r");
+            // printf("\033[A\33[2K\r");
+            uint64_t counter = 0;
+            uint8_t start_point = SpiDmaTimReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
+            ex_convertUint8ToUint64(&SpiDmaTimReceivedData[start_point], &counter);
+            printf("Basic counter: %d Received counter: %d\n", SpiDmaTimCounter, counter);
+            // printf("exactolink\n");
+            printf("Received buffer(exactolink): ");
+            for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
+            {
+                printf("%d ", SpiDmaTimReceivedData[i]);
+            }
+            printf("\n");
+        }
+            // printf("\033[A\33[2K\r");
+            // printf("\033[A\33[2K\r");
+            // printf("\033[A\33[2K\r");
+            // printf("Basic counter: %d\n", SpiDmaTimCounter);
+            // printf("Unknown package\n");
+            // for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
+            // {
+            //     printf("%d ", SpiDmaTimReceivedData[i]);
+            // }
+            // printf("\n");
+        //-------------------------------------------------------------------------
+        mutex_lock(&SpiDmaTim_WindowPrinter_Mutex);
+        cond_wait(&SpiDmaTim_WindowPrinter_Signal, &SpiDmaTim_WindowPrinter_Mutex);
+        mutex_unlock(&SpiDmaTim_WindowPrinter_Mutex);
+    }
+    return NULL;
+}
 static void *runSpiDmaTim_PrintToSD_Thread(void *arg) {
-    printf("Run printer to sd card");
+    printk("Run printer to sd card");
     while(1)
     {
         // printf("Try to save to file\n");
@@ -69,24 +113,18 @@ static void *runSpiDmaTim_PrintToSD_Thread(void *arg) {
     }    
     return NULL;
 }
-static int runSpiDmaTimPrinterWindowThread(struct lthread * self)
+static int runSpiDmaTim_WinPrintRemainder_Lthread(struct lthread * self)
 {
-    printf("\033[A\33[2K\r");
-    printf("\033[A\33[2K\r");
-    // printf("\033[A\33[2K\r");
-    // printf("\033[A\33[2K\r");
-    uint64_t counter = 0;
-    uint8_t start_point = SpiDmaTimReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
-    ex_convertUint8ToUint64(&SpiDmaTimReceivedData[start_point], &counter);
-    printf("Basic counter: %d Received counter: %d\n", SpiDmaTimCounter, counter);
-    // printf("exactolink\n");
-    printf("Received buffer(exactolink): ");
-    for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
-    {
-        printf("%d ", SpiDmaTimReceivedData[i]);
-    }
-    printf("\n");
- 
+    // start:
+    // mutex_retry:
+    // printk("Light thread run\n");
+	if (mutex_trylock_lthread(self, &SpiDmaTim_WindowPrinter_Mutex) == -EAGAIN) {
+        // return lthread_yield(&&start, &&mutex_retry);
+        return 0;
+	}
+    // printk("after mutex\n");
+    cond_signal(&SpiDmaTim_WindowPrinter_Signal);
+	mutex_unlock_lthread(self, &SpiDmaTim_WindowPrinter_Mutex);
     return 0;
 }
 
@@ -167,20 +205,8 @@ static int runPrintReceivedData(struct  lthread * self)
                 lthread_launch(&SpiDmaTimLedControlThread);
             }
         }
-        else
-        {
-            printf("\033[A\33[2K\r");
-            printf("\033[A\33[2K\r");
-            printf("\033[A\33[2K\r");
-            printf("Basic counter: %d\n", SpiDmaTimCounter);
-            printf("Unknown package\n");
-            for (uint8_t i = 0; i < (SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE + 1); i++)
-            {
-                printf("%d ", SpiDmaTimReceivedData[i]);
-            }
-            printf("\n");
-        }  
-        SpiDmaTimCallIndex = 0;
+        lthread_launch(&SpiDmaTim_WinPrintRemainder_Lthread);
+       SpiDmaTimCallIndex = 0;
     }
     return 0;
 }
@@ -204,14 +230,19 @@ int main(int argc, char *argv[]) {
     lthread_init(&SpiDmaTimLedControlThread, runSpiDmaTimLedControlThread);
 
     lthread_init(&SpiDmaTimSaveToSdThread, runSpiDmaTimSaveToSdThread);
-    lthread_init(&SpiDmaTimPrinterWindowThread, runSpiDmaTimPrinterWindowThread);
 
 	SpiDmaTim_PrintToSD_Thread = thread_create(THREAD_FLAG_SUSPENDED, runSpiDmaTim_PrintToSD_Thread, NULL);
 	mutex_init(&SpiDmaTim_MutexForSD);
 	cond_init(&SpiDmaTim_SignalForSD, NULL);
+
+    SpiDmaTim_WindowPrinter_Thread = thread_create(THREAD_FLAG_SUSPENDED, runSpiDmaTim_WindowPrinter_Thread, NULL);
+    mutex_init(&SpiDmaTim_WindowPrinter_Mutex);
+    cond_init(&SpiDmaTim_WindowPrinter_Signal, NULL);
+    lthread_init(&SpiDmaTim_WinPrintRemainder_Lthread, runSpiDmaTim_WinPrintRemainder_Lthread);
     
     schedee_priority_set(&SpiDmaTim_PrintToSD_Thread->schedee, 200);
     schedee_priority_set(&SpiDmaTimSaveToSdThread.schedee,210);
+    schedee_priority_set(&SpiDmaTim_WindowPrinter_Thread->schedee, 150);
 
     lthread_launch(&SpiDmaTimSubscribeThread);
 
@@ -224,6 +255,9 @@ int main(int argc, char *argv[]) {
     // printf("Start Full Duplex SPI\n");
     thread_launch(SpiDmaTim_PrintToSD_Thread);
     thread_join(SpiDmaTim_PrintToSD_Thread, NULL);
+
+    thread_launch(SpiDmaTim_WindowPrinter_Thread);
+    thread_join(SpiDmaTim_WindowPrinter_Thread, NULL);
 
 
     while(1)
