@@ -41,18 +41,19 @@ static struct lthread TET_SafeCopyResult_Lthread;
 uint32_t    TET_Ticker_Start, 
             TET_Ticker_Stop, 
             TET_Ticker_Result,
+            TET_Ticker_ResultPlus = 0,
             TET_Ticker_Buffer,
-            TET_Ticker_BufferPlus;
+            TET_Ticker_BufferPlus = 0;
 uint8_t TET_Ticker_Marker = 0;
-float TET_Ticker_floatbuffer = 0;
 
 
 static int runTET_SafeCopyResult_Lthread (struct lthread * self)
 {
     TET_TimEvent_Buffer = TET_TimEvent_Counter;
     TET_Ticker_Buffer = TET_Ticker_Result;
+    TET_Ticker_BufferPlus = TET_Ticker_ResultPlus;
+    TET_Ticker_ResultPlus = 0;
     // TET_Ticker_Buffer = TET_Ticker_Start;
-    TET_Ticker_floatbuffer = TET_Ticker_BufferPlus /(TET_PrintEvent_Max + 1);
     
     TET_print_Marker = 1;
 //    printk("1\n");
@@ -71,8 +72,8 @@ static int runTET_TimReceiver_Lthread(struct  lthread * self)
     {
         TET_Ticker_Stop = ex_dwt_cyccnt_stop();
         TET_Ticker_Result = TET_Ticker_Stop - TET_Ticker_Start;
+        TET_Ticker_ResultPlus += TET_Ticker_Result;
         TET_Ticker_Start = ex_dwt_cyccnt_start();
-        TET_Ticker_BufferPlus += TET_Ticker_Result;
     }
     if (TET_PrintEvent_Counter < TET_PrintEvent_Max)
     {
@@ -122,8 +123,8 @@ int main(int argc, char *argv[]) {
         while(!TET_print_Marker){}
         TET_print_Marker = 0;
         //printk("0\n");
-        printf("Tim counter %d\nTicker = %d\n", TET_TimEvent_Buffer, TET_Ticker_Buffer);
+        printf("Tim counter %d\nTicker = %d Plus = %d\n", TET_TimEvent_Buffer, TET_Ticker_Buffer, TET_Ticker_BufferPlus);
     }
-    printf("\nDone T:\n");
+    printf("\nDone \n");
     return 0;
 }
