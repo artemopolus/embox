@@ -31,7 +31,7 @@ uint8_t TET_subscribe_Marker = 0;
 
 uint16_t TET_TimEvent_Counter = 0;
 uint16_t TET_TimEvent_Buffer = 0;
-uint16_t TET_TimEvent_Max = 20;
+uint16_t TET_TimEvent_Max = 50;
 
 uint16_t TET_PrintEvent_Max = 0;
 uint16_t TET_PrintEvent_Counter = 0;
@@ -84,6 +84,7 @@ static int runTET_TimReceiver_Lthread(struct  lthread * self)
         TET_PrintEvent_Counter = 0;
         //Some happen
         // I generate marker!!!
+        if (!TET_print_Marker)
         lthread_launch(&TET_SafeCopyResult_Lthread);
     }
     return 0;
