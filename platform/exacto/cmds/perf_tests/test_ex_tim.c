@@ -109,6 +109,15 @@ int main(int argc, char *argv[]) {
         printf("Specify value!\n");
         return 0;
     }
+    switch (value)
+    {
+    case 200:
+        ex_setFreqHz(200);
+        break;
+    
+    default:
+        break;
+    }
     ex_dwt_cyccnt_reset();
     lthread_init(&TET_Subcribe_Lthread, runTET_Subcribe_Lthread);
     lthread_init(&TET_SafeCopyResult_Lthread, runTET_SafeCopyResult_Lthread);

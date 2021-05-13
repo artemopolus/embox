@@ -46,7 +46,7 @@ static int apollon_tim_init(void)
     /* TIM2CLK = SystemCoreClock / (APB prescaler & multiplier)                 */
   TimOutClock = SystemCoreClock/1;
   
-  InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 1000);
+  InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 100);
   LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
   // LL_TIM_InitTypeDef TIM_InitStruct = {0};
 
@@ -98,3 +98,9 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
   return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(29, tim_irq_handler, NULL);
+void ex_setFreqHz(const uint32_t target_freq)
+{
+  uint32_t InitialAutoreload = __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM3), target_freq);
+  LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
+  LL_TIM_GenerateEvent_UPDATE(TIM3);
+}
