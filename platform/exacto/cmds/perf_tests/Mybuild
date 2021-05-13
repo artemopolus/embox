@@ -1,0 +1,15 @@
+package exacto.cmds.perf_tests
+
+@AutoCmd
+@Cmd(name="test_ex_tim", help=" Performance test for TIM ", man='''
+AUTHOR Kuznetcov
+''')
+module ex_tim{
+	source "test_ex_tim.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.cmds.tests.timbase
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+}

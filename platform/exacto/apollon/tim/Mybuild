@@ -5,4 +5,5 @@ module tim3 extends exacto.cmds.tests.timbase{
 	@IncludeExport(path="tim")
 	source "tim.h"
 	depends embox.kernel.lthread.lthread
+	depends exacto.commander.services
 }
