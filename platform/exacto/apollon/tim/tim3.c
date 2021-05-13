@@ -44,9 +44,9 @@ static int apollon_tim_init(void)
   
   /* Set the auto-reload value to have an initial update event frequency of 10 Hz */
     /* TIM2CLK = SystemCoreClock / (APB prescaler & multiplier)                 */
-  TimOutClock = SystemCoreClock/2;
+  TimOutClock = SystemCoreClock/1;
   
-  InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 1600);
+  InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 1000);
   LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
   // LL_TIM_InitTypeDef TIM_InitStruct = {0};
 
