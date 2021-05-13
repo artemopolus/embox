@@ -24,6 +24,7 @@
 
 #include <sys/wait.h>
 #include "tim/tim.h"
+#include "ex_utils.h"
 
 uint8_t TET_print_Marker = 0;
 uint8_t TET_subscribe_Marker = 0;
@@ -37,10 +38,21 @@ uint16_t TET_PrintEvent_Counter = 0;
 static struct lthread TET_Subcribe_Lthread;
 static struct lthread TET_SafeCopyResult_Lthread;
 
+uint32_t    TET_Ticker_Start, 
+            TET_Ticker_Stop, 
+            TET_Ticker_Result,
+            TET_Ticker_Buffer,
+            TET_Ticker_BufferPlus;
+uint8_t TET_Ticker_Marker = 0;
+float TET_Ticker_floatbuffer = 0;
+
 
 static int runTET_SafeCopyResult_Lthread (struct lthread * self)
 {
     TET_TimEvent_Buffer = TET_TimEvent_Counter;
+    TET_Ticker_Buffer = TET_Ticker_Result;
+    TET_Ticker_floatbuffer = TET_Ticker_BufferPlus /(TET_PrintEvent_Max + 1);
+    
     TET_print_Marker = 1;
 //    printk("1\n");
     return 0;
@@ -49,6 +61,16 @@ static int runTET_SafeCopyResult_Lthread (struct lthread * self)
 static int runTET_TimReceiver_Lthread(struct  lthread * self)
 {
     TET_TimEvent_Counter++;
+    if (!TET_Ticker_Marker)
+    {
+        TET_Ticker_Start = ex_dwt_cyccnt_start();
+    }
+    else
+    {
+        TET_Ticker_Stop = ex_dwt_cyccnt_stop();
+        TET_Ticker_Result = TET_Ticker_Stop - TET_Ticker_Start;
+        TET_Ticker_BufferPlus += TET_Ticker_Result;
+    }
     if (TET_PrintEvent_Counter < TET_PrintEvent_Max)
     {
         TET_PrintEvent_Counter++;
@@ -82,6 +104,7 @@ int main(int argc, char *argv[]) {
         printf("Specify value!\n");
         return 0;
     }
+    ex_dwt_cyccnt_reset();
     lthread_init(&TET_Subcribe_Lthread, runTET_Subcribe_Lthread);
     lthread_init(&TET_SafeCopyResult_Lthread, runTET_SafeCopyResult_Lthread);
     lthread_launch(&TET_Subcribe_Lthread);
@@ -96,8 +119,8 @@ int main(int argc, char *argv[]) {
         while(!TET_print_Marker){}
         TET_print_Marker = 0;
         //printk("0\n");
-        printf("Tim counter %d\n", TET_TimEvent_Buffer);
+        printf("Tim counter %d\nTicker = %d TickAv = %f\n", TET_TimEvent_Buffer, TET_Ticker_Buffer, TET_Ticker_floatbuffer);
     }
-    printf("\nDone\n");
+    printf("\nDone T:\n");
     return 0;
 }
