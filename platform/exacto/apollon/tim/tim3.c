@@ -46,7 +46,7 @@ static int apollon_tim_init(void)
     /* TIM2CLK = SystemCoreClock / (APB prescaler & multiplier)                 */
   TimOutClock = SystemCoreClock/2;
   
-  InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 10);
+  InitialAutoreload = __LL_TIM_CALC_ARR(TimOutClock, LL_TIM_GetPrescaler(TIM3), 100);
   LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
   // LL_TIM_InitTypeDef TIM_InitStruct = {0};
 
