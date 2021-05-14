@@ -141,11 +141,11 @@ int main(int argc, char *argv[]) {
         //printk("0\n");
         printf("Tim counter %d\nTicker = %d Plus = %d\n", TET_TimEvent_Buffer, TET_Ticker_Buffer, TET_Ticker_BufferPlus);
     }
-    printf("\n[");
+    printf("\nTicker info:\n[");
     for (uint16_t i = 0; (i < TET_Ticker_ArraySz)&&(i < TET_TICKER_ARRAY_SZ); i ++)
     {
         printf("%d, ", TET_Ticker_Array[i]);
-        if (i % 10)
+        if (!(i % 10))
             printf("\n");
     }
     printf("]\nDone \n");

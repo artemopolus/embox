@@ -123,13 +123,15 @@ int main(int argc, char *argv[]) {
         printf("Done\n");
     else
         printf("Failed\n");
+    printf("\nTicker info:\n[");
     for (uint16_t i = 0; i < TES_Ticker_ArraySz; i++)
     {
         printf("%d, ", TES_Ticker_Array[i]);
-        if (i % 10)
+        if (!(i % 10))
             printf("\n");
  
     }
+    printf("]\n");
     printf("Selftest done\n");
     return 0;
 }
