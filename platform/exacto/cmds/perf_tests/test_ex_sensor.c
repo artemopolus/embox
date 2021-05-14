@@ -29,6 +29,13 @@
 #include "sensors/lsm303ah_reg.h"
 #include "spi/spi_sns.h"
 
+#define     TES_TICKER_ARRAY_SZ 1000
+uint32_t    TES_Ticker_Array[TES_TICKER_ARRAY_SZ] = {0};
+uint16_t    TES_Ticker_ArraySz = 0;
+uint32_t    TES_Ticker_Start, 
+            TES_Ticker_Stop, 
+            TES_Ticker_Result;
+uint8_t     TES_Ticker_Marker = 0;
 
 static ex_spi_pack_t TES_PackageToSend = {
     .result = EXACTO_OK,
@@ -39,7 +46,6 @@ static ex_spi_pack_t TES_PackageToGett = {
 exacto_sensors_list_t TES_CurTrgSens = LSM303AH;
 uint8_t TES_CurTrgSens_isenabled  = 0;
 static struct lthread TES_Send_Lthread;
-ex_service_transport_msg_t TES_BufferToData;
 
 void tes_sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value)
 {
@@ -61,6 +67,7 @@ void tes_sendAndReceive(exacto_sensors_list_t sns, const uint8_t address, const 
 }
 static int runTES_Send_Lthread(struct lthread * self)
 {
+    TES_Ticker_Start = ex_dwt_cyccnt_start();
     TES_CurTrgSens_isenabled = 1;
     enableExactoSensor(TES_CurTrgSens);
     if (TES_PackageToSend.type == EX_SPI_DT_TRANSMIT)
@@ -72,6 +79,14 @@ static int runTES_Send_Lthread(struct lthread * self)
         ex_gettSpiSns(&TES_PackageToGett);
     }
     disableExactoSensor(TES_CurTrgSens);
+    TES_Ticker_Stop = ex_dwt_cyccnt_stop();
+    TES_Ticker_Result = TES_Ticker_Stop - TES_Ticker_Start;
+    if (TES_Ticker_ArraySz < TES_TICKER_ARRAY_SZ)
+    {
+        TES_Ticker_Array[TES_Ticker_ArraySz] = TES_Ticker_Result;
+        TES_Ticker_ArraySz++;
+    }
+
     return 0;
 }
 void tes_printReceivedData()
@@ -88,13 +103,33 @@ void tes_printReceivedData()
 }
 
 int main(int argc, char *argv[]) {
+    ex_dwt_cyccnt_reset();
     printf("Start testing sensors\n");
-    ex_initServiceMsg(&TES_BufferToData);
     lthread_init(&TES_Send_Lthread, runTES_Send_Lthread);
     tes_sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
-    tes_sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x0c);
+    printf("WHOAMI test: ");
     tes_sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
     tes_printReceivedData();
-    printf("Done\n");
+    if (TES_PackageToGett.data[0] == LSM303AH_ID_XL)
+        printf("Done\n");
+    else
+        printf("Failed\n");
+    printf("Set option test: ");
+    uint8_t value = 0xC5;
+    tes_sendOptions(LSM303AH, LSM303AH_CTRL1_A, value); //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+    tes_sendAndReceive(LSM303AH, LSM303AH_CTRL1_A, 2);
+    tes_printReceivedData();
+    if (TES_PackageToGett.data[0] == value)
+        printf("Done\n");
+    else
+        printf("Failed\n");
+    for (uint16_t i = 0; i < TES_Ticker_ArraySz; i++)
+    {
+        printf("%d, ", TES_Ticker_Array[i]);
+        if (i % 10)
+            printf("\n");
+ 
+    }
+    printf("Selftest done\n");
     return 0;
 }

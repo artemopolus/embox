@@ -145,6 +145,8 @@ int main(int argc, char *argv[]) {
     for (uint16_t i = 0; (i < TET_Ticker_ArraySz)&&(i < TET_TICKER_ARRAY_SZ); i ++)
     {
         printf("%d, ", TET_Ticker_Array[i]);
+        if (i % 10)
+            printf("\n");
     }
     printf("]\nDone \n");
     return 0;
