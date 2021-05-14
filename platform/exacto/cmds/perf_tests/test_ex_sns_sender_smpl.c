@@ -47,6 +47,9 @@ exacto_sensors_list_t TES_CurTrgSens = LSM303AH;
 uint8_t TES_CurTrgSens_isenabled  = 0;
 static struct lthread TES_Send_Lthread;
 uint8_t               TES_Send_Marker = 0;
+
+static struct lthread TES_getSensData_Lthread;
+
 void tes_setTickerStart()
 {
     TES_Ticker_Start = ex_dwt_cyccnt_start();
@@ -80,7 +83,7 @@ void tes_sendAndReceive(exacto_sensors_list_t sns, const uint8_t address, const 
     TES_CurTrgSens = sns;
     lthread_launch(&TES_Send_Lthread);
 }
-uint8_t tes_getSensData()
+static int runTES_getSensData_Lthread( struct lthread * self)
 {
     tes_setTickerStart();
     TES_PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
@@ -89,12 +92,13 @@ uint8_t tes_getSensData()
     enableExactoSensor(TES_CurTrgSens);
     ex_gettSpiSns(&TES_PackageToGett);
     disableExactoSensor(TES_CurTrgSens);
-    if(isXlGrDataReady(TES_CurTrgSens, TES_PackageToGett.data[0]))
-    {
-        tes_setTickerStop();
-        return 1;
-    }
+    // if(isXlGrDataReady(TES_CurTrgSens, TES_PackageToGett.data[0]))
+    // {
+        // tes_setTickerStop();
+        // return 1;
+    // }
     tes_setTickerStop();
+    TES_Send_Marker = 1;
     return 0;
 }
 static int runTES_Send_Lthread(struct lthread * self)
@@ -112,7 +116,6 @@ static int runTES_Send_Lthread(struct lthread * self)
         ex_gettSpiSns(&TES_PackageToGett);
     }
     disableExactoSensor(TES_CurTrgSens);
-    TES_Send_Marker = 1;
     // tes_setTickerStop();
     return 0;
 }
@@ -142,6 +145,7 @@ int main(int argc, char *argv[]) {
     ex_dwt_cyccnt_reset();
     printf("Start testing sensors\n");
     lthread_init(&TES_Send_Lthread, runTES_Send_Lthread);
+    lthread_init(&TES_getSensData_Lthread, runTES_getSensData_Lthread);
     tes_sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
     printf("WHOAMI test: ");
     tes_sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
@@ -165,7 +169,8 @@ int main(int argc, char *argv[]) {
         TES_Send_Marker = 0;
         // tes_sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 2);
         // while(!TES_Send_Marker){a
-        while (!tes_getSensData())
+        lthread_launch(&TES_getSensData_Lthread);
+        while (!TES_Send_Marker)
         {
         }
         
