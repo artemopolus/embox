@@ -52,7 +52,7 @@ static struct lthread TES_getSensData_Lthread;
 static struct lthread TESSB_Subcribe_Lthread;
 
 uint32_t TESSB_Send_Counter = 0;
-uint32_t TESSB_Send_Max = 20;
+uint32_t TESSB_Send_Max = 500;
 uint32_t TESSB_Recv_Counter = 0;
 
 uint8_t TESSB_PrintWindow_Max = 9;
@@ -160,11 +160,25 @@ void tessb_printWindow()
         uint8_t ctrl_value = TES_PackageToGett.data[i];
         printf(" %d | ", ctrl_value);
     }
-    printf(" Tx: %d Rx %d\n",TESSB_Send_Counter, TESSB_Recv_Counter);
+    float av = TESSB_Recv_Counter/TESSB_Send_Counter;
+    printf(" Tx: %d Rx: %d  Rx/Tx: %.6f \n",TESSB_Send_Counter, TESSB_Recv_Counter, av);
 }
 
 
 int main(int argc, char *argv[]) {
+TES_Ticker_ArraySz = 0;
+TES_Ticker_Marker = 0;
+TES_CurTrgSens_isenabled  = 0;
+TES_Send_Marker = 0;
+TESSB_Send_Counter = 0;
+TESSB_Send_Max = 500;
+TESSB_Recv_Counter = 0;
+TESSB_PrintWindow_Max = 9;
+TESSB_PrintWindow_Counter = 0;
+TESSB_PrintWindow_Marker = 0;
+TESSB_subscribe_Marker = 0;
+
+
     ex_dwt_cyccnt_reset();
     printf("Start testing sensors\n");
     lthread_init(&TES_Send_Lthread, runTES_Send_Lthread);
