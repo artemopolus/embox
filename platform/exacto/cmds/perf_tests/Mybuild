@@ -46,3 +46,22 @@ module ex_sensor{
 	depends third_party.bsp.stmf1cube.cube
 
 }
+@AutoCmd
+@Cmd(name="test_ex_sns_sender_smpl", help=" Performance test for SPI sensors  reading", man='''
+AUTHOR Kuznetcov
+''')
+module ex_sns_sender_smpl{
+	source "test_ex_sns_sender_smpl.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.cmds.tests.timbase
+	depends exacto.cmds.perf_tests.ex_utils
+	depends exacto.spi.sns_apollon
+	depends exacto.commander.data_storage
+	depends exacto.commander.sns_apollon_lib
+	depends exacto.sensors.ism330dlc
+	depends exacto.sensors.lsm303ah
+	depends third_party.bsp.stmf1cube.cube
+}
