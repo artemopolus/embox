@@ -173,7 +173,6 @@ int main(int argc, char *argv[]) {
     tes_sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
     printf("WHOAMI test: ");
     tes_sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
-    tes_printReceivedData();
     if (TES_PackageToGett.data[0] == LSM303AH_ID_XL)
         printf("Done\n");
     else
@@ -182,7 +181,6 @@ int main(int argc, char *argv[]) {
     uint8_t value = 0xC5;
     tes_sendOptions(LSM303AH, LSM303AH_CTRL1_A, value); //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
     tes_sendAndReceive(LSM303AH, LSM303AH_CTRL1_A, 2);
-    tes_printReceivedData();
     if (TES_PackageToGett.data[0] == value)
         printf("Done\n");
     else
