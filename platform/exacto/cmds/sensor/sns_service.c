@@ -439,7 +439,7 @@ static int initSnsService(void)
 #endif
     
 
-    sendOptions(LSM303AH, LSM303AH_CTRL1_A, 0x39);
+    sendOptions(LSM303AH, LSM303AH_CTRL1_A, 0xC5);
 
 #ifdef PRINT_ON
     printf("lsm303 data read\n");

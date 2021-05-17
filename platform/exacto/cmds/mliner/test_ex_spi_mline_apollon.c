@@ -33,6 +33,8 @@ uint8_t TESMA_ReceivedData[TESMA_DATA_MESSAGE_SIZE] = { 0};
 
 static struct lthread TESMA_DownloadData_Lthread;
 uint8_t               TESMA_DownloadData_Marker = 0;
+uint8_t               TESMA_DownloadData_Counter = 0;
+uint8_t               TESMA_DownloadData_Max = 9;
 
 void executeSpiTxRxStage();
 
@@ -86,7 +88,8 @@ void printBufferData()
         convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
         printf("%d\t", value);
     }
-    printf("\nExDtBfCounter: %d SpiOn: %d Tx: %d Rx: %d\n", ExDtBfCounter, TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
+    printf("\n");
+    printf("ExDtBfCounter: %d| SpiOn: %d| Tx: %d| Rx: %d|\n", ExDtBfCounter, TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
 #endif
     return; 
 }
@@ -105,7 +108,15 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
 
 void executeSpiTxRxStage()
 {
-    lthread_launch(&TESMA_DownloadData_Lthread );
+    if (TESMA_DownloadData_Counter < TESMA_DownloadData_Max)
+    {
+        TESMA_DownloadData_Counter++;
+    }
+    else
+    {
+        lthread_launch(&TESMA_DownloadData_Lthread );
+        TESMA_DownloadData_Counter = 0;
+    }
 
     if (ex_checkGpio())
     {
