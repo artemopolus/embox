@@ -84,3 +84,26 @@ module ex_sns_sender_bs{
 	depends exacto.sensors.lsm303ah
 	depends third_party.bsp.stmf1cube.cube
 }
+@AutoCmd
+@Cmd(name="test_ex_sd_print", help=" Performance test for SD printer", man='''
+AUTHOR Kuznetcov
+''')
+module ex_sd_print{
+	source "test_ex_sd_print.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.cmds.tests.timbase
+
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.data_storage
+	depends exacto.spi.mliner_afina
+	depends exacto.afina.gpio.gpio_spi
+	depends exacto.commander.filemanager
+	depends exacto.sensors.datatools
+
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends exacto.cmds.perf_tests.ex_utils
+}

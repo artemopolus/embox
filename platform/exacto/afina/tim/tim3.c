@@ -91,4 +91,7 @@ uwPrescalerValue = (uint32_t)((SystemCoreClock / 2) / 10000) - 1;
   ex_initSubscribeEvents(ExTimServicesInfo, ExTimServices);  
   return 0;
 }
+void ex_setFreqHz(const uint32_t target_freq)
+{
 
+}
