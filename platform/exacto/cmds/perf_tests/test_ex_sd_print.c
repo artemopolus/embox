@@ -58,8 +58,8 @@ static void * runTESP_PrintToSD_Thread(void * arg)
 
     while(1)
     {
-        mutex_lock(&TESP_PrintToSD_Mutex);
         ex_saveToFile(test_string, sizeof(test_string));
+        mutex_lock(&TESP_PrintToSD_Mutex);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
     }    
@@ -69,7 +69,6 @@ static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
 {
     // start:
     // mutex_retry:
-    // printk("Light thread run\n");
 	if (mutex_trylock_lthread(self, &TESP_WindowPrinter_Mutex) == -EAGAIN) {
         // return lthread_yield(&&start, &&mutex_retry);
         return 0;
@@ -82,11 +81,12 @@ static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
 }
 static void * runTESP_WindowPrinter_Thread(void * arg)
 {
+    printf("Start reporter!\n\n\n");
     while(1)
     {
+        mutex_lock(&TESP_WindowPrinter_Mutex);
         printf("\033[A\33[2K\r");
         printf("Counter: %d\n", TESP_TimReceiver_Buffer);
-        mutex_lock(&TESP_WindowPrinter_Mutex);
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
         mutex_unlock(&TESP_WindowPrinter_Mutex);
     }
@@ -146,16 +146,13 @@ int main(int argc, char *argv[]) {
     while(!TESP_Subscribe_Marker)
     {
     }
+    printf("Subscribing is done\n");
 
     thread_launch(TESP_PrintToSD_Thread);
-    thread_join(TESP_PrintToSD_Thread,NULL);
 
     thread_launch(TESP_WindowPrinter_Thread);
+    thread_join(TESP_PrintToSD_Thread,NULL);
     thread_join(TESP_WindowPrinter_Thread, NULL);
 
-    while(1)
-    {
-
-    }
     return 0;
 }
