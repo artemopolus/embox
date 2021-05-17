@@ -57,3 +57,18 @@ module spi_txrx {
 	depends exacto.apollon.tim.tim3
 	
 }
+@AutoCmd
+@Cmd(name="test_ex_spi_mline", help=" Test for MLINE ", man='''
+AUTHOR Kuznetcov
+''')
+module ex_spi_mline_apollon {
+	source "test_ex_spi_mline_apollon.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.data_storage
+	depends exacto.spi.mliner_apollon
+	depends exacto.apollon.gpio.gpio_spi
+	depends exacto.apollon.tim.tim3
+}
