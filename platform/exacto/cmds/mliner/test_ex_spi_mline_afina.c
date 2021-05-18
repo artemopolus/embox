@@ -61,6 +61,7 @@ int16_t TESMAF_ReceivedData_Data[TESMAF_RECEIVED_DATA_SZ] = {0};
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     start:
+    printk("&");
     disableMasterSpiDma();
     ex_disableGpio();
     ex_enableGpio();
@@ -82,10 +83,10 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
             ex_convertUint8ToUint64(&TESMAF_ReceivedData[start_point], &TESMAF_ReceivedData_Counter);
             for (uint8_t i = 0; i < 6; i++)
             {
-                ex_convertUint8ToInt16(&TESMAF_ReceivedData[start_point + 4 + i], &TESMAF_ReceivedData_Data[i]);
+                ex_convertUint8ToInt16(&TESMAF_ReceivedData[start_point + 4 + 2*i], &TESMAF_ReceivedData_Data[i]);
             }
             TESMAF_WindowPrinter_Marker = 2;
-            lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
+            // lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
         }
     }
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
@@ -157,6 +158,8 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
     {
         mutex_lock(&TESP_WindowPrinter_Mutex);
         printf("\033[A\33[2K\r");
+        printf("\033[A\33[2K\r");
+        printf("\033[A\33[2K\r");
         printf("Tim: %d Input: %d\n", TESP_TimReceiver_Buffer, TESMAF_ReceivedData_Counter);
         printf("Data:\n");
         for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
@@ -175,7 +178,9 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
 static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 {
     TESP_TimReceiver_Counter++;
+    // printk("+");
     // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+    updateMline();
     if (TESP_WindowPrinter_Counter < TESP_WindowPrinter_Max)
     {
         TESP_WindowPrinter_Counter++;
@@ -183,7 +188,8 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
     else
     {
         TESP_WindowPrinter_Counter = 0;
-        // lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
+        // printk("i\n");
+        lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
         if (TESMAF_WindowPrinter_Marker == 0)
             TESMAF_WindowPrinter_Marker = 1;
     }
@@ -231,6 +237,8 @@ int main(int argc, char *argv[]) {
     {
     }
     printf("Subscribing is done\n");
+
+    printk("+ -- tim run\ni -- win run\n& -- exdtst run\n");
 
     thread_launch(TESP_PrintToSD_Thread);
 
