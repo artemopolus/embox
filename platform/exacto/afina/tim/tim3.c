@@ -93,5 +93,23 @@ uwPrescalerValue = (uint32_t)((SystemCoreClock / 2) / 10000) - 1;
 }
 void ex_setFreqHz(const uint32_t target_freq)
 {
-
+  uint32_t value = 100;
+  switch (target_freq)
+  {
+    case 100:
+      value = 100000;
+      break;
+    case 200:
+      value = 500000;
+      break;
+    default:
+      return;
+      break;
+  }
+  HAL_TIM_Base_Stop_IT(&TimHandle);
+  TimHandle.Init.Period = value - 1;
+  if (HAL_TIM_Base_Init(&TimHandle) != HAL_OK)
+  {}
+  if (HAL_TIM_Base_Start_IT(&TimHandle) != HAL_OK)
+  {}
 }

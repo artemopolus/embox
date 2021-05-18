@@ -117,6 +117,9 @@ int main(int argc, char *argv[]) {
     }
     switch (value)
     {
+    case 100:
+        ex_setFreqHz(100);
+        break;
     case 200:
         ex_setFreqHz(200);
         break;
