@@ -97,10 +97,10 @@ void ex_setFreqHz(const uint32_t target_freq)
   switch (target_freq)
   {
     case 100:
-      value = 100000;
+      value = 100;
       break;
     case 200:
-      value = 500000;
+      value = 50;
       break;
     default:
       return;
