@@ -152,6 +152,7 @@ uint8_t ex_subscribeTim(int (*run)(struct lthread *))
 {
   if (!ExTim_Base_Marker)
   {
+    ExTim_Base_Marker = 1;
     lthread_init(&ExTim_Base_Lthread, run);
     return 0;
   }
