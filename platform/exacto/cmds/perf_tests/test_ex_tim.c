@@ -117,14 +117,41 @@ int main(int argc, char *argv[]) {
     }
     switch (value)
     {
+    case 10:
+        ex_setFreqHz(10);
+        break;
+    case 50:
+        ex_setFreqHz(50);
+        break;
     case 100:
         ex_setFreqHz(100);
         break;
     case 200:
         ex_setFreqHz(200);
         break;
-    
+    case 400:
+        ex_setFreqHz(400);
+        break;
+    case 800:
+        ex_setFreqHz(800);
+        break;
+    case 1000:
+        ex_setFreqHz(1000);
+        break;
+    case 1600:
+        ex_setFreqHz(1600);
+        break;
+    case 2000:
+        ex_setFreqHz(2000);
+        break;
+    case 3200:
+        ex_setFreqHz(3200);
+        break;
+    case 6400:
+        ex_setFreqHz(6400);
+        break;
     default:
+        printf("This value is not allowed\n");
         break;
     }
     ex_dwt_cyccnt_reset();

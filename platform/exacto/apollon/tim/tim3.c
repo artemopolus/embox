@@ -100,7 +100,47 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
 STATIC_IRQ_ATTACH(29, tim_irq_handler, NULL);
 void ex_setFreqHz(const uint32_t target_freq)
 {
-  uint32_t InitialAutoreload = __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM3), target_freq);
+  uint32_t value = 100;
+  switch (target_freq)
+  {
+    case 10:
+      value = 10;
+      break;
+    case 50:
+      value = 50;
+      break;
+    case 100:
+      value = 100;
+      break;
+    case 200:
+      value = 200;
+      break;
+    case 400:
+      value = 400;
+      break;
+    case 800:
+      value = 800;
+      break;
+    case 1000:
+      value = 1000;
+      break;
+    case 1600:
+      value = 1600;
+      break;
+    case 2000:
+      value = 2000;
+      break;
+    case 3200:
+      value = 3200;
+      break;
+    case 6400:
+      value = 6400;
+      break;
+    default:
+      return;
+      break;
+  }
+  uint32_t InitialAutoreload = __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM3), value);
   LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
   LL_TIM_GenerateEvent_UPDATE(TIM3);
 }
