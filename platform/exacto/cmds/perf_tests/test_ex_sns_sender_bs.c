@@ -166,17 +166,74 @@ void tessb_printWindow()
 
 
 int main(int argc, char *argv[]) {
-TES_Ticker_ArraySz = 0;
-TES_Ticker_Marker = 0;
-TES_CurTrgSens_isenabled  = 0;
-TES_Send_Marker = 0;
-TESSB_Send_Counter = 0;
-TESSB_Send_Max = 500;
-TESSB_Recv_Counter = 0;
-TESSB_PrintWindow_Max = 9;
-TESSB_PrintWindow_Counter = 0;
-TESSB_PrintWindow_Marker = 0;
-TESSB_subscribe_Marker = 0;
+    TES_Ticker_ArraySz = 0;
+    TES_Ticker_Marker = 0;
+    TES_CurTrgSens_isenabled  = 0;
+    TES_Send_Marker = 0;
+    TESSB_Send_Counter = 0;
+    TESSB_Send_Max = 500;
+    TESSB_Recv_Counter = 0;
+    TESSB_PrintWindow_Max = 9;
+    TESSB_PrintWindow_Counter = 0;
+    TESSB_PrintWindow_Marker = 0;
+    TESSB_subscribe_Marker = 0;
+    int value_input = 0;
+    if (argc > 1)
+    {
+        value_input = atoi(argv[1]); 
+        printf("value: %d",value_input);
+    }
+    else
+    {
+        printf("Specify value!\n");
+        return 0;
+    }
+    switch (value_input)
+    {
+    case 10:
+        ex_setFreqHz(10);
+        break;
+    case 50:
+        ex_setFreqHz(50);
+        break;
+    case 100:
+        ex_setFreqHz(100);
+        break;
+    case 200:
+        TESSB_PrintWindow_Max = 20 - 1;
+        TESSB_Send_Max = 1000;
+        ex_setFreqHz(200);
+        break;
+    case 400:
+        TESSB_PrintWindow_Max = 40 - 1;
+        TESSB_Send_Max = 2000;
+        ex_setFreqHz(400);
+        break;
+    case 800:
+        TESSB_PrintWindow_Max = 80 - 1;
+        TESSB_Send_Max = 4000;
+        ex_setFreqHz(800);
+        break;
+    case 1000:
+        TESSB_PrintWindow_Max = 80 - 1;
+        TESSB_Send_Max = 4000;
+        ex_setFreqHz(1000);
+        break;
+    case 1600:
+        TESSB_PrintWindow_Max = 160 - 1;
+        TESSB_Send_Max = 8000;
+        ex_setFreqHz(1600);
+        break;
+    case 2000:
+        TESSB_PrintWindow_Max = 160 - 1;
+        TESSB_Send_Max = 8000;
+        ex_setFreqHz(2000);
+        break;
+    default:
+        printf("This value is not allowed\n");
+        return 0;
+        break;
+    }
 
 
     ex_dwt_cyccnt_reset();
