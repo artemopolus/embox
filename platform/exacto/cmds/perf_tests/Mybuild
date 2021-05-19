@@ -24,6 +24,21 @@ module ex_tim{
 
 }
 @AutoCmd
+@Cmd(name="test_ex_tim_q", help=" Performance test for TIM ", man='''
+AUTHOR Kuznetcov
+''')
+module ex_tim_q{
+	source "test_ex_tim_q.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	depends exacto.cmds.tests.timbase
+	depends exacto.cmds.perf_tests.ex_utils
+
+}
+@AutoCmd
 @Cmd(name="test_ex_sensor", help=" Performance test for SPI sensors ", man='''
 AUTHOR Kuznetcov
 ''')
