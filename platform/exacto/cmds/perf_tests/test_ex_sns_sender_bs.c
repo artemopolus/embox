@@ -178,6 +178,7 @@ int main(int argc, char *argv[]) {
     TESSB_PrintWindow_Marker = 0;
     TESSB_subscribe_Marker = 0;
     int value_input = 0;
+    uint8_t value_sns_option = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
     if (argc > 1)
     {
         value_input = atoi(argv[1]); 
@@ -191,25 +192,33 @@ int main(int argc, char *argv[]) {
     switch (value_input)
     {
     case 10:
+        TESSB_PrintWindow_Max = 0;
+        TESSB_Send_Max = 50;
         ex_setFreqHz(10);
         break;
     case 50:
+        TESSB_PrintWindow_Max = 10 - 1;
+        TESSB_Send_Max = 100;
         ex_setFreqHz(50);
         break;
     case 100:
+        value_sns_option = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
         ex_setFreqHz(100);
         break;
     case 200:
+        value_sns_option = 0xD5;//1101 01 0 1 : 200 Hz 16g HF_ODR= 0 BDU=1
         TESSB_PrintWindow_Max = 20 - 1;
         TESSB_Send_Max = 1000;
         ex_setFreqHz(200);
         break;
     case 400:
+        value_sns_option = 0xE5;//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
         TESSB_PrintWindow_Max = 40 - 1;
         TESSB_Send_Max = 2000;
         ex_setFreqHz(400);
         break;
     case 800:
+        value_sns_option = 0xF5;//1111 01 0 1 : 800 Hz 16g HF_ODR= 0 BDU=1
         TESSB_PrintWindow_Max = 80 - 1;
         TESSB_Send_Max = 4000;
         ex_setFreqHz(800);
@@ -220,6 +229,7 @@ int main(int argc, char *argv[]) {
         ex_setFreqHz(1000);
         break;
     case 1600:
+        value_sns_option = 0x57;//0101 01 1 1 : 1600 Hz 16g HF_ODR= 1 BDU=1
         TESSB_PrintWindow_Max = 160 - 1;
         TESSB_Send_Max = 8000;
         ex_setFreqHz(1600);
@@ -249,10 +259,9 @@ int main(int argc, char *argv[]) {
     else
         printf("Failed\n");
     printf("Set option test: ");
-    uint8_t value = 0xC5;
-    tes_sendOptions(LSM303AH, LSM303AH_CTRL1_A, value); //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+    tes_sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option); 
     tes_sendAndReceive(LSM303AH, LSM303AH_CTRL1_A, 2);
-    if (TES_PackageToGett.data[0] == value)
+    if (TES_PackageToGett.data[0] == value_sns_option)
         printf("Done\n");
     else
         printf("Failed\n");
