@@ -97,12 +97,24 @@ static int runTET_TimReceiver_Lthread(struct  lthread * self)
 }
 static int runTET_Subcribe_Lthread( struct lthread * self)
 {
+    if (TET_subscribe_Marker)
+        return 0;
     uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTET_TimReceiver_Lthread);
     if (result == 0)
         TET_subscribe_Marker = 1;
     return 0;
 }
 int main(int argc, char *argv[]) {
+    TET_print_Marker = 0;
+    TET_TimEvent_Counter = 0;
+    TET_TimEvent_Buffer = 0;
+    TET_TimEvent_Max = 50;
+    TET_PrintEvent_Max = 0;
+    TET_PrintEvent_Counter = 0;
+    TET_Ticker_ResultPlus = 0,
+    TET_Ticker_BufferPlus = 0;
+    TET_Ticker_Marker = 0;
+    TET_Ticker_ArraySz = 0;
     printf("Testing command for TIM\nYou can use following values:\n 10, 50, 100, 200, 400, 800, 1000, 2000\n");
     int value = 0;
     if (argc > 1)
@@ -127,31 +139,48 @@ int main(int argc, char *argv[]) {
         ex_setFreqHz(100);
         break;
     case 200:
+        TET_PrintEvent_Max = 19;
+        TET_TimEvent_Max = 100;
         ex_setFreqHz(200);
         break;
     case 400:
+        TET_PrintEvent_Max = 39;
+        TET_TimEvent_Max = 200;
         ex_setFreqHz(400);
         break;
     case 800:
+        TET_PrintEvent_Max = 79;
+        TET_TimEvent_Max = 400;
         ex_setFreqHz(800);
         break;
     case 1000:
+        TET_PrintEvent_Max = 79;
+        TET_TimEvent_Max = 400;
         ex_setFreqHz(1000);
         break;
     case 1600:
+        TET_PrintEvent_Max = 159;
+        TET_TimEvent_Max = 800;
         ex_setFreqHz(1600);
         break;
     case 2000:
+        TET_PrintEvent_Max = 159;
+        TET_TimEvent_Max = 800;
         ex_setFreqHz(2000);
         break;
     case 3200:
+        TET_PrintEvent_Max = 319;
+        TET_TimEvent_Max = 1600;
         ex_setFreqHz(3200);
         break;
     case 6400:
+        TET_PrintEvent_Max = 639;
+        TET_TimEvent_Max = 3200;
         ex_setFreqHz(6400);
         break;
     default:
         printf("This value is not allowed\n");
+        return 0;
         break;
     }
     ex_dwt_cyccnt_reset();
