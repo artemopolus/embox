@@ -15,6 +15,8 @@
 #define EXACTOLINK_START_DATA_POINT_VAL 7
 #define EXACTOLINK_PCK_ID 17
 
+#define EXACTO_DATA_STORAGE_SZ 64
+
 #include <stdint.h>
 // typedef enum{
 //     APPEND = 0,
@@ -48,6 +50,7 @@ typedef struct {
     thread_control_result_t result;
     thread_type_t type;
     uint8_t isready;
+    exacto_output_state_t state;
     // function_list_t fun_type;
 }thread_control_t;
 

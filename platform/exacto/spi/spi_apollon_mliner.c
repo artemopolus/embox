@@ -19,7 +19,6 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
-#include "commander/exacto_data_storage.h"
 
 
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE SPI_MLINER_BUFFER_SIZE
@@ -249,7 +248,14 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
         // grbfst_exbu8(&_trg_thread->datastorage, &value);
         // SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     // }
-    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
+    switch (_trg_thread->state)
+    {
+    case EX_SMPL:
+        grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
+        break;
+    default:
+        break;
+    }
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);

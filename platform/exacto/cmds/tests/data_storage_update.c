@@ -11,6 +11,8 @@ int main(int argc, char *argv[]) {
 
     uint8_t test_buffer[] = "hello there plz\n";
     setDataToExactoDataStorage(test_buffer, sizeof(test_buffer), EXACTO_INIT);
+    setDataToExactoDataStorage(test_buffer, sizeof(test_buffer), EXACTO_INIT);
+    setDataToExactoDataStorage(test_buffer, sizeof(test_buffer), EXACTO_INIT);
     transmitExactoDataStorage();
     printf("Done\n");
     return 0;

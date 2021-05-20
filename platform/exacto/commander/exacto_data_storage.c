@@ -147,6 +147,7 @@ static int initExactoDataStorage(void)
         ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
         ExOutputStorage[i].isready = 0;
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
+        ExOutputStorage[i].state = ExDt_Output_state;
         setini_exbu8(&ExOutputStorage[i].datastorage);
     }
     for (uint8_t i = 0 ; i < ExDataStorageServicesInfo.max_count; i++)
@@ -198,7 +199,17 @@ uint8_t receiveExactoDataStorage()
 }
 uint8_t clearExactoDataStorage()
 {
-    setemp_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+    switch ( ExDt_Output_state   )
+    {
+    case EX_SMPL:
+        setemp_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+        break;
+    case EX_DIRECT:
+        ExDt_Output_pt = 0;
+        break;
+    default:
+        break;
+    }
     return 0;
 }
 void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, const uint16_t length)
@@ -261,11 +272,11 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thre
     case EX_DIRECT:
         if(ExDt_Output_IsEnabled)
         {
-            for (uint8_t i = 0; i < datacount; i++)
+            for (uint8_t i = 0; (i < datacount)&&((ExDt_Output_pt + i) < EXACTO_DATA_STORAGE_SZ); i++)
             {
                 ExDt_Output_Buffer[ExDt_Output_pt + i] = data[i];
             }
-            
+            ExDt_Output_pt += datacount;
         }
 
         break;

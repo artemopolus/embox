@@ -1,8 +1,9 @@
 #ifndef SPI_MLINER_H
 #define SPI_MLINER_H
 #include <stdint.h>
+#include "commander/exacto_data_storage.h"
 
-#define SPI_MLINER_BUFFER_SIZE 64
+#define SPI_MLINER_BUFFER_SIZE EXACTO_DATA_STORAGE_SZ
 
 extern void SPI1_FULL_DMA_SetEnabled();
 extern void disableMasterSpiDma();
