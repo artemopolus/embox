@@ -154,6 +154,7 @@ static int SPI2_FULL_DMA_init(void)
     if(!ExDt_Output_IsEnabled)
     {
         ExDt_Output_Buffer = SPI2_FULL_DMA_tx_buffer.dt_buffer;
+        ExDt_Output_IsEnabled = 1;
     }
 
     /* embox specific section  */
