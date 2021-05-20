@@ -150,6 +150,12 @@ static int SPI2_FULL_DMA_init(void)
     ExOutputStorage[THR_SPI_TX].isready = 1;
     lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI2_FULL_DMA_receive);
     ExOutputStorage[THR_SPI_RX].isready = 0;
+
+    if(!ExDt_Output_IsEnabled)
+    {
+        ExDt_Output_Buffer = SPI2_FULL_DMA_tx_buffer.dt_buffer;
+    }
+
     /* embox specific section  */
     //enable hardware for SPI and DMA
     // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive

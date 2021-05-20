@@ -2,6 +2,11 @@
 #include <embox/unit.h>
 // #include "blink/blinker.h"
 
+uint8_t * ExDt_Output_Buffer= NULL;
+uint8_t   ExDt_Output_IsEnabled = 0;
+uint16_t  ExDt_Output_pt = 0;
+
+exacto_output_state_t ExDt_Output_state = EX_DIRECT;
 
 /**
  * @brief store info and data about external input
@@ -239,16 +244,34 @@ thread_control_result_t getStateExactoDataStorage()
 }
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result)
 {
-    if (result == THR_CTRL_INIT)
+    switch (ExDt_Output_state)
     {
-        clearExactoDataStorage();
-        setHeaderExactoDataStorage(1,1,64);
+    case EX_SMPL:
+        if (result == THR_CTRL_INIT)
+        {
+            clearExactoDataStorage();
+            setHeaderExactoDataStorage(1,1,64);
+        }
+        for (uint8_t i = 0; i < datacount; i++)
+        {
+            pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
+        }
+        ExOutputStorage[THR_SPI_TX].result = result;
+        break;
+    case EX_DIRECT:
+        if(ExDt_Output_IsEnabled)
+        {
+            for (uint8_t i = 0; i < datacount; i++)
+            {
+                ExDt_Output_Buffer[ExDt_Output_pt + i] = data[i];
+            }
+            
+        }
+
+        break;
+    default:
+        break;
     }
-    for (uint8_t i = 0; i < datacount; i++)
-    {
-        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
-    }
-    ExOutputStorage[THR_SPI_TX].result = result;
     return 0;
 }
 uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length)

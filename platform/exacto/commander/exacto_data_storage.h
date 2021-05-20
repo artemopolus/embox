@@ -21,7 +21,10 @@
 //     GET,
 //     CHECK
 // }function_list_t;
-
+typedef enum{
+    EX_SMPL = 0,
+    EX_DIRECT
+}exacto_output_state_t;
 
 typedef enum t_c_r_t{
     THR_CTRL_OK = 0,
@@ -65,6 +68,9 @@ typedef enum{
     EXACTO_DENY,
     EXACTO_ERROR
 }exacto_process_result_t;
+
+extern uint8_t * ExDt_Output_Buffer;
+extern uint8_t   ExDt_Output_IsEnabled;
 
 extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
