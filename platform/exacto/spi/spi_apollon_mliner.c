@@ -257,6 +257,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
         break;
     }
     _trg_thread->isready = 0;
+    _trg_thread->result = THR_CTRL_OK;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
     return 0;

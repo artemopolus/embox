@@ -6,6 +6,7 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_buffer.h"
 #include "commander/exacto_services.h"
+// #include "commander/exacto_sns_ctrl.h"
 
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_OUTPUT_TYPES_SZ 4
@@ -18,11 +19,11 @@
 #define EXACTO_DATA_STORAGE_SZ 64
 
 #include <stdint.h>
-// typedef enum{
-//     APPEND = 0,
-//     GET,
-//     CHECK
-// }function_list_t;
+typedef enum{
+    EX_XL_LSM303AH = 0,
+    EX_XL_ISM330DLC,
+    EX_GR_ISM330DLC
+}exacto_dtstr_types_t;
 typedef enum{
     EX_SMPL = 0,
     EX_DIRECT
@@ -88,6 +89,10 @@ extern uint8_t receiveExactoDataStorage();
 extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);
 extern uint8_t clearExactoDataStorage();
 extern thread_control_result_t getStateExactoDataStorage();
+
+extern uint8_t ex_setData_ExactoDtStr(uint8_t * data, const uint16_t data_length, uint64_t data_counter, exacto_dtstr_types_t type);
+extern uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length, exacto_dtstr_types_t type);
+
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result);
 extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);

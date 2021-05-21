@@ -50,6 +50,8 @@ module storage_run{
 }
 module sns_service{
     source "sns_service.c"
+	@IncludeExport(path="")
+    source "sns_service.h"
 	depends embox.kernel.lthread.lthread
 	
 	depends exacto.spi.sns_apollon

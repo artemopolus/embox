@@ -9,6 +9,7 @@
 #include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
 #include "tim/tim.h"
+#include "sns_service.h"
 
 #define SPI_TXRX_PRINT_ON
 
@@ -62,34 +63,34 @@ void printBufferData()
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
-    uint8_t length = TESMA_DATA_MESSAGE_SIZE;
-    uint8_t start_point = 4;
-    for (uint8_t i = 0; i < TESMA_DATA_MESSAGE_SIZE; i++)
-    {
-        printf("%#04x|",TESMA_ReceivedData[i]);
-        if (i < (TESMA_DATA_MESSAGE_SIZE - 4))
-        {
-            if ((TESMA_ReceivedData[i]== 0x05)&&(TESMA_ReceivedData[i+1]== 0x05)&&(TESMA_ReceivedData[i+2]== 0x05)&&(TESMA_ReceivedData[i+3]== 0x05))
-            {
-                length = i;
-            }
-        }
-    }
-    printf("\n");
-    start_point = TESMA_ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
+    // uint8_t length = TESMA_DATA_MESSAGE_SIZE;
+    // uint8_t start_point = 4;
+    // for (uint8_t i = 0; i < TESMA_DATA_MESSAGE_SIZE; i++)
+    // {
+    //     printf("%#04x|",TESMA_ReceivedData[i]);
+    //     if (i < (TESMA_DATA_MESSAGE_SIZE - 4))
+    //     {
+    //         if ((TESMA_ReceivedData[i]== 0x05)&&(TESMA_ReceivedData[i+1]== 0x05)&&(TESMA_ReceivedData[i+2]== 0x05)&&(TESMA_ReceivedData[i+3]== 0x05))
+    //         {
+    //             length = i;
+    //         }
+    //     }
+    // }
+    // printf("\n");
+    // start_point = TESMA_ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
 
-    uint64_t ExDtBfCounter = 0;
+    // uint64_t ExDtBfCounter = 0;
 
-    convertUint8ToUint64(&TESMA_ReceivedData[start_point],&ExDtBfCounter);
-    printf("\nData output: %d\n", length);
-    for (uint8_t i = start_point  + 4; i < length; i+=2)
+    // convertUint8ToUint64(&TESMA_ReceivedData[start_point],&ExDtBfCounter);
+    printf("\nData output: %d\n", TESMA_DATA_MESSAGE_SIZE);
+    for (uint8_t i = 0; i < TESMA_DATA_MESSAGE_SIZE; i+=2)
     {
         int16_t value;
         convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
         printf("%d\t", value);
     }
     printf("\n");
-    printf("ExDtBfCounter: %d| SpiOn: %d| Tx: %d| Rx: %d|\n", ExDtBfCounter, TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
+    printf("SpiOn: %d| Tx: %d| Rx: %d|\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
 #endif
     return; 
 }
@@ -98,7 +99,8 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
 {
     if(!TESMA_DownloadData_Marker)
     {
-        getMailFromExactoDataStorage(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE);
+        // getMailFromExactoDataStorage(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE);
+        ex_getPack_ExactoDtStr(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE, EX_XL_LSM303AH);
         TESMA_DownloadData_Marker = 1;
         TESMA_Rx_Buffer = TESMA_Rx_Counter;
         TESMA_Tx_Buffer = TESMA_Tx_Counter;
@@ -147,7 +149,15 @@ void executeSpiTxRxStage()
 }
 
 int main(int argc, char *argv[]) {
-
+    uint16_t work_freq = 100;
+    if (argc > 1)
+    {
+        work_freq = atoi(argv[1]); 
+        printf("value: %d", work_freq);
+    }
+    else
+    {
+    }
 #ifdef SPI_TXRX_PRINT_ON
     printf("Start Full Duplex SPI\n");
 #endif
@@ -159,9 +169,17 @@ int main(int argc, char *argv[]) {
     printf("Run cycle for checking:\n");
 #endif
 //=================================================================================================
-    ex_stopTimerTIM();
-    ex_startTimerTIM();
-    
+   switch (work_freq)
+   {
+   case 100:
+        ex_setFreqHz_SnsService(100, EX_SNSS_ONLY_ACC);
+       break;
+   case 200:
+        ex_setFreqHz_SnsService(200, EX_SNSS_ONLY_ACC);
+       break;
+   default:
+       break;
+   } 
 //=================================================================================================
     if (ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESMA_TimReceiver_Lthread))
         return 1;

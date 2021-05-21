@@ -14,6 +14,7 @@
 // #include <asm/arm_m_regs.h>
 #include "sensors/ism330dlc_reg.h"
 #include "sensors/lsm303ah_reg.h"
+#include "sns_service.h"
 
 // #define PRINT_ON
 #define PRINT_TICKER_MAX 9 
@@ -59,6 +60,7 @@ typedef struct{
     uint16_t datalen;
     uint16_t pt2buffer;
     uint8_t shift;
+    exacto_dtstr_types_t sns_type;
 }ex_sns_cmds_t;
 typedef struct{
     struct lthread thread;
@@ -253,16 +255,16 @@ static int runSendAndUploadThread(struct lthread * self)
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
     uint16_t enabled = 0;
-    uint8_t counter_tmp;
-    counter_tmp = (uint8_t)(SensorTickerCounter );
-    Header[0] = counter_tmp; 
-    counter_tmp = (uint8_t)(SensorTickerCounter >> 8); 
-    Header[1] = counter_tmp; 
-    counter_tmp = (uint8_t)(SensorTickerCounter >> 16); 
-    Header[2] = counter_tmp; 
-    counter_tmp = (uint8_t)(SensorTickerCounter >> 24); 
-    Header[3] = counter_tmp; 
-    setDataToExactoDataStorage(Header, 4, THR_CTRL_INIT); 
+    // uint8_t counter_tmp;
+    // counter_tmp = (uint8_t)(SensorTickerCounter );
+    // Header[0] = counter_tmp; 
+    // counter_tmp = (uint8_t)(SensorTickerCounter >> 8); 
+    // Header[1] = counter_tmp; 
+    // counter_tmp = (uint8_t)(SensorTickerCounter >> 16); 
+    // Header[2] = counter_tmp; 
+    // counter_tmp = (uint8_t)(SensorTickerCounter >> 24); 
+    // Header[3] = counter_tmp; 
+    // setDataToExactoDataStorage(Header, 4, THR_CTRL_INIT); 
 
     for (uint16_t i = 0; i < count; i++)
     {
@@ -272,6 +274,7 @@ static int runSendAndUploadThread(struct lthread * self)
             uint16_t datalen = trg->sns[i].datalen;
             uint16_t pt = trg->sns[i].pt2buffer;
             uint8_t shift = trg->sns[i].shift;
+            exacto_dtstr_types_t sns_type = trg->sns[i].sns_type;
             PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
             PackageToGett.cmd = cmd;
             PackageToGett.datalen = datalen;
@@ -281,12 +284,14 @@ static int runSendAndUploadThread(struct lthread * self)
             if(isXlGrDataReady(sns, PackageToGett.data[0]))
             {
                 uploadRecevedData(pt, shift, datalen);
-                setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
+                // setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
+
+                ex_setData_ExactoDtStr( &PackageToGett.data[shift],(datalen - shift), SensorTickerCounter, sns_type );
                 enabled++;
             }
         }
     }
-    setDataToExactoDataStorage(Ender, 4, THR_CTRL_OK); 
+    // setDataToExactoDataStorage(Ender, 4, THR_CTRL_OK); 
 
     if (enabled == count)
     {
@@ -367,12 +372,15 @@ static int initSnsService(void)
     SendAndUploadThread.sns[0].datalen = 7;
     SendAndUploadThread.sns[0].pt2buffer = 0;
     SendAndUploadThread.sns[0].shift = 1;
+    SendAndUploadThread.sns[0].sns_type = EX_XL_LSM303AH;
+
     SendAndUploadThread.sns[1].isenabled = 1;
     SendAndUploadThread.sns[1].sns = ISM330DLC;
     SendAndUploadThread.sns[1].address = ISM330DLC_STATUS_REG; 
     SendAndUploadThread.sns[1].datalen = 16;
     SendAndUploadThread.sns[1].pt2buffer = 6;
     SendAndUploadThread.sns[1].shift = 4;
+    SendAndUploadThread.sns[1].sns_type = EX_XL_ISM330DLC;
 #ifdef PRINT_ON
     printf("lsm303ah XL\n");
 #endif
@@ -459,6 +467,46 @@ static int initSnsService(void)
 
     MarkerStage = 0;
 
+    return 0;
+}
+uint8_t ex_setFreqHz_SnsService(const uint16_t freq, const exacto_output_state_t state)
+{
+    ex_stopTimerTIM();
+    uint8_t value_sns_option = 0xC5;
+    switch (freq)
+    {
+    case 10:
+        ex_setFreqHz(10);
+        break;
+    case 50:
+        ex_setFreqHz(50);
+        break;
+    case 100:
+        value_sns_option = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+        ex_setFreqHz(100);
+        break;
+    case 200:
+        value_sns_option = 0xD5;//1101 01 0 1 : 200 Hz 16g HF_ODR= 0 BDU=1
+        ex_setFreqHz(200);
+        break;
+    case 400:
+        value_sns_option = 0xE5;//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
+        ex_setFreqHz(400);
+        break;
+    case 800:
+        value_sns_option = 0xF5;//1111 01 0 1 : 800 Hz 16g HF_ODR= 0 BDU=1
+        ex_setFreqHz(800);
+        break;
+    case 1600:
+        value_sns_option = 0x57;//0101 01 1 1 : 1600 Hz 16g HF_ODR= 1 BDU=1
+        ex_setFreqHz(1600);
+        break;
+    default:
+        return 1;
+        break;
+    }
+    sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option);
+    ex_startTimerTIM();
     return 0;
 }
 // int main(int argc, char *argv[]) {

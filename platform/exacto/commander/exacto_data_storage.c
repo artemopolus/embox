@@ -5,6 +5,7 @@
 uint8_t * ExDt_Output_Buffer= NULL;
 uint8_t   ExDt_Output_IsEnabled = 0;
 uint16_t  ExDt_Output_pt = 0;
+uint64_t  ExDt_Output_Counter = 0;
 
 exacto_output_state_t ExDt_Output_state = EX_DIRECT;
 
@@ -75,7 +76,7 @@ static int resetThreadRun(struct lthread * self)
     ExDtStorage.isEmpty = 1;
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
-        ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
+        ExOutputStorage[i].result = THR_CTRL_OK;
         ExOutputStorage[i].isready = 0;
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
         setini_exbu8(&ExOutputStorage[i].datastorage);
@@ -144,7 +145,7 @@ static int initExactoDataStorage(void)
     ExOutputStorage[3].type = THR_I2C_TX;
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
-        ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
+        ExOutputStorage[i].result = THR_CTRL_OK;
         ExOutputStorage[i].isready = 0;
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
         ExOutputStorage[i].state = ExDt_Output_state;
@@ -260,7 +261,7 @@ void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, cons
         ExDt_Output_Buffer[4] = data_start_point;
         ExDt_Output_Buffer[5] = addrH;
         ExDt_Output_Buffer[6] = addrL;
-        ExDt_Output_pt = 7;
+        ExDt_Output_pt = EXACTOLINK_START_DATA_POINT_VAL;
         break;
     default:
         break;
@@ -269,6 +270,39 @@ void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, cons
 thread_control_result_t getStateExactoDataStorage()
 {
     return ExOutputStorage[THR_SPI_TX].result;
+}
+uint8_t ex_setData_ExactoDtStr(uint8_t * data, const uint16_t data_length, uint64_t data_counter, exacto_dtstr_types_t type)
+{
+    //проверка отправленных данных
+    if (ExOutputStorage[THR_SPI_TX].result == THR_CTRL_OK)
+    {
+        ExOutputStorage[THR_SPI_TX].result = THR_CTRL_WAIT;
+        //вписываем начальные значения
+        ExDt_Output_Counter++;
+    }
+    switch (ExDt_Output_state)
+    {
+    case EX_SMPL:
+        break;
+    case EX_DIRECT:
+        //data_counter можно будет использовать для подсчета потерь
+        if(ExDt_Output_IsEnabled)
+        {
+            if (type == EX_XL_LSM303AH)
+            {
+                for (uint8_t i = 0; (i < data_length)&&((ExDt_Output_pt + i) < EXACTO_DATA_STORAGE_SZ); i++)
+                {
+                    ExDt_Output_Buffer[ExDt_Output_pt + i] = data[i];
+                }
+                ExDt_Output_pt += data_length;
+            }
+        }
+
+        break;
+    default:
+        break;
+    }
+    return 0;
 }
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result)
 {
@@ -302,11 +336,40 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thre
     }
     return 0;
 }
+uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length, exacto_dtstr_types_t type)
+{
+    switch (ExDt_Output_state)
+    {
+        case EX_SMPL:
+        break;
+        case EX_DIRECT:
+        if(type == EX_XL_LSM303AH)
+        {
+            for (int i = EXACTOLINK_START_DATA_POINT_VAL; (i < ExDt_Output_pt)&&((i - EXACTOLINK_START_DATA_POINT_VAL) < receiver_length); i ++)
+            {
+                receiver[i- EXACTOLINK_START_DATA_POINT_VAL] = ExDt_Output_Buffer[i];
+            }
+        }
+        break;
+    }
+    return 0;
+}
 uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length)
 {
-    if (receiver_length < getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage))
-        return 1;
-    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver);
+    switch (ExDt_Output_state)
+    {
+        case EX_SMPL:
+            if (receiver_length < getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage))
+                return 1;
+            grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver);
+        break;
+        case EX_DIRECT:
+            for (int i = EXACTOLINK_START_DATA_POINT_VAL; (i < ExDt_Output_pt)&&((i - EXACTOLINK_START_DATA_POINT_VAL) < receiver_length); i ++)
+            {
+                receiver[i- EXACTOLINK_START_DATA_POINT_VAL] = ExDt_Output_Buffer[i];
+            }
+        break;
+    }
     return 0;
 
 }
