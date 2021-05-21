@@ -160,6 +160,7 @@ int main(int argc, char *argv[]) {
 #endif
 //=================================================================================================
     ex_stopTimerTIM();
+    ex_startTimerTIM();
     
 //=================================================================================================
     if (ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESMA_TimReceiver_Lthread))
