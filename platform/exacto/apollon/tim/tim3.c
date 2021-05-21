@@ -144,3 +144,16 @@ void ex_setFreqHz(const uint32_t target_freq)
   LL_TIM_SetAutoReload(TIM3, InitialAutoreload);
   LL_TIM_GenerateEvent_UPDATE(TIM3);
 }
+void ex_stopTimerTIM()
+{
+  LL_TIM_DisableIT_UPDATE(TIM3);
+  LL_TIM_DisableCounter(TIM3);
+
+}
+void ex_startTimerTIM()
+{
+  LL_TIM_EnableIT_UPDATE(TIM3);
+  LL_TIM_EnableCounter(TIM3);
+  LL_TIM_GenerateEvent_UPDATE(TIM3);
+
+}

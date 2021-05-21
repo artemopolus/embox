@@ -159,8 +159,8 @@ int main(int argc, char *argv[]) {
     printf("Run cycle for checking:\n");
 #endif
 //=================================================================================================
-
-
+    ex_stopTimerTIM();
+    
 //=================================================================================================
     if (ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESMA_TimReceiver_Lthread))
         return 1;

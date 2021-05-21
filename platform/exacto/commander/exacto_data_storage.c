@@ -241,13 +241,30 @@ void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, cons
     const uint8_t lenH = (uint8_t) (length << 8);
     const uint8_t lenL = (uint8_t) (length);
     const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, pck_id);             //[0]
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenH);               //[1]
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenL);               //[2]
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, type);               //[3]
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data_start_point);   //[4]
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrH);              //[5]
-    pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrL);              //[6]
+    switch ( ExDt_Output_state   )
+    {
+    case EX_SMPL:
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, pck_id);             //[0]
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenH);               //[1]
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, lenL);               //[2]
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, type);               //[3]
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data_start_point);   //[4]
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrH);              //[5]
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrL);              //[6]
+        break;
+    case EX_DIRECT:
+        ExDt_Output_Buffer[0] = pck_id;
+        ExDt_Output_Buffer[1] = lenH;
+        ExDt_Output_Buffer[2] = lenL;
+        ExDt_Output_Buffer[3] = type;
+        ExDt_Output_Buffer[4] = data_start_point;
+        ExDt_Output_Buffer[5] = addrH;
+        ExDt_Output_Buffer[6] = addrL;
+        ExDt_Output_pt = 7;
+        break;
+    default:
+        break;
+    }
 }
 thread_control_result_t getStateExactoDataStorage()
 {
