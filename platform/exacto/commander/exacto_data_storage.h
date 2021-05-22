@@ -91,7 +91,7 @@ extern uint8_t clearExactoDataStorage();
 extern thread_control_result_t getStateExactoDataStorage();
 
 extern uint8_t ex_setData_ExactoDtStr(uint8_t * data, const uint16_t data_length, uint64_t data_counter, exacto_dtstr_types_t type);
-extern uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length, exacto_dtstr_types_t type);
+extern uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length, uint16_t * pack_length, exacto_dtstr_types_t type);
 
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result);
 extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);

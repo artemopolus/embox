@@ -184,10 +184,11 @@ uint8_t initThreadExactoDataStorage( thread_control_t * base )
 }
 uint8_t transmitExactoDataStorage()
 {
-    // if (ExOutputStorage[THR_SPI_TX].isready)
-    // {
-        lthread_launch(&ExOutputStorage[THR_SPI_TX].thread);
-    // }
+    const uint8_t lenH = (uint8_t) (ExDt_Output_pt << 8);
+    const uint8_t lenL = (uint8_t) (ExDt_Output_pt);
+    ExDt_Output_Buffer[1] = lenL;
+    ExDt_Output_Buffer[2] = lenH;
+    lthread_launch(&ExOutputStorage[THR_SPI_TX].thread);
     return 0;
 }
 uint8_t receiveExactoDataStorage()
@@ -273,13 +274,23 @@ thread_control_result_t getStateExactoDataStorage()
 }
 uint8_t ex_setData_ExactoDtStr(uint8_t * data, const uint16_t data_length, uint64_t data_counter, exacto_dtstr_types_t type)
 {
-    //проверка отправленных данных
-    if (ExOutputStorage[THR_SPI_TX].result == THR_CTRL_OK)
+    //проверка отправленных данны
+    switch (  ExOutputStorage[THR_SPI_TX].result  )
     {
+    case THR_CTRL_OK:
         ExOutputStorage[THR_SPI_TX].result = THR_CTRL_WAIT;
         //вписываем начальные значения
         ExDt_Output_Counter++;
+        setHeaderExactoDataStorage(1,1,1);
+        
+        break;
+    case THR_CTRL_WAIT:
+        break;    
+    default:
+        return 1;
+        break;
     }
+
     switch (ExDt_Output_state)
     {
     case EX_SMPL:
@@ -290,11 +301,15 @@ uint8_t ex_setData_ExactoDtStr(uint8_t * data, const uint16_t data_length, uint6
         {
             if (type == EX_XL_LSM303AH)
             {
-                for (uint8_t i = 0; (i < data_length)&&((ExDt_Output_pt + i) < EXACTO_DATA_STORAGE_SZ); i++)
+                if (ExDt_Output_pt < EXACTO_DATA_STORAGE_SZ )
                 {
-                    ExDt_Output_Buffer[ExDt_Output_pt + i] = data[i];
+                    uint8_t i;
+                    for ( i = 0; (i < data_length)&&((ExDt_Output_pt + i) < EXACTO_DATA_STORAGE_SZ); i++)
+                    {
+                        ExDt_Output_Buffer[ExDt_Output_pt + i] = data[i];
+                    }
+                    ExDt_Output_pt += i;
                 }
-                ExDt_Output_pt += data_length;
             }
         }
 
@@ -336,7 +351,7 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thre
     }
     return 0;
 }
-uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length, exacto_dtstr_types_t type)
+uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length, uint16_t * pack_length, exacto_dtstr_types_t type)
 {
     switch (ExDt_Output_state)
     {
@@ -349,6 +364,7 @@ uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length
             {
                 receiver[i- EXACTOLINK_START_DATA_POINT_VAL] = ExDt_Output_Buffer[i];
             }
+            *pack_length = ExDt_Output_pt;
         }
         break;
     }

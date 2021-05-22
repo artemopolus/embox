@@ -24,6 +24,7 @@ uint32_t TESMA_Rx_Counter = 0;
 uint32_t TESMA_Rx_Buffer;
 
 
+
 uint8_t TESMA_MlineSpiEnableMarker = 0;
 
 thread_control_t TESMA_MainThread;
@@ -31,6 +32,7 @@ thread_control_t TESMA_MainThread;
 
 #define TESMA_DATA_MESSAGE_SIZE SPI_MLINER_BUFFER_SIZE
 uint8_t TESMA_ReceivedData[TESMA_DATA_MESSAGE_SIZE] = { 0};
+uint16_t TESMA_ReceivedData_Length = 0;
 
 static struct lthread TESMA_DownloadData_Lthread;
 uint8_t               TESMA_DownloadData_Marker = 0;
@@ -83,7 +85,7 @@ void printBufferData()
 
     // convertUint8ToUint64(&TESMA_ReceivedData[start_point],&ExDtBfCounter);
     printf("\nData output: %d\n", TESMA_DATA_MESSAGE_SIZE);
-    for (uint8_t i = 0; i < TESMA_DATA_MESSAGE_SIZE; i+=2)
+    for (uint8_t i = 0; i < 6; i+=2)
     {
         int16_t value;
         convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
@@ -91,6 +93,7 @@ void printBufferData()
     }
     printf("\n");
     printf("SpiOn: %d| Tx: %d| Rx: %d|\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
+    printf("Len: %d\n",TESMA_ReceivedData_Length);
 #endif
     return; 
 }
@@ -100,7 +103,7 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
     if(!TESMA_DownloadData_Marker)
     {
         // getMailFromExactoDataStorage(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE);
-        ex_getPack_ExactoDtStr(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE, EX_XL_LSM303AH);
+        ex_getPack_ExactoDtStr(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE, &TESMA_ReceivedData_Length, EX_XL_LSM303AH);
         TESMA_DownloadData_Marker = 1;
         TESMA_Rx_Buffer = TESMA_Rx_Counter;
         TESMA_Tx_Buffer = TESMA_Tx_Counter;
