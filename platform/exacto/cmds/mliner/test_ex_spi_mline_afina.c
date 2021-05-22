@@ -56,7 +56,8 @@ static struct mutex     TESMAF_CheckExactoStorage_Mutex;
 
 uint64_t TESMAF_ReceivedData_Counter = 0;
 #define TESMAF_RECEIVED_DATA_SZ 6
-int16_t TESMAF_ReceivedData_Data[TESMAF_RECEIVED_DATA_SZ] = {0};
+int16_t     TESMAF_ReceivedData_Data[TESMAF_RECEIVED_DATA_SZ] = {0};
+uint16_t    TESMAF_ReceivedData_Length = 0;
 
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
@@ -80,11 +81,14 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         if (TESMAF_ReceivedData[0] == EXACTOLINK_PCK_ID)
         {
             uint8_t start_point = TESMAF_ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
+            uint16_t received_length = 0;
+            ex_convertUint8ToUint16(&TESMAF_ReceivedData[1],&received_length);
             ex_convertUint8ToUint64(&TESMAF_ReceivedData[start_point], &TESMAF_ReceivedData_Counter);
-            for (uint8_t i = 0; i < 6; i++)
+            for (uint8_t i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
             {
                 ex_convertUint8ToInt16(&TESMAF_ReceivedData[start_point + 4 + 2*i], &TESMAF_ReceivedData_Data[i]);
             }
+            TESMAF_ReceivedData_Length = received_length;
             TESMAF_WindowPrinter_Marker = 2;
             // lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
         }
@@ -160,7 +164,7 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         printf("\033[A\33[2K\r");
         printf("\033[A\33[2K\r");
         printf("\033[A\33[2K\r");
-        printf("Tim: %d Input: %d\n", TESP_TimReceiver_Buffer, TESMAF_ReceivedData_Counter);
+        printf("Tim: %d Input: %d Len: %d\n", TESP_TimReceiver_Buffer, TESMAF_ReceivedData_Counter, TESMAF_ReceivedData_Length);
         printf("Data:\n");
         for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
         {

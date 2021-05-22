@@ -282,7 +282,16 @@ uint8_t ex_setData_ExactoDtStr(uint8_t * data, const uint16_t data_length, uint6
         //вписываем начальные значения
         ExDt_Output_Counter++;
         setHeaderExactoDataStorage(1,1,1);
-        
+        uint8_t counter_tmp;
+        counter_tmp = (uint8_t)( ExDt_Output_Counter);
+        ExDt_Output_Buffer[ExDt_Output_pt++] = counter_tmp; 
+        counter_tmp = (uint8_t)( ExDt_Output_Counter>> 8); 
+        ExDt_Output_Buffer[ExDt_Output_pt++] = counter_tmp; 
+        counter_tmp = (uint8_t)( ExDt_Output_Counter>> 16); 
+        ExDt_Output_Buffer[ExDt_Output_pt++]  = counter_tmp; 
+        counter_tmp = (uint8_t)( ExDt_Output_Counter>> 24); 
+        ExDt_Output_Buffer[ExDt_Output_pt++] = counter_tmp; 
+ 
         break;
     case THR_CTRL_WAIT:
         break;    
@@ -360,9 +369,9 @@ uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length
         case EX_DIRECT:
         if(type == EX_XL_LSM303AH)
         {
-            for (int i = EXACTOLINK_START_DATA_POINT_VAL; (i < ExDt_Output_pt)&&((i - EXACTOLINK_START_DATA_POINT_VAL) < receiver_length); i ++)
+            for (int i = EXACTOLINK_START_DATA_POINT_VAL + 4; (i < ExDt_Output_pt)&&((i - EXACTOLINK_START_DATA_POINT_VAL + 4) < receiver_length); i ++)
             {
-                receiver[i- EXACTOLINK_START_DATA_POINT_VAL] = ExDt_Output_Buffer[i];
+                receiver[i- EXACTOLINK_START_DATA_POINT_VAL + 4] = ExDt_Output_Buffer[i];
             }
             *pack_length = ExDt_Output_pt;
         }
