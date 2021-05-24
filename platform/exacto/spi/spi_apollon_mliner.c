@@ -226,14 +226,14 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
     ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
-    printk("t");
+    printk("t!");
     return 0;
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
-    printk("t1");
     if (SPI2_FULL_DMA_tx_buffer.is_full)
         return 1;
+    printk("t1");
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
     uint32_t _datacount;

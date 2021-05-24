@@ -5,8 +5,9 @@
   
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
-#include "spi/spi2_generated.h"
+#include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
+#include "ex_utils.h"
 
 #define MAX_CALL_COUNT 10
 
@@ -19,23 +20,21 @@ uint8_t MarkerThread = 0;
 uint8_t MarkerTx = 0;
 uint8_t MarkerRx = 0;
 #define DATA_MESSAGE_SIZE 16
-uint8_t DataToBuffer[] = {3, 7, 2, 10, 1,
+uint8_t DataToBuffer[] = {17, 7, 2, 10, 1,
                             0, 0, 0, 0, 0,
-                            0, 0, 0, 0, 0, 0};
+                            0, 3, 3, 3, 3, 3};
 uint8_t ReceivedData[DATA_MESSAGE_SIZE] = { 0};
 
-struct lthread PrintThread;
-struct lthread MarkerCheckerThread;
+static struct lthread MarkerCheckerThread;
 
-struct lthread UpdateDataToBufferThread;
-struct lthread SendDataThread;
+static struct lthread UpdateDataToBufferThread;
+static struct lthread SendDataThread;
 
-struct lthread DownLoadDataFromBufferThread;
+static struct lthread DownLoadDataFromBufferThread;
 
-struct lthread PrintDataFromBufferThread;
 
-struct lthread CheckTransmitThread;
-struct lthread CheckReceiveThread;
+static struct lthread CheckTransmitThread;
+static struct lthread CheckReceiveThread;
 
 static int checkTransmitRun(struct lthread * self )
 {
@@ -48,7 +47,7 @@ static int checkReceiveRun(struct lthread * self)
     return 0;
 }
 
-static int printBufferData(struct  lthread * self)
+int printBufferData()
 {
     printf("Received buffer: ");
     for (uint8_t i = 0; i < DATA_MESSAGE_SIZE; i++)
@@ -61,13 +60,16 @@ static int printBufferData(struct  lthread * self)
 
 static int downloadDataRun(struct lthread * self)
 {
-    getDataFromExactoDataStorage(ReceivedData, 16);
+    // getDataFromExactoDataStorage(ReceivedData, SPI_MLINER_BUFFER_SIZE);
+    uint16_t pack_len;
+    ex_getPack_ExactoDtStr(ReceivedData, sizeof(ReceivedData),&pack_len,EX_XL_LSM303AH);
     return 0;
 }
 
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, 16); 
+    // setDataToExactoDataStorage(DataToBuffer, SPI_MLINER_BUFFER_SIZE, THR_CTRL_OK); 
+    ex_setData_ExactoDtStr(DataToBuffer, sizeof(DataToBuffer), 1, EX_XL_LSM303AH);
     return 0;
 }
 static int sendDataThreadRun(struct lthread * self)
@@ -75,11 +77,7 @@ static int sendDataThreadRun(struct lthread * self)
     transmitExactoDataStorage();
     return 0;
 }
-static int printThreadRun(struct lthread * self)
-{
-    printf("Test spi done\n");
-    return 0;
-}
+
 static int checkMarkerThreadRun(struct lthread * self)
 {
     if (MainThread.result == THR_CTRL_OK)
@@ -105,23 +103,11 @@ int main(int argc, char *argv[]) {
 
     printf("Start Full Duplex SPI\n");
     lthread_init(&MarkerCheckerThread, checkMarkerThreadRun);
-    printf("Reset ALL\n");
     resetExactoDataStorage();
-    printf("Init thread:\n-main\n");
     initThreadExactoDataStorage(&MainThread);
-    printf("-printf\n");
-    lthread_init(&PrintThread, printThreadRun);
-    printf("-sending\n");
     lthread_init(&SendDataThread, sendDataThreadRun);
-    printf("Init buffer: \n-upload\n");
     lthread_init(&UpdateDataToBufferThread, updateDataToBufferThreadRun);
-    printf("-download\n");
     lthread_init(&DownLoadDataFromBufferThread, downloadDataRun);
-    printf("-printing\n");
-    lthread_init(&PrintDataFromBufferThread, printBufferData);
-    lthread_launch(&PrintDataFromBufferThread);
-    printf("Upload data to buffer\n");
-    printf("Data[ buffer] = > SPI[TX]\n");
 
     printf("Init threat for RX TX values control\n");
     lthread_init(&CheckReceiveThread, &checkReceiveRun);
@@ -185,12 +171,11 @@ int main(int argc, char *argv[]) {
         receiveExactoDataStorage();
         printf("Download data from data storage\n");
         lthread_launch(&DownLoadDataFromBufferThread);
-        lthread_launch(&PrintDataFromBufferThread);
+        printBufferData();
         usleep(1000000);
         call_counter++;
     }
     
-    lthread_launch(&PrintThread);
 
     turnOffSPI2_FULL_DMA();
 

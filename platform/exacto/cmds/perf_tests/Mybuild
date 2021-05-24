@@ -122,3 +122,19 @@ module ex_sd_print{
 	depends embox.kernel.thread.sync
 	depends exacto.cmds.perf_tests.ex_utils
 }
+@AutoCmd
+@Cmd(name="test_spi_ml_rx", help=" Test for receiving data via Mline ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_ml_rx_apollon {
+	source "spi_ml_rx_apollon.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	depends exacto.commander.data_storage
+	depends exacto.spi.mliner_apollon
+	depends exacto.apollon.gpio.gpio_spi
+	depends exacto.cmds.perf_tests.ex_utils
+}
