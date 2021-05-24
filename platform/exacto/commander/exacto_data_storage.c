@@ -370,7 +370,8 @@ uint8_t ex_getPack_ExactoDtStr(uint8_t * receiver, const uint8_t receiver_length
         if(type == EX_XL_LSM303AH)
         {
             uint8_t str_pt = EXACTOLINK_START_DATA_POINT_VAL + 4;
-            for (int i = str_pt; (i < ExDt_Output_pt)&&((i - str_pt) < receiver_length); i ++)
+            str_pt = 0;
+            for (int i = str_pt; (i < EXACTO_DATA_STORAGE_SZ)&&((i - str_pt) < receiver_length); i ++)
             {
                 receiver[i- str_pt] = ExDt_Output_Buffer[i];
             }

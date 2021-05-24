@@ -20,6 +20,7 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_data_storage.h"
+#include <kernel/printk.h>
 
 /**
  * @brief опредееляет количество данных, выделяемых в DMA
@@ -264,6 +265,7 @@ static int SPI1_FULL_DMA_tx_handler(struct lthread *self)
     _trg_buffer = (SPI1_FULL_DMA_buffer*) self;
     _trg_buffer->is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
+    printk("t!");
     return 0;
 }
 /**
@@ -302,6 +304,7 @@ mutex_retry:
  */
 static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
+    printk("t0");
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
     const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
@@ -318,8 +321,9 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     }
     _trg_thread->isready = 0;
 
-    LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, _datacount); //устанавливаем сколько символов передачть
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_tx_buffer.dt_count); //устанавливаем сколько символов передачть
     LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);                 //включаем поток передачи данных
+    printk("t1");
     return 0;
 }
 /**
@@ -341,7 +345,7 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
     for (uint8_t i = 2; i < _datacount; i++)                        //
         pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     _trg_thread->isready = 0;
-    LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
     return 0;
 }

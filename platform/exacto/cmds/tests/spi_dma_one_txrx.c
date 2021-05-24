@@ -60,12 +60,15 @@ int main(int argc, char *argv[]) {
             usleep(1000000);
 
 
-        setDataToExactoDataStorage(DataToBuffer, TRANSMIT_MESSAGE_SIZE, THR_CTRL_OK); 
+        // setDataToExactoDataStorage(DataToBuffer, TRANSMIT_MESSAGE_SIZE, THR_CTRL_OK);
+        ex_setData_ExactoDtStr(DataToBuffer,TRANSMIT_MESSAGE_SIZE,1,EX_XL_LSM303AH); 
         transmitExactoDataStorage();
         printf("Tx\n");
         receiveExactoDataStorage();
         printf("Download data from data storage\n");
-        getDataFromExactoDataStorage(ReceivedData, TRANSMIT_MESSAGE_SIZE);
+        // getDataFromExactoDataStorage(ReceivedData, TRANSMIT_MESSAGE_SIZE);
+        uint16_t cnt;
+        ex_getPack_ExactoDtStr(ReceivedData, TRANSMIT_MESSAGE_SIZE,&cnt,EX_XL_LSM303AH);
     
     
         lthread_launch(&PrintDataFromBufferThread);
