@@ -71,7 +71,7 @@ module ex_spi_mline_apollon {
 	depends exacto.spi.mliner_apollon
 	depends exacto.apollon.gpio.gpio_spi
 	depends exacto.apollon.tim.tim3
-	depends exacto.commander.sns_apollon_lib
+	depends exacto.commander.tools
 }
 @AutoCmd
 @Cmd(name="test_ex_spi_mline", help=" Performance test for SD printer", man='''

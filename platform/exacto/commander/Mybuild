@@ -59,4 +59,9 @@ module filemanager
 	source "exacto_filemanager.h"
 
 }
-
+module tools {
+	source "exacto_tools.c"
+	@IncludeExport(path="commander")
+	source "exacto_tools.h"
+	
+}

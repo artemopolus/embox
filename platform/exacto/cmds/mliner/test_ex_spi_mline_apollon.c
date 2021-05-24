@@ -5,7 +5,7 @@
   
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
-#include "commander/exacto_sns_ctrl.h"
+#include "commander/exacto_tools.h"
 #include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
 #include "tim/tim.h"
@@ -80,12 +80,12 @@ void printBufferData()
 
     uint64_t ExDtBfCounter = 0;
 
-    convertUint8ToUint64(&TESMA_ReceivedData[start_point],&ExDtBfCounter);
+    ex_convertUint8ToUint64(&TESMA_ReceivedData[start_point],&ExDtBfCounter);
     printf("\nData output: %d\n", length);
     for (uint8_t i = start_point  + 4; i < length; i+=2)
     {
         int16_t value;
-        convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
+        ex_convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
         printf("%d\t", value);
     }
     printf("\n");
