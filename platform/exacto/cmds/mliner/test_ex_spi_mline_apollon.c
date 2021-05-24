@@ -15,7 +15,7 @@
 #define MAX_CALL_COUNT 10
 
 uint8_t TESMA_Sender_Counter = 0;
-uint8_t TESMA_Sender_Max = 9;
+uint8_t TESMA_Sender_Max = 0;
 
 uint32_t TESMA_Tx_Counter = 0;
 uint32_t TESMA_Tx_Buffer;

@@ -50,7 +50,7 @@ uint8_t TESMAF_DataToBuffer[TESMAF_MESSAGE_SIZE] = {0};
 uint8_t TESMAF_ReceivedData[TESMAF_MESSAGE_SIZE] = {0};
 
 uint8_t TESMAF_CheckDiv_Counter = 0;
-uint8_t TESMAF_CheckDiv_Max = 9;
+uint8_t TESMAF_CheckDiv_Max = 0;
 static struct lthread   TESMAF_CheckExactoStorage_Lthread;
 static struct mutex     TESMAF_CheckExactoStorage_Mutex; 
 
