@@ -20,6 +20,15 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_data_storage.h"
+#include "ex_utils.h"
+
+// #define SAM_REPORTER
+#ifdef SAM_REPORTER
+#include "kernel/printk.h"
+uint32_t    SAM_Ticker_Start, 
+            SAM_Ticker_Stop, 
+            SAM_Ticker_Result;
+#endif
 
 
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE SPI_MLINER_BUFFER_SIZE
@@ -157,6 +166,9 @@ static int SPI2_FULL_DMA_init(void)
     // LL_SPI_EnableDMAReq_TX(SPI2);
     // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);   //transmit
     // LL_SPI_Enable(SPI2);
+#ifdef SAM_REPORTER
+    ex_dwt_cyccnt_reset();
+#endif
     return 0;
 }
 void setupSPI2_FULL_DMA()
@@ -219,10 +231,18 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
     ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
+#ifdef SAM_REPORTER
+    SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
+    SAM_Ticker_Result = SAM_Ticker_Stop - SAM_Ticker_Start;
+    printk("%d",SAM_Ticker_Result);
+#endif
     return 0;
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
+#ifdef SAM_REPORTER
+    SAM_Ticker_Start = ex_dwt_cyccnt_start();
+#endif
     if (ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)
         return 0;
     thread_control_t * _trg_thread;

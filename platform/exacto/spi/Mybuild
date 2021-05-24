@@ -24,6 +24,7 @@ module mliner_apollon {
 	@IncludeExport(path="spi")
 	source "spi_mliner.h"
 	depends exacto.commander.data_storage
+	depends exacto.cmds.perf_tests.ex_utils
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 }
