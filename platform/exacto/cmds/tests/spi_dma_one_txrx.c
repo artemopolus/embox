@@ -5,7 +5,7 @@
   
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
-#include "spi/spi1.h"
+#include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
 
 #define MAX_CALL_COUNT 10

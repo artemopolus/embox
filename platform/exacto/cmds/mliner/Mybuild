@@ -75,7 +75,7 @@ module ex_spi_mline_apollon {
 	depends exacto.cmds.sensor.sns_service
 }
 @AutoCmd
-@Cmd(name="test_ex_spi_mline", help=" Performance test for SD printer", man='''
+@Cmd(name="test_ex_spi_mline", help="Test receiving data using Mline Spi", man='''
 AUTHOR Kuznetcov
 ''')
 module ex_spi_mline_afina{

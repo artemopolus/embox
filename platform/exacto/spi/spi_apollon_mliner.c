@@ -19,7 +19,7 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
-
+#include <kernel/printk.h>
 
 #define SPI2_FULL_DMA_RXTX_BUFFER_SIZE SPI_MLINER_BUFFER_SIZE
 typedef struct
@@ -198,6 +198,7 @@ static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
     {
         LL_DMA_ClearFlag_GI4(DMA1);
         lthread_launch(&SPI2_FULL_DMA_rx_buffer.dt_lth);
+        printk("r\n");
     }
     return IRQ_HANDLED;
 }
@@ -225,20 +226,30 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
     ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
+    printk("t");
     return 0;
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
-    if (ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)
-        return 0;
-    thread_control_t * _trg_thread;
-    _trg_thread = (thread_control_t *)self;
-    //const uint32_t _datacount = _trg_thread->datalen;
-    const uint32_t _datacount = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
-    if (_datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
-        return 1;
+    printk("t1");
     if (SPI2_FULL_DMA_tx_buffer.is_full)
         return 1;
+    thread_control_t * _trg_thread;
+    _trg_thread = (thread_control_t *)self;
+    uint32_t _datacount;
+    switch (_trg_thread->state)
+    {
+    case EX_SMPL:
+        if (ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)
+            return 0;
+        //const uint32_t _datacount = _trg_thread->datalen;
+        _datacount = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+        if (_datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
+            return 1;
+    default:
+        break;
+    }
+
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
     // uint8_t value = 0;
     // for (uint8_t i = 0; i < _datacount; i++)
@@ -258,8 +269,10 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     }
     _trg_thread->isready = 0;
     _trg_thread->result = THR_CTRL_OK;
+    SPI2_FULL_DMA_tx_buffer.is_full = 1;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
+    printk("t2");
     return 0;
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)

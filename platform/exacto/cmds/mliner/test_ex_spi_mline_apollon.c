@@ -39,10 +39,13 @@ uint8_t               TESMA_DownloadData_Marker = 0;
 uint8_t               TESMA_DownloadData_Counter = 0;
 uint8_t               TESMA_DownloadData_Max = 9;
 
+uint8_t TESMA_TimCounter_Smpl = 0;
+
 void executeSpiTxRxStage();
 
 static int runTESMA_TimReceiver_Lthread(struct lthread * self)
 {
+    TESMA_TimCounter_Smpl++;
 
     if (TESMA_Sender_Counter < TESMA_Sender_Max)
     {
@@ -92,8 +95,8 @@ void printBufferData()
         printf("%d\t", value);
     }
     printf("\n");
-    printf("SpiOn: %d| Tx: %d| Rx: %d|\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
-    printf("Len: %d\n",TESMA_ReceivedData_Length);
+    printf("SpiOn: %d| Tx: %d| Rx: %d \n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
+    printf("Len: %d Cnt: %d\n",TESMA_ReceivedData_Length, TESMA_TimCounter_Smpl);
 #endif
     return; 
 }
