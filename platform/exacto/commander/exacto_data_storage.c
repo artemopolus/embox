@@ -3,6 +3,8 @@
 // #include "blink/blinker.h"
 
 
+uint32_t ExDtStr_TransmitSPI_Counter = 0;
+
 /**
  * @brief store info and data about external input
  * 
@@ -242,7 +244,7 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thre
     if (result == THR_CTRL_INIT)
     {
         clearExactoDataStorage();
-        setHeaderExactoDataStorage(1,1,64);
+        // setHeaderExactoDataStorage(1,1,64);
     }
     for (uint8_t i = 0; i < datacount; i++)
     {
@@ -255,7 +257,33 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
 {
     if (receiver_length < getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage))
         return 1;
-    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver);
+    uint8_t type = 1;
+    const uint8_t pck_id = EXACTOLINK_PCK_ID;
+    uint16_t address = 1;
+    const uint8_t addrH = (uint8_t) (address << 8);
+    const uint8_t addrL = (uint8_t) (address);
+    uint16_t length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+    const uint8_t lenH = (uint8_t) (length << 8);
+    const uint8_t lenL = (uint8_t) (length);
+    const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
+    //header
+    receiver[0] = pck_id;
+    receiver[1] = lenL;
+    receiver[2] = lenH;
+    receiver[3] = type;
+    //
+    receiver[4] = data_start_point; //datatype
+    receiver[5] = 0;
+    receiver[6] = 0xff;  //priority
+    receiver[7] = addrL;
+    receiver[8] = addrH; //datasrc
+
+    receiver[9] = (uint8_t)ExDtStr_TransmitSPI_Counter;    //counter
+    receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_Counter >> 8);
+    receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_Counter >> 16);
+    receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_Counter >> 24);
+
+    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
     return 0;
 
 }

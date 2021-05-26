@@ -262,7 +262,8 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
         // grbfst_exbu8(&_trg_thread->datastorage, &value);
         // SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     // }
-    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
+    getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
+    // grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);

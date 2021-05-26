@@ -253,16 +253,16 @@ static int runSendAndUploadThread(struct lthread * self)
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
     uint16_t enabled = 0;
-    uint8_t counter_tmp;
-    counter_tmp = (uint8_t)(SensorTickerCounter );
-    Header[0] = counter_tmp; 
-    counter_tmp = (uint8_t)(SensorTickerCounter >> 8); 
-    Header[1] = counter_tmp; 
-    counter_tmp = (uint8_t)(SensorTickerCounter >> 16); 
-    Header[2] = counter_tmp; 
-    counter_tmp = (uint8_t)(SensorTickerCounter >> 24); 
-    Header[3] = counter_tmp; 
-    setDataToExactoDataStorage(Header, 4, THR_CTRL_INIT); 
+    // uint8_t counter_tmp;
+    // counter_tmp = (uint8_t)(SensorTickerCounter );
+    // Header[0] = counter_tmp; 
+    // counter_tmp = (uint8_t)(SensorTickerCounter >> 8); 
+    // Header[1] = counter_tmp; 
+    // counter_tmp = (uint8_t)(SensorTickerCounter >> 16); 
+    // Header[2] = counter_tmp; 
+    // counter_tmp = (uint8_t)(SensorTickerCounter >> 24); 
+    // Header[3] = counter_tmp; 
+    setDataToExactoDataStorage(Header, 0, THR_CTRL_INIT); 
 
     for (uint16_t i = 0; i < count; i++)
     {
