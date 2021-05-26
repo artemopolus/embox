@@ -75,6 +75,17 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         return lthread_yield(&&start, &&mutex_retry);
 	}
     getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
+    if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
+    {
+        uint8_t * tmp_buff;
+        uint16_t tmp_buff_len;
+        ex_getData_ExDtStr(tmp_buff, &tmp_buff_len, THR_SPI_RX);
+        for (uint16_t i = 0; i < tmp_buff_len; i++)
+        {
+            TESMAF_ReceivedData[i] = tmp_buff[i];
+        }
+        
+    }
     if (TESMAF_WindowPrinter_Marker == 1)
     {
         if (TESMAF_ReceivedData[0] == EXACTOLINK_PCK_ID)

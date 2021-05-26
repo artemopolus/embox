@@ -5,6 +5,14 @@
 
 uint32_t ExDtStr_TransmitSPI_Counter = 0;
 
+//temporary
+uint8_t ExDtStr_TrasmitSPI_Buffer[EXACTOLINK_MESSAGE_SIZE] = {0};
+uint16_t ExDtStr_TransmitSPI_BuffLen = 0;
+exactolink_package_info_t ExDtStr_TrasmitSPI_Info = {
+    .is_data_available = 0,
+    .packagetype = EXACTOLINK_NO_DATA,
+};
+uint32_t ExDtStr_TrasmitSPI_RefCounter = 0;
 /**
  * @brief store info and data about external input
  * 
@@ -262,7 +270,7 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
     uint16_t address = 1;
     const uint8_t addrH = (uint8_t) (address << 8);
     const uint8_t addrL = (uint8_t) (address);
-    uint16_t length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+    uint16_t length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage) + EXACTOLINK_START_DATA_POINT_VAL - 2;
     const uint8_t lenH = (uint8_t) (length << 8);
     const uint8_t lenL = (uint8_t) (length);
     const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
@@ -298,6 +306,80 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
     }
     return 0;
 }
+exactolink_package_result_t ex_checkData_ExDtStr()
+{
+    uint8_t value = 0;
+    //pack specific
+    if (!grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))
+    {
+        ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
+        return EXACTOLINK_NO_DATA;
+    }
+    if (value != EXACTOLINK_PCK_ID)
+    {
+        ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
+        return EXACTOLINK_NO_DATA;
+    }
+    ExDtStr_TrasmitSPI_Info.is_data_available = 1;
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_Info.length = (uint16_t)value;
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_Info.length += (uint16_t)(value << 8);
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    if (value != EXACTOLINK_START_DATA_POINT_VAL)
+        return EXACTOLINK_NO_DATA;
+    ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_Info.datatype += (uint16_t)(value << 8);
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_Info.priority = value;
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_Info.datasrc = (uint16_t)value;
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_Info.datasrc += (uint16_t)(value << 8);
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_RefCounter = (uint32_t)value;
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_RefCounter = (uint32_t)(value << 8);
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_RefCounter = (uint32_t)(value << 16);
+    grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value);
+    ExDtStr_TrasmitSPI_RefCounter = (uint32_t)(value << 24);
+    uint16_t i;
+    for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length - EXACTOLINK_START_DATA_POINT_VAL); i++)
+    {
+        if (grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))
+        {
+            break;
+        }
+        else
+        {
+            ExDtStr_TrasmitSPI_Buffer[i] = value;
+        }
+    }
+    ExDtStr_TransmitSPI_BuffLen = i;
+    return EXACTOLINK_LSM303AH_TYPE0;
+}
+uint8_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t * buffer_length, uint16_t data_type)
+{
+    buffer = ExDtStr_TrasmitSPI_Buffer;
+    *buffer_length = ExDtStr_TransmitSPI_BuffLen;
+    return 0;
+}
+uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info)
+{
+    info = &ExDtStr_TrasmitSPI_Info;
+    return 0;
+}
+void ex_updateCounter_ExDtStr(thread_type_t type)
+{
+   ExDtStr_TransmitSPI_Counter++; 
+}
+uint32_t ex_getCounter_ExDtStr(thread_type_t type)
+{
+    return ExDtStr_TransmitSPI_Counter;
+}
+
 uint8_t resetExactoDataStorage()
 {
     lthread_launch(&ResetThread);

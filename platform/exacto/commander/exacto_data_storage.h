@@ -14,6 +14,7 @@
 #define EXACTOLINK_START_DATA_POINT_ADR 4
 #define EXACTOLINK_START_DATA_POINT_VAL 13
 #define EXACTOLINK_PCK_ID 17
+#define EXACTOLINK_MESSAGE_SIZE 64
 
 #include <stdint.h>
 // typedef enum{
@@ -65,6 +66,23 @@ typedef enum{
     EXACTO_DENY,
     EXACTO_ERROR
 }exacto_process_result_t;
+typedef enum{
+    EXACTOLINK_NO_DATA = 0,
+    EXACTOLINK_LSM303AH_TYPE0,
+    EXACTOLINK_CRC_ERROR,
+    EXACTOLINK_UNKNOWN_ERROR
+}exactolink_package_result_t;
+
+typedef struct{
+    uint16_t length;
+    uint16_t datatype;
+    uint8_t priority;
+    uint16_t datasrc;
+    uint32_t counter;
+    uint8_t is_data_available;
+    exactolink_package_result_t packagetype;
+}exactolink_package_info_t;
+
 
 extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
@@ -81,6 +99,13 @@ extern uint8_t clearExactoDataStorage();
 extern thread_control_result_t getStateExactoDataStorage();
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result);
 extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
+
+extern exactolink_package_result_t ex_checkData_ExDtStr();
+extern uint8_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t * buffer_length, uint16_t data_type);
+extern uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info);
+extern void ex_updateCounter_ExDtStr(thread_type_t type);
+extern uint32_t ex_getCounter_ExDtStr(thread_type_t type);
+
 extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t resetExactoDataStorage();
 extern uint8_t checkTxSender();
