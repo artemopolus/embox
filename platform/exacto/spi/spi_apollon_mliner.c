@@ -222,6 +222,7 @@ mutex_retry:
     SPI2_FULL_DMA_rx_buffer.is_full = 1;
     ExOutputStorage[THR_SPI_RX].isready = 1;
     ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
+    ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
@@ -231,6 +232,7 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
     ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
+    ex_updateCounter_ExDtStr(THR_SPI_TX);
 #ifdef SAM_REPORTER
     SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
     SAM_Ticker_Result = SAM_Ticker_Stop - SAM_Ticker_Start;

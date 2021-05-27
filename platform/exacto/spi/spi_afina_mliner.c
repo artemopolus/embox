@@ -260,6 +260,7 @@ STATIC_IRQ_ATTACH(56, SPI1_FULL_DMA_rx_irq_handler, NULL);
  */
 static int SPI1_FULL_DMA_tx_handler(struct lthread *self)
 {
+    ex_updateCounter_ExDtStr(THR_SPI_TX);
     SPI1_FULL_DMA_buffer * _trg_buffer;
     _trg_buffer = (SPI1_FULL_DMA_buffer*) self;
     _trg_buffer->is_full = 0;
@@ -289,6 +290,7 @@ mutex_retry:
         // ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
         // pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     // }
+    ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
@@ -332,14 +334,18 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
+    
     const uint32_t _datacount = SPI1_FULL_DMA_rx_buffer.dt_count;   //сколько данных влезает в буффер
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
     // пропускаем первый элемент, так как он вечно левый какой-то
 
     // так же здесь распознавалку пакета нужно добавить
     //---------
-    for (uint8_t i = 2; i < _datacount; i++)                        //
-        pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+    if (_trg_thread->isready)
+    {
+        for (uint8_t i = 2; i < _datacount; i++)                        //
+            pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+    }
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);
     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);

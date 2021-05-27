@@ -54,14 +54,17 @@ uint8_t TESMAF_CheckDiv_Max = 0;
 static struct lthread   TESMAF_CheckExactoStorage_Lthread;
 static struct mutex     TESMAF_CheckExactoStorage_Mutex; 
 
-uint64_t TESMAF_ReceivedData_Counter = 0;
 #define TESMAF_RECEIVED_DATA_SZ 6
-int16_t TESMAF_ReceivedData_Data[TESMAF_RECEIVED_DATA_SZ] = {0};
+int16_t                     TESMAF_ReceivedData_Data[TESMAF_RECEIVED_DATA_SZ] = {0};
+exactolink_package_info_t   TESMAF_ReceivedData_Info;
+uint32_t TESMAF_Tx_Buffer;
+uint32_t TESMAF_Rx_Buffer;
 
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     start:
-    printk("&");
+    // printk("&");
+    TESP_TimReceiver_Counter++;
     disableMasterSpiDma();
     ex_disableGpio();
     ex_enableGpio();
@@ -74,27 +77,22 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
         return lthread_yield(&&start, &&mutex_retry);
 	}
-    getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
+    // getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
     if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
     {
-        uint8_t * tmp_buff;
-        uint16_t tmp_buff_len;
-        ex_getData_ExDtStr(tmp_buff, &tmp_buff_len, THR_SPI_RX);
-        for (uint16_t i = 0; i < tmp_buff_len; i++)
-        {
-            TESMAF_ReceivedData[i] = tmp_buff[i];
-        }
+        ex_getData_ExDtStr(TESMAF_ReceivedData, 12, THR_SPI_RX);
+        ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
+        TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
+        TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
         
     }
     if (TESMAF_WindowPrinter_Marker == 1)
     {
-        if (TESMAF_ReceivedData[0] == EXACTOLINK_PCK_ID)
+        if (TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_LSM303AH_TYPE0)
         {
-            uint8_t start_point = TESMAF_ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
-            ex_convertUint8ToUint64(&TESMAF_ReceivedData[start_point], &TESMAF_ReceivedData_Counter);
             for (uint8_t i = 0; i < 6; i++)
             {
-                ex_convertUint8ToInt16(&TESMAF_ReceivedData[start_point + 2*i], &TESMAF_ReceivedData_Data[i]);
+                ex_convertUint8ToInt16(&TESMAF_ReceivedData[2*i], &TESMAF_ReceivedData_Data[i]);
             }
             TESMAF_WindowPrinter_Marker = 2;
             // lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
@@ -171,14 +169,13 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         printf("\033[A\33[2K\r");
         printf("\033[A\33[2K\r");
         printf("\033[A\33[2K\r");
-        printf("Tim: %d Input: %d\n", TESP_TimReceiver_Buffer, TESMAF_ReceivedData_Counter);
-        printf("Data:\n");
+        printf("Data received:\n");
         for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
         {
             printf("%d\t",TESMAF_ReceivedData_Data[i]);
         }
- 
-        printf("\n");
+        printf("\nRefCnt: %d| Tx: %d| Rx: %d| Tim: %d|\n", TESMAF_ReceivedData_Info.counter,
+                     TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESP_TimReceiver_Buffer);
 
         TESMAF_WindowPrinter_Marker = 0;
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
@@ -188,7 +185,6 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
 }
 static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 {
-    TESP_TimReceiver_Counter++;
     // printk("+");
     // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
     updateMline();

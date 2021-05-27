@@ -22,6 +22,9 @@ uint32_t TESMA_Tx_Buffer;
 uint32_t TESMA_Rx_Counter = 0;
 uint32_t TESMA_Rx_Buffer;
 
+uint32_t TESMA_Tim_Counter = 0;
+uint32_t TESMA_Tim_Buffer;
+
 
 uint8_t TESMA_MlineSpiEnableMarker = 0;
 
@@ -47,6 +50,7 @@ static int runTESMA_TimReceiver_Lthread(struct lthread * self)
     }
     else
     {
+        TESMA_Tim_Counter++;
         TESMA_Sender_Counter = 0;
         executeSpiTxRxStage();
     }
@@ -78,7 +82,7 @@ void printBufferData()
     printf("\n");
     start_point = TESMA_ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
 
-    printf("\nData output: %d\n", length);
+    printf("\nData to transmit: %d\n", length);
     for (uint8_t i = start_point  ; i < length; i+=2)
     {
         int16_t value;
@@ -86,7 +90,7 @@ void printBufferData()
         printf("%d\t", value);
     }
     printf("\n");
-    printf("SpiOn: %d| Tx: %d| Rx: %d|\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer);
+    printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer, TESMA_Tim_Buffer);
 #endif
     return; 
 }
@@ -97,8 +101,9 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
     {
         getMailFromExactoDataStorage(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE);
         TESMA_DownloadData_Marker = 1;
-        TESMA_Rx_Buffer = TESMA_Rx_Counter;
-        TESMA_Tx_Buffer = TESMA_Tx_Counter;
+        TESMA_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
+        TESMA_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
+        TESMA_Tim_Buffer = TESMA_Tim_Counter;
     }
     return 0;
 }
