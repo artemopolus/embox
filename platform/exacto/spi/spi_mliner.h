@@ -2,7 +2,7 @@
 #define SPI_MLINER_H
 #include <stdint.h>
 
-#define SPI_MLINER_BUFFER_SIZE 64
+#define SPI_MLINER_BUFFER_SIZE EXACTOLINK_MESSAGE_SIZE
 
 extern void SPI1_FULL_DMA_SetEnabled();
 extern void disableMasterSpiDma();

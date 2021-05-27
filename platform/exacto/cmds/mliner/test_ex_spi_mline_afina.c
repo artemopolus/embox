@@ -50,7 +50,7 @@ uint8_t TESMAF_DataToBuffer[TESMAF_MESSAGE_SIZE] = {0};
 uint8_t TESMAF_ReceivedData[TESMAF_MESSAGE_SIZE] = {0};
 
 uint8_t TESMAF_CheckDiv_Counter = 0;
-uint8_t TESMAF_CheckDiv_Max = 0;
+uint8_t TESMAF_CheckDiv_Max = 9;
 static struct lthread   TESMAF_CheckExactoStorage_Lthread;
 static struct mutex     TESMAF_CheckExactoStorage_Mutex; 
 
@@ -59,16 +59,20 @@ int16_t                     TESMAF_ReceivedData_Data[TESMAF_RECEIVED_DATA_SZ] = 
 exactolink_package_info_t   TESMAF_ReceivedData_Info;
 uint32_t TESMAF_Tx_Buffer;
 uint32_t TESMAF_Rx_Buffer;
+uint32_t TESMAF_DataCheck_Counter = 0;
+uint32_t TESMAF_DataCheck_Success = 0;
+uint32_t TESMAF_DataCheck_CntBuff;
+uint32_t TESMAF_DataCheck_ScsBuff;
 
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     start:
     // printk("&");
-    TESP_TimReceiver_Counter++;
     disableMasterSpiDma();
     ex_disableGpio();
     ex_enableGpio();
-    enableMasterSpiDma(); 
+    enableMasterSpiDma();
+    TESMAF_DataCheck_Counter++; 
 
     setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK); 
     transmitExactoDataStorage();
@@ -84,6 +88,9 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
         TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
         TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
+        TESMAF_DataCheck_Success++;
+        TESMAF_DataCheck_CntBuff = TESMAF_DataCheck_Counter;
+        TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
         
     }
     if (TESMAF_WindowPrinter_Marker == 1)
@@ -174,8 +181,8 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         {
             printf("%d\t",TESMAF_ReceivedData_Data[i]);
         }
-        printf("\nRefCnt: %d| Tx: %d| Rx: %d| Tim: %d|\n", TESMAF_ReceivedData_Info.counter,
-                     TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESP_TimReceiver_Buffer);
+        printf("\nRefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d\n", TESMAF_ReceivedData_Info.counter,
+                     TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
 
         TESMAF_WindowPrinter_Marker = 0;
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
@@ -185,6 +192,7 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
 }
 static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 {
+    TESP_TimReceiver_Counter++;
     // printk("+");
     // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
     updateMline();
