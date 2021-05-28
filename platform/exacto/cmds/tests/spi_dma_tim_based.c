@@ -158,8 +158,8 @@ static int runSpiDmaTimLedControlThread(struct lthread * self)
 static int runSpiDmaTimCheckExactoStorageThread(struct lthread * self)
 {
     disableMasterSpiDma();
-    ex_disableGpio();
-    ex_enableGpio();
+    ex_disableGpio(EX_GPIO_SPI_MLINE);
+    ex_enableGpio(EX_GPIO_SPI_MLINE);
     enableMasterSpiDma(); 
 
     setDataToExactoDataStorage(SpiDmaTimDataToBuffer, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE , THR_CTRL_OK); 

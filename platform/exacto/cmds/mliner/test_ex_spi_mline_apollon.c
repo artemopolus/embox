@@ -41,6 +41,11 @@ uint8_t               TESMA_DownloadData_Max = 9;
 
 void executeSpiTxRxStage();
 
+static int runTESMA_GpioReceiver_Lthread(struct lthread * self)
+{
+    return 0;
+}
+
 static int runTESMA_TimReceiver_Lthread(struct lthread * self)
 {
 
@@ -120,7 +125,7 @@ void executeSpiTxRxStage()
         TESMA_DownloadData_Counter = 0;
     }
 
-    if (ex_checkGpio())
+    if (!ex_checkGpio(EX_GPIO_SPI_MLINE))
     {
         if (!TESMA_MlineSpiEnableMarker)
         {
@@ -165,6 +170,8 @@ int main(int argc, char *argv[]) {
 
 //=================================================================================================
     if (ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESMA_TimReceiver_Lthread))
+        return 1;
+    if (ex_subscribeOnGpioEvent(EX_GPIO_SPI_MLINE, runTESMA_GpioReceiver_Lthread))
         return 1;
 
 

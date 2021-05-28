@@ -71,12 +71,12 @@ static int runTET_TimReceiver_Lthread(struct  lthread * self)
 {
     if(TET_Gpio_enabled)
     {
-        ex_disableGpio();
+        ex_disableGpio(EX_GPIO_SPI_SYNC);
         TET_Gpio_enabled = 0;
     }
     else
     {
-        ex_enableGpio();
+        ex_enableGpio(EX_GPIO_SPI_SYNC);
         TET_Gpio_enabled = 1;
     }
     TET_TimEvent_Counter++;
