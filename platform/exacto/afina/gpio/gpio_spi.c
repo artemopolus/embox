@@ -66,7 +66,7 @@ static int initSpiGpio(void)
     LL_GPIO_SetPinMode(GPIOE, LL_GPIO_PIN_12, LL_GPIO_MODE_OUTPUT );
     LL_GPIO_SetPinMode(GPIOE, LL_GPIO_PIN_7, LL_GPIO_MODE_OUTPUT );
     LL_GPIO_SetPinMode(GPIOE, LL_GPIO_PIN_8, LL_GPIO_MODE_OUTPUT );
-    ex_disableGpio();
+    ex_enableGpio();
     ex_disableLed(EX_LED_GREEN);
     ex_disableLed(EX_LED_BLUE);
     return 0;

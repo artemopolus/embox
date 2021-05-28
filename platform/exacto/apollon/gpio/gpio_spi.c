@@ -17,6 +17,8 @@ static irq_return_t gpio_spi_irq_handler(unsigned int irq_nr, void *data)
     if(LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_12) != RESET)
     {
         LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_12);
+        if (Ex_Gpio_IsEnabled)
+            lthread_launch(&Ex_Gpio_Lthread);
 
     /* Manage code in main.c.*/
     // UserButton_Callback(); 
