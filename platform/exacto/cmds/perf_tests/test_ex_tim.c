@@ -70,9 +70,15 @@ static int runTET_SafeCopyResult_Lthread (struct lthread * self)
 static int runTET_TimReceiver_Lthread(struct  lthread * self)
 {
     if(TET_Gpio_enabled)
+    {
         ex_disableGpio();
+        TET_Gpio_enabled = 0;
+    }
     else
+    {
         ex_enableGpio();
+        TET_Gpio_enabled = 1;
+    }
     TET_TimEvent_Counter++;
     if (!TET_Ticker_Marker)
     {
@@ -112,6 +118,7 @@ static int runTET_Subcribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
+    ex_setOutputGpio(EX_GPIO_SPI_MLINE);
     TET_print_Marker = 0;
     TET_TimEvent_Counter = 0;
     TET_TimEvent_Buffer = 0;

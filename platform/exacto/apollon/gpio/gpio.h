@@ -12,5 +12,6 @@ extern void ex_enableGpio();
 extern void ex_disableGpio();
 extern uint32_t ex_checkGpio();
 extern uint8_t ex_subscribeOnGpioEvent( exacto_gpio_types_t type ,int (*run)(struct lthread *));
+extern void ex_setOutputGpio(exacto_gpio_types_t type);
 #endif //SPI2_GENERATED_H
 

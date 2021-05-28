@@ -23,6 +23,7 @@ static irq_return_t gpio_spi_irq_handler(unsigned int irq_nr, void *data)
     }
     return IRQ_HANDLED;
 }
+STATIC_IRQ_ATTACH(8, gpio_spi_irq_handler, NULL);
 
 EMBOX_UNIT_INIT(initSpiGpio);
 static int initSpiGpio(void)
@@ -43,11 +44,11 @@ static int initSpiGpio(void)
 
 void ex_enableGpio()
 {
-
+    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
 }
 void ex_disableGpio()
 {
-
+    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);
 }
 uint32_t ex_checkGpio()
 {
@@ -61,4 +62,11 @@ uint8_t ex_subscribeOnGpioEvent( exacto_gpio_types_t type ,int (*run)(struct lth
     lthread_init(&Ex_Gpio_Lthread, run);
     Ex_Gpio_IsEnabled = 1;
     return 0;
+}
+void ex_setOutputGpio(exacto_gpio_types_t type)
+{
+    // LL_EXTI_DisableFallingTrig_0_31(LL_EXTI_LINE_12);
+    // LL_EXTI_DisableIT_0_31(LL_EXTI_LINE_12);
+    LL_EXTI_DeInit();
+    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_OUTPUT );
 }
