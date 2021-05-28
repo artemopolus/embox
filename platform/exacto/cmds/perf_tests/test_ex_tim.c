@@ -22,6 +22,7 @@
 #include <sys/wait.h>
 #include "tim/tim.h"
 #include "ex_utils.h"
+#include "gpio/gpio.h"
 
 uint8_t TET_print_Marker = 0;
 uint8_t TET_subscribe_Marker = 0;
@@ -49,6 +50,8 @@ uint8_t TET_Ticker_Marker = 0;
 uint32_t TET_Ticker_Array[TET_TICKER_ARRAY_SZ] = {0};
 uint16_t TET_Ticker_ArraySz = 0;
 
+uint8_t TET_Gpio_enabled = 0;
+
 
 static int runTET_SafeCopyResult_Lthread (struct lthread * self)
 {
@@ -66,6 +69,10 @@ static int runTET_SafeCopyResult_Lthread (struct lthread * self)
 
 static int runTET_TimReceiver_Lthread(struct  lthread * self)
 {
+    if(TET_Gpio_enabled)
+        ex_disableGpio();
+    else
+        ex_enableGpio();
     TET_TimEvent_Counter++;
     if (!TET_Ticker_Marker)
     {

@@ -1,5 +1,9 @@
 package exacto.cmds.perf_tests
 
+abstract module gpio
+{
+	
+}
 module ex_utils
 {
 	source "ex_utils.c"
@@ -21,6 +25,8 @@ module ex_tim{
 
 	depends exacto.cmds.tests.timbase
 	depends exacto.cmds.perf_tests.ex_utils
+
+	depends exacto.cmds.perf_tests.gpio
 
 }
 @AutoCmd
@@ -122,3 +128,4 @@ module ex_sd_print{
 	depends embox.kernel.thread.sync
 	depends exacto.cmds.perf_tests.ex_utils
 }
+

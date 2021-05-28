@@ -1,6 +1,6 @@
 package exacto.apollon.gpio
 @BuildDepends(third_party.bsp.stmf1cube.cube)
-module gpio_spi{
+module gpio_spi extends exacto.cmds.perf_tests.gpio{
 	source "gpio_spi.c"
 	@IncludeExport(path="gpio")
 	source "gpio.h"
