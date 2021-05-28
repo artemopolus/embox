@@ -118,7 +118,7 @@ static int runTET_Subcribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
-    ex_setOutputGpio(EX_GPIO_SPI_MLINE);
+    // ex_setOutputGpio(EX_GPIO_SPI_MLINE);
     TET_print_Marker = 0;
     TET_TimEvent_Counter = 0;
     TET_TimEvent_Buffer = 0;
