@@ -23,22 +23,24 @@ static irq_return_t gpio_spi_irq_handler(unsigned int irq_nr, void *data)
     }
     return IRQ_HANDLED;
 }
-STATIC_IRQ_ATTACH(8, gpio_spi_irq_handler, NULL);
+STATIC_IRQ_ATTACH(40, gpio_spi_irq_handler, NULL);
 
 EMBOX_UNIT_INIT(initSpiGpio);
 static int initSpiGpio(void)
 {
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
+    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
   
-    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT );
     //   EXTI2_IRQn                  = 8,      /*!< EXTI Line2 Interrupt 
     LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
     EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_12;
     EXTI_InitStruct.LineCommand = ENABLE;
     EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
-    EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_FALLING;
+    EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING_FALLING;
+    LL_GPIO_AF_SetEXTISource(LL_GPIO_AF_EXTI_PORTB, LL_GPIO_AF_EXTI_LINE12);
     LL_EXTI_Init(&EXTI_InitStruct);
-    irq_attach(8, gpio_spi_irq_handler, 0, NULL, "gpio spi irq handler");
+    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_FLOATING );
+    irq_attach(40, gpio_spi_irq_handler, 0, NULL, "gpio spi irq handler");
     return 0;
 }
 
