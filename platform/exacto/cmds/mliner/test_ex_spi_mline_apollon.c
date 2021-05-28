@@ -39,10 +39,17 @@ uint8_t               TESMA_DownloadData_Marker = 0;
 uint8_t               TESMA_DownloadData_Counter = 0;
 uint8_t               TESMA_DownloadData_Max = 9;
 
+uint8_t TESMA_Sync_Marker = 1;
+
 void executeSpiTxRxStage();
 
 static int runTESMA_GpioReceiver_Lthread(struct lthread * self)
 {
+    if (TESMA_Sync_Marker)
+    {
+       ex_frcTimReload(); 
+       TESMA_Sync_Marker = 0;
+    }
     return 0;
 }
 

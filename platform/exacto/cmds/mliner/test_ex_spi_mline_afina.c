@@ -64,10 +64,18 @@ uint32_t TESMAF_DataCheck_Success = 0;
 uint32_t TESMAF_DataCheck_CntBuff;
 uint32_t TESMAF_DataCheck_ScsBuff;
 
+uint8_t TESMAF_Sync_Marker = 1;
+
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     start:
     // printk("&");
+    if (TESMAF_Sync_Marker)
+    {
+        ex_disableGpio(EX_GPIO_SPI_SYNC);
+        TESMAF_Sync_Marker = 0;
+    }
+    
     disableMasterSpiDma();
     ex_enableGpio(EX_GPIO_SPI_MLINE);
     ex_disableGpio(EX_GPIO_SPI_MLINE);
