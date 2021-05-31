@@ -27,6 +27,8 @@
 // static struct lthread tim_irq_lt;
 
 /* TIM2 Clock */
+static exacto_tim_states_t ExTim_Freq_Current;
+
 static struct lthread ExTim_Base_Lthread;
 uint8_t               ExTim_Base_Marker = 0;
 
@@ -109,36 +111,47 @@ void ex_setFreqHz(const uint32_t target_freq)
   {
     case 10:
       value = 10;
+      ExTim_Freq_Current = EXACTO_TIM_10;
       break;
     case 50:
       value = 50;
+      ExTim_Freq_Current = EXACTO_TIM_50;
       break;
     case 100:
       value = 100;
+      ExTim_Freq_Current = EXACTO_TIM_100;
       break;
     case 200:
       value = 200;
+      ExTim_Freq_Current = EXACTO_TIM_200;
       break;
     case 400:
       value = 400;
+      ExTim_Freq_Current = EXACTO_TIM_400;
       break;
     case 800:
       value = 800;
+      ExTim_Freq_Current = EXACTO_TIM_800;
       break;
     case 1000:
       value = 1000;
+      ExTim_Freq_Current = EXACTO_TIM_1000;
       break;
     case 1600:
       value = 1600;
+      ExTim_Freq_Current = EXACTO_TIM_1600;
       break;
     case 2000:
       value = 2000;
+      ExTim_Freq_Current = EXACTO_TIM_2000;
       break;
     case 3200:
       value = 3200;
+      ExTim_Freq_Current = EXACTO_TIM_3200;
       break;
     case 6400:
       value = 6400;
+      ExTim_Freq_Current = EXACTO_TIM_6400;
       break;
     default:
       return;
@@ -157,4 +170,8 @@ uint8_t ex_subscribeTim(int (*run)(struct lthread *))
     return 0;
   }
   return 1;
+}
+exacto_tim_states_t  ex_getFreqHz_TIM()
+{
+  return ExTim_Freq_Current;
 }

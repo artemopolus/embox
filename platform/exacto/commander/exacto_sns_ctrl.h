@@ -2,11 +2,26 @@
 #define EXACTO_SNS_CTRL_H
 #include "spi/spi_sns.h"
 #include <stdint.h>
+#define EX_SNS_CMDS_COUNT 6
 typedef enum {
     LSM303AH = 0,
     ISM330DLC,
     BMP280
 }exacto_sensors_list_t;
+typedef struct{
+    exacto_sensors_list_t sns;
+    uint8_t isenabled;
+    uint8_t address;
+    uint16_t datalen;
+    uint16_t pt2buffer;
+    uint8_t shift;
+}ex_sns_cmds_t;
+typedef struct{
+    struct lthread thread;
+    uint8_t sns_count;
+    ex_sns_cmds_t sns[EX_SNS_CMDS_COUNT];
+    uint8_t sns_current;
+}ex_sns_lth_container_t;
 // const uint8_t lsm303ah_3wire_adr = 0x21;
     // const uint8_t lsm303ah_3wire_val = 0x07;
     // const uint8_t lsm303ah_whoami_xl_adr = 0x0f;

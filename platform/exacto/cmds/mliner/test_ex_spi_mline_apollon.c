@@ -10,6 +10,8 @@
 #include "gpio/gpio.h"
 #include "tim/tim.h"
 
+#include "sensor/sns_service.h"
+
 #define SPI_TXRX_PRINT_ON
 
 #define MAX_CALL_COUNT 10
@@ -41,8 +43,18 @@ uint8_t               TESMA_DownloadData_Max = 9;
 
 uint8_t TESMA_Sync_Marker = 1;
 
-void executeSpiTxRxStage();
+static struct lthread TESMA_ChangeMode_Lthread;
 
+void executeSpiTxRxStage();
+static int runTESMA_ChangeMode_Lthread(struct lthread * self)
+{
+    ex_setFreqHz(200);
+    ex_switchStage_SnsService(EXACTOLINK_LSM303AH_TYPE0);
+    TESMA_DownloadData_Marker = 0;
+    TESMA_DownloadData_Counter = 0;
+    TESMA_DownloadData_Max = 19;
+    return 0;
+}
 static int runTESMA_GpioReceiver_Lthread(struct lthread * self)
 {
     if (TESMA_Sync_Marker)
@@ -168,6 +180,7 @@ int main(int argc, char *argv[]) {
     resetExactoDataStorage();
     initThreadExactoDataStorage(&TESMA_MainThread);
     lthread_init(&TESMA_DownloadData_Lthread, runTESMA_DownloadData_Lthread);
+    lthread_init(&TESMA_ChangeMode_Lthread, runTESMA_ChangeMode_Lthread);
 
 #ifdef SPI_TXRX_PRINT_ON
     printf("Run cycle for checking:\n");
@@ -181,7 +194,7 @@ int main(int argc, char *argv[]) {
     if (ex_subscribeOnGpioEvent(EX_GPIO_SPI_MLINE, runTESMA_GpioReceiver_Lthread))
         return 1;
 
-
+    lthread_launch(&TESMA_ChangeMode_Lthread);
 
 #ifdef SPI_TXRX_PRINT_ON
     printf("Starting observing of sensor data:");
