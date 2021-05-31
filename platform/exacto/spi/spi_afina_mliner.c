@@ -285,12 +285,8 @@ mutex_retry:
     }
     ExDtStorage.isEmpty = 0;
     ExOutputStorage[THR_SPI_RX].isready = 1;
-    // for (uint8_t i = 0; i < SPI1_FULL_DMA_rx_buffer.dt_count; i++)
-    // {
-        // ExOutputStorage[THR_SPI_RX].databuffer[i] = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
-        // pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
-    // }
-    ex_updateCounter_ExDtStr(THR_SPI_RX);
+    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[2] == 17)
+        ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
@@ -334,6 +330,8 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
 {
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
+    if (!_trg_thread->isready)
+        return 0;
     
     const uint32_t _datacount = SPI1_FULL_DMA_rx_buffer.dt_count;   //сколько данных влезает в буффер
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
@@ -341,11 +339,11 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
 
     // так же здесь распознавалку пакета нужно добавить
     //---------
-    if (_trg_thread->isready)
-    {
-        for (uint8_t i = 2; i < _datacount; i++)                        //
+    // if (_trg_thread->isready)
+    // {
+        for (uint8_t i = 1; i < _datacount; i++)                        //
             pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
-    }
+    // }
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);
     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);

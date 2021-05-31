@@ -247,6 +247,8 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 #endif
     if (ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)
         return 0;
+    if (!ExOutputStorage[THR_SPI_TX].isready)
+        return 0;
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;
     //const uint32_t _datacount = _trg_thread->datalen;
