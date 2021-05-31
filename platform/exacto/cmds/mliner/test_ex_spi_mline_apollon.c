@@ -48,11 +48,11 @@ static struct lthread TESMA_ChangeMode_Lthread;
 void executeSpiTxRxStage();
 static int runTESMA_ChangeMode_Lthread(struct lthread * self)
 {
-    ex_setFreqHz(200);
+    ex_setFreqHz(400);
     ex_switchStage_SnsService(EXACTOLINK_LSM303AH_TYPE0);
     TESMA_DownloadData_Marker = 0;
     TESMA_DownloadData_Counter = 0;
-    TESMA_DownloadData_Max = 19;
+    TESMA_DownloadData_Max = 39;
     return 0;
 }
 static int runTESMA_GpioReceiver_Lthread(struct lthread * self)

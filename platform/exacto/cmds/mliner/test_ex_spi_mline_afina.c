@@ -66,6 +66,8 @@ uint32_t TESMAF_DataCheck_ScsBuff;
 
 uint8_t TESMAF_Sync_Marker = 1;
 
+uint8_t TESMAF_Sensors_Marker = 0;
+
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     start:
@@ -92,6 +94,11 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     // getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
     if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
     {
+        if (!TESMAF_Sensors_Marker)
+        {
+            ex_enableLed(EX_LED_BLUE);
+            TESMAF_Sensors_Marker = 1;
+        }
         ex_getData_ExDtStr(TESMAF_ReceivedData, 12, THR_SPI_RX);
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
         TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
