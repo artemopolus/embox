@@ -111,6 +111,11 @@ ex_service_transport_msg_t BufferToData;
 uint8_t Header[] = {7,7,7,7};
 uint8_t Ender[] = {5,5,5,5};
 
+uint8_t SNSSRV_SensorCheck_Max = 0;
+uint8_t SNSSRV_SensorCheck_Counter = 0;
+uint8_t SNSSRV_UploadData_Max = 0;
+uint8_t SNSSRV_UploadData_Counter = 0;
+
 //========================================================================
 void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value)
 {
