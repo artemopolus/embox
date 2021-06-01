@@ -23,6 +23,7 @@ module data_storage {
 	depends exacto.commander.buffer	
 	//depends exacto.commander.blink	
 	depends exacto.commander.services
+	depends exacto.hardtools.basic
 }
 module buffer{
 	option number buffersz=128

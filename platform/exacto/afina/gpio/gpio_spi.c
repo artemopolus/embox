@@ -43,6 +43,25 @@ void ex_disableLed(ex_led_type_t type)
         break;
     }
 }
+void ex_toggleLed(ex_led_type_t type)
+{
+    switch (type)
+    {
+    case EX_LED_RED:
+        break;
+    case EX_LED_GREEN:
+        LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_8);
+        break;
+    case EX_LED_BLUE:
+        LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_7);
+        break;
+    case EX_LED_RGB:
+        break;
+    default:
+        break;
+    }
+
+}
 void ex_enableGpio(exacto_gpio_types_t type)
 {
     switch (type)

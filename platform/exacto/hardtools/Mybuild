@@ -1,0 +1,18 @@
+package exacto.hardtools
+
+abstract module basic{
+
+}
+
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module basic_apollon extends exacto.hardtools.basic{
+	source "basic_stm32f1.c"
+	@IncludeExport(path="hardtools")
+	source "basic.h"
+}
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module basic_afina extends exacto.hardtools.basic{
+	source "basic_stm32f7.c"
+	@IncludeExport(path="hardtools")
+	source "basic.h"
+}

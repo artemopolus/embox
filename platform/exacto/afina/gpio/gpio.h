@@ -14,6 +14,7 @@ typedef enum{
 }exacto_gpio_types_t;
 extern void ex_enableLed(ex_led_type_t type);
 extern void ex_disableLed(ex_led_type_t type);
+extern void ex_toggleLed(ex_led_type_t type);
 extern void ex_enableGpio(exacto_gpio_types_t type);
 extern void ex_disableGpio(exacto_gpio_types_t type);
 extern uint32_t ex_checkGpio(exacto_gpio_types_t type);

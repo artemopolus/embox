@@ -70,8 +70,8 @@ uint8_t TESMAF_Sensors_Marker = 0;
 //проверка 
 static uint8_t TESMAF_Sensors_TickCnt = 0;
 static uint8_t TESMAF_Sensors_TickMax = 200;
-static uint8_t TESMAF_Sensors_BadCnt = 0;
-static uint8_t TESMAF_Sensors_BadMax = 20;
+static uint8_t TESMAF_Sensors_GoodCnt = 0;
+static uint8_t TESMAF_Sensors_GoodMax = 180;
 
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
@@ -97,31 +97,9 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         return lthread_yield(&&start, &&mutex_retry);
 	}
     // getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
-    if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
-    {
-        TESMAF_Sensors_TickCnt++;
-    }
-    else
-    {
-        if (TESMAF_Sensors_BadCnt > TESMAF_Sensors_BadMax)
-        {
-            //Датчики слишком долго ничего не слали
-            if (TESMAF_Sensors_Marker)
-            {
-                TESMAF_Sensors_Marker = 0;
-                ex_disableLed(EX_LED_BLUE);
-            }
-        }
-        TESMAF_Sensors_TickCnt = 0;
-        TESMAF_Sensors_BadCnt = 0;
-    }
+    
     if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
     {
-        if (!TESMAF_Sensors_Marker)
-        {
-            ex_enableLed(EX_LED_BLUE);
-            TESMAF_Sensors_Marker = 1;
-        }
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
         ex_getData_ExDtStr(TESMAF_ReceivedData, 12, THR_SPI_RX);
         TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
@@ -130,11 +108,9 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         TESMAF_DataCheck_CntBuff = TESMAF_DataCheck_Counter;
         TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
         
+        TESMAF_Sensors_GoodCnt++; //<======================================
     }
-    else
-    {
-        TESMAF_Sensors_BadCnt++;
-    }
+
     if (TESMAF_WindowPrinter_Marker == 1)
     {
         if (TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_LSM303AH_TYPE0)
@@ -235,7 +211,33 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
 static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 {
     TESP_TimReceiver_Counter++;
-    // printk("+");
+    if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
+    {
+        TESMAF_Sensors_TickCnt++;
+    }
+    else
+    {
+        if (TESMAF_Sensors_GoodCnt > TESMAF_Sensors_GoodMax)
+        {
+            if (!TESMAF_Sensors_Marker)
+            {
+                ex_enableLed(EX_LED_BLUE);
+                TESMAF_Sensors_Marker = 1;
+            }
+        }
+        else
+        {
+            //Датчики слишком долго ничего не слали
+            if (TESMAF_Sensors_Marker)
+            {
+                TESMAF_Sensors_Marker = 0;
+                ex_disableLed(EX_LED_BLUE);
+            }
+        }
+        TESMAF_Sensors_TickCnt = 0;
+        TESMAF_Sensors_GoodCnt = 0;
+        ex_toggleLed(EX_LED_GREEN);
+    }    // printk("+");
     // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
     updateMline();
     if (TESP_WindowPrinter_Counter < TESP_WindowPrinter_Max)
