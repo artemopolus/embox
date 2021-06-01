@@ -259,11 +259,12 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thre
         clearExactoDataStorage();
         // setHeaderExactoDataStorage(1,1,64);
     }
-    ExactoBufferUint8Type * tmp_buffer = NULL;
-    *tmp_buffer = ExOutputStorage[THR_SPI_TX].datastorage;
+    // ExactoBufferUint8Type * tmp_buffer = NULL;
+    // // *tmp_buffer = ExOutputStorage[THR_SPI_TX].datastorage;
     for (uint8_t i = 0; i < datacount; i++)
     {
-        pshfrc_exbu8(tmp_buffer, data[i]);
+        // pshfrc_exbu8(tmp_buffer, data[i]);
+        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
     }
     ExOutputStorage[THR_SPI_TX].result = result;
     // if (result == THR_CTRL_OK)
