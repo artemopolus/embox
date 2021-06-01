@@ -14,6 +14,10 @@
 
 #include "hardtools/basic.h"
 
+static uint32_t HTBS1_CRC_buf;
+static uint8_t  HTBS1_CRC_cnt = 0;
+static uint8_t  HTBS1_CRC_max = 4;
+
 EMBOX_UNIT_INIT(apollon_hardtools_init);
 static int apollon_hardtools_init(void)
 {
@@ -24,15 +28,14 @@ uint8_t ex_feedCRC(uint8_t * buffer, uint16_t buffer_length)
 {
   register uint32_t data = 0;
   register uint32_t index = 0;
-  for ( index = 0; index < buffer_length; index += 4)
+  for ( index = 0; (index + 3) < buffer_length; index += 4)
   {
-    data =  (uint32_t)(buffer[4*index + 3] << 24);
-    data |= (uint32_t)(buffer[4*index + 2] << 16);
-    data |= (uint32_t)(buffer[4*index + 1] << 8);
-    data |= (uint32_t)(buffer[4*index] );
+    data =  (uint32_t)(buffer[index + 3] << 24);
+    data |= (uint32_t)(buffer[index + 2] << 16);
+    data |= (uint32_t)(buffer[index + 1] << 8);
+    data |= (uint32_t)(buffer[index] );
     LL_CRC_FeedData32(CRC, data);
-  }
-  
+  }  
   return 0;
 }
 uint32_t ex_getResultCRC()
@@ -41,6 +44,37 @@ uint32_t ex_getResultCRC()
 }
 uint8_t  ex_getCRC(uint8_t * buffer, uint16_t buffer_length, uint32_t * result)
 {
+  ex_feedCRC(buffer, buffer_length);
+  *result = ex_getResultCRC();
+  return 0;
+}
+uint8_t ex_updateCRC(uint8_t value)
+{
+  if (HTBS1_CRC_cnt == 0)
+  {
+    HTBS1_CRC_buf = (uint32_t)(value);
+  }
+  else if (HTBS1_CRC_cnt == 1)
+  {
+    HTBS1_CRC_buf |= (uint32_t)(value << 8);
+  }
+  else if (HTBS1_CRC_cnt == 2)
+  {
+    HTBS1_CRC_buf |= (uint32_t)(value << 16);
+  }
+  else if (HTBS1_CRC_cnt == 3)
+  {
+    HTBS1_CRC_buf |= (uint32_t)(value << 24);
+    LL_CRC_FeedData32(CRC, HTBS1_CRC_buf);
+  }
+  if(HTBS1_CRC_cnt < HTBS1_CRC_max)
+  {
+    HTBS1_CRC_cnt++;
+  }
+  else
+  {
+    HTBS1_CRC_cnt = 0;
+  }
   return 0;
 }
 
