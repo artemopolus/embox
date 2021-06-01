@@ -71,7 +71,7 @@ uint8_t TESMAF_Sensors_Marker = 0;
 static uint8_t TESMAF_Sensors_TickCnt = 0;
 static uint8_t TESMAF_Sensors_TickMax = 200;
 static uint8_t TESMAF_Sensors_GoodCnt = 0;
-static uint8_t TESMAF_Sensors_GoodMax = 180;
+static uint8_t TESMAF_Sensors_GoodMax = 5;
 
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {

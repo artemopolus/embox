@@ -290,7 +290,7 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
     uint16_t address = 1;
     const uint8_t addrH = (uint8_t) (address << 8);
     const uint8_t addrL = (uint8_t) (address);
-    uint16_t length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage) + EXACTOLINK_START_DATA_POINT_VAL - 2;
+    uint16_t length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage) + EXACTOLINK_START_DATA_POINT_VAL;
     const uint8_t lenH = (uint8_t) (length << 8);
     const uint8_t lenL = (uint8_t) (length);
     const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
@@ -346,7 +346,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         return EXACTOLINK_NO_DATA;
     }
     grbfst_exbu8(tmp_buffer, &value); //[0] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     // grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value); //id
     if (value != EXACTOLINK_PCK_ID)
     {
@@ -356,18 +356,18 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     }
     ExDtStr_TrasmitSPI_Info.is_data_available = 1;
     grbfst_exbu8(tmp_buffer, &value); //[1]
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     // grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value); //lenL
     ExDtStr_TrasmitSPI_Info.length = (uint16_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[2] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     // grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value); //lenH
     ExDtStr_TrasmitSPI_Info.length += (uint16_t)(value << 8);
     grbfst_exbu8(tmp_buffer, &value); //[3] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     //type
     grbfst_exbu8(tmp_buffer, &value); //[4] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     //datatype
     if (value != EXACTOLINK_START_DATA_POINT_VAL)
     {
@@ -376,28 +376,28 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     }
     ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[5] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.datatype += (uint16_t)(value << 8);
     grbfst_exbu8(tmp_buffer, &value); //[6] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.priority = value;
     grbfst_exbu8(tmp_buffer, &value); //[7] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.datasrc = (uint16_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[8] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.datasrc += (uint16_t)(value << 8);
     grbfst_exbu8(tmp_buffer, &value); //[9] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter = (uint32_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[10] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter += (uint32_t)(value << 8);
     grbfst_exbu8(tmp_buffer, &value); //[11] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter += (uint32_t)(value << 16);
     grbfst_exbu8(tmp_buffer, &value); //[12] 
-    ex_updateCRC(value); 
+    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter += (uint32_t)(value << 24);
     ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
     ExDtStr_TransmitSPI_RxCounter++;
@@ -412,10 +412,11 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         else
         {
             ExDtStr_TrasmitSPI_Buffer[i] = value;
-            ex_updateCRC(value); 
+            // ex_updateCRC(value); 
         }
     }
-    uint32_t crc_calc = ex_getResultCRC();
+    uint32_t crc_calc;
+    ex_getCRC(&ExOutputStorage[THR_SPI_RX].datastorage.data[0],(ExDtStr_TrasmitSPI_Info.length - 4), &crc_calc);
     uint32_t crc_refr;
     grbfst_exbu8(tmp_buffer, &value);
     crc_refr = (uint32_t)(value); 

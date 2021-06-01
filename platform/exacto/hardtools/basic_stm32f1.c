@@ -44,6 +44,7 @@ uint32_t ex_getResultCRC()
 }
 uint8_t  ex_getCRC(uint8_t * buffer, uint16_t buffer_length, uint32_t * result)
 {
+  LL_CRC_ResetCRCCalculationUnit(CRC);
   ex_feedCRC(buffer, buffer_length);
   *result = ex_getResultCRC();
   return 0;
