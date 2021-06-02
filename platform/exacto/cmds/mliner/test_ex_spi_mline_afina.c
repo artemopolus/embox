@@ -101,7 +101,11 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
     {
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
-        ex_getData_ExDtStr(TESMAF_ReceivedData, 12, THR_SPI_RX);
+        TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.counter_raw[0];
+        TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.counter_raw[1];
+        TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[2];
+        TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[3];
+        ex_getData_ExDtStr(&TESMAF_ReceivedData[6], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
         TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
         TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
         TESMAF_DataCheck_Success++;
@@ -109,6 +113,7 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
         
         TESMAF_Sensors_GoodCnt++; //<======================================
+        lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
     }
 
     if (TESMAF_WindowPrinter_Marker == 1)
@@ -140,7 +145,7 @@ void updateMline()
         {
             uint64_t counter = 0;
             ex_convertUint8ToUint64(&TESMAF_ReceivedData[0], &counter);
-            lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+            // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
         }
     }
 }
@@ -262,6 +267,8 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
+    TESMAF_ReceivedData[0] = 0x11;
+    TESMAF_ReceivedData[1] = 0x11;
     if(initExactoFileManager())
     {
         printf("Can't run SD card\n");
