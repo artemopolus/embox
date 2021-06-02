@@ -79,6 +79,7 @@ typedef struct{
     uint8_t priority;
     uint16_t datasrc;
     uint32_t counter;
+    uint8_t counter_raw[4];
     uint8_t is_data_available;
     exactolink_package_result_t packagetype;
 }exactolink_package_info_t;
