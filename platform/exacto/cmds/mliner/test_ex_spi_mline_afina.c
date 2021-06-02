@@ -101,11 +101,13 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
     {
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
-        TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.counter_raw[0];
-        TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.counter_raw[1];
-        TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[2];
-        TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[3];
-        ex_getData_ExDtStr(&TESMAF_ReceivedData[6], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
+        TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
+        TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
+        TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[0];
+        TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[1];
+        TESMAF_ReceivedData[6] = TESMAF_ReceivedData_Info.counter_raw[2];
+        TESMAF_ReceivedData[7] = TESMAF_ReceivedData_Info.counter_raw[3];
+        ex_getData_ExDtStr(&TESMAF_ReceivedData[8], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
         TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
         TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
         TESMAF_DataCheck_Success++;

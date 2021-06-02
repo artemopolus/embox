@@ -75,6 +75,7 @@ typedef enum{
 
 typedef struct{
     uint16_t length;
+    uint8_t length_raw[2];
     uint16_t datatype;
     uint8_t priority;
     uint16_t datasrc;

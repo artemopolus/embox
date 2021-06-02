@@ -377,6 +377,8 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     }
 
     ExDtStr_TrasmitSPI_Info.length = pck_length - value - 4;
+    ExDtStr_TrasmitSPI_Info.length_raw[0] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length);
+    ExDtStr_TrasmitSPI_Info.length_raw[1] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length >> 8);
 
     ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[5] 
