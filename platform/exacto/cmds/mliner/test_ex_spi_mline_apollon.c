@@ -107,13 +107,18 @@ void printBufferData()
     start_point = TESMA_ReceivedData[EXACTOLINK_START_DATA_POINT_ADR];
 
     printf("\nData to transmit: %d\n", length);
-    for (uint8_t i = start_point  ; i < length; i+=2)
-    {
-        int16_t value;
-        ex_convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
-        printf("%d\t", value);
-    }
-    printf("\n");
+    // for (uint8_t i = start_point  ; i < length; i+=2)
+    // {
+    //     int16_t value;
+    //     ex_convertUint8ToInt16(&TESMA_ReceivedData[i], &value);
+    //     printf("%d\t", value);
+    // }
+    int16_t x, y, z;
+    ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point], &x);
+    ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 2], &y);
+    ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 4], &z);
+
+    printf("%d\t%d\t%d\n", x, y, z);
     printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer, TESMA_Tim_Buffer);
 #endif
     return; 
@@ -206,6 +211,7 @@ int main(int argc, char *argv[]) {
         {}
         printBufferData();
         TESMA_DownloadData_Marker = 0;
+        usleep(100);
     }
 
     return 0;
