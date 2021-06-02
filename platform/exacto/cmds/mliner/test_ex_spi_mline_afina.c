@@ -124,7 +124,7 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         {
             for (uint8_t i = 0; i < 6; i++)
             {
-                ex_convertUint8ToInt16(&TESMAF_ReceivedData[2*i], &TESMAF_ReceivedData_Data[i]);
+                ex_convertUint8ToInt16(&TESMAF_ReceivedData[8 + 2*i], &TESMAF_ReceivedData_Data[i]);
             }
             TESMAF_WindowPrinter_Marker = 2;
             // lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
