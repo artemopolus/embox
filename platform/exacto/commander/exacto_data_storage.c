@@ -465,6 +465,14 @@ uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info)
     info->length = ExDtStr_TrasmitSPI_Info.length;
     info->packagetype = ExDtStr_TrasmitSPI_Info.packagetype;
     info->priority = ExDtStr_TrasmitSPI_Info.priority;
+
+    info->counter_raw[0] = ExDtStr_TrasmitSPI_Info.counter_raw[0];
+    info->counter_raw[1] = ExDtStr_TrasmitSPI_Info.counter_raw[1];
+    info->counter_raw[2] = ExDtStr_TrasmitSPI_Info.counter_raw[2];
+    info->counter_raw[3] = ExDtStr_TrasmitSPI_Info.counter_raw[3];
+
+    info->length_raw[0] = ExDtStr_TrasmitSPI_Info.length_raw[0];
+    info->length_raw[1] = ExDtStr_TrasmitSPI_Info.length_raw[1];
     return 0;
 }
 void ex_updateCounter_ExDtStr(thread_type_t type)
