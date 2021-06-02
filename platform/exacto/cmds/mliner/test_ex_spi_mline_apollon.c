@@ -11,6 +11,7 @@
 #include "tim/tim.h"
 
 #include "sensor/sns_service.h"
+#include "kernel/printk.h"
 
 #define SPI_TXRX_PRINT_ON
 
@@ -67,6 +68,7 @@ static int runTESMA_GpioReceiver_Lthread(struct lthread * self)
 
 static int runTESMA_TimReceiver_Lthread(struct lthread * self)
 {
+    printk("+");
 
     if (TESMA_Sender_Counter < TESMA_Sender_Max)
     {
@@ -175,6 +177,7 @@ void executeSpiTxRxStage()
             turnOffSPI2_FULL_DMA();
         }
     } 
+    printk("-");
 }
 
 int main(int argc, char *argv[]) {

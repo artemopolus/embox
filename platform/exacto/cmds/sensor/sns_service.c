@@ -11,6 +11,8 @@
 #include <embox/unit.h>
 // #include <stm32f1xx_hal.h>
 #include <hal/reg.h>
+
+#include "kernel/printk.h"
 // #include <asm/arm_m_regs.h>
 #include "sensors/ism330dlc_reg.h"
 #include "sensors/lsm303ah_reg.h"
@@ -302,6 +304,7 @@ void executeStage()
 }
 static int runSendAndUploadThread(struct lthread * self)
 {
+    printk("@");
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
     uint16_t enabled = 0;
@@ -355,6 +358,7 @@ static int runSendAndUploadThread(struct lthread * self)
         UploadSnsDataCounter++;
 
     }
+    printk("!");
     return 0;
 }
 static int runSendThread(struct lthread * self)
