@@ -293,14 +293,22 @@ mutex_retry:
         return lthread_yield(&&start, &&mutex_retry);
     }
     ExDtStorage.isEmpty = 0;
-    ExOutputStorage[THR_SPI_RX].isready = 1;
-    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[2] == 17)
-        ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     // receiveExactoDataStorage();
-    if (ExOutputStorage[THR_SPI_TX].isready)
+    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[1] == 17)
     {
-        ex_enableGpio(EX_GPIO_SPI_MLINE);
+        ex_updateCounter_ExDtStr(THR_SPI_RX);
+        ExOutputStorage[THR_SPI_RX].isready = 1;
+        if (ExOutputStorage[THR_SPI_TX].isready)
+        {
+            ex_enableGpio(EX_GPIO_SPI_MLINE);
+        }
+    }
+    else
+    {
+        LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
+        LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
+        LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
     }
     return 0;
 }
@@ -354,9 +362,10 @@ static int SPI1_FULL_DMA_receive(struct lthread * self)
     //---------
     // if (_trg_thread->isready)
     // {
-        for (uint8_t i = 1; i < _datacount; i++)                        //
+        for (uint8_t i = 2; i < _datacount; i++)                        //
             pshfrc_exbu8(&_trg_thread->datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
     // }
+    // _trg_thread->result = THR_CTRL_READY;
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, _datacount);
     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
