@@ -14,6 +14,7 @@ module mliner_afina {
 	@IncludeExport(path="spi")
 	source "spi_mliner.h"
     depends exacto.commander.data_storage
+	depends exacto.afina.gpio.gpio_spi
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 	@NoRuntime depends third_party.bsp.stmf7cube.cube

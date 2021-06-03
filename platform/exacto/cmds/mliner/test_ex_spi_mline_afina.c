@@ -77,14 +77,9 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     start:
     // printk("&");
-    if (TESMAF_Sync_Marker)
-    {
-        ex_disableGpio(EX_GPIO_SPI_SYNC);
-        TESMAF_Sync_Marker = 0;
-    }
     
     disableMasterSpiDma();
-    ex_enableGpio(EX_GPIO_SPI_MLINE);
+    // ex_enableGpio(EX_GPIO_SPI_MLINE);
     ex_disableGpio(EX_GPIO_SPI_MLINE);
     enableMasterSpiDma();
     TESMAF_DataCheck_Counter++; 
@@ -244,6 +239,11 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
                 TESMAF_Sensors_Marker = 0;
                 ex_disableLed(EX_LED_BLUE);
             }
+            if (TESMAF_Sync_Marker)
+            {
+                ex_disableGpio(EX_GPIO_SPI_SYNC);
+                // TESMAF_Sync_Marker = 0;
+            }
         }
         TESMAF_Sensors_TickCnt = 0;
         TESMAF_Sensors_GoodCnt = 0;
@@ -275,6 +275,7 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
 int main(int argc, char *argv[]) {
     TESMAF_ReceivedData[0] = 0x11;
     TESMAF_ReceivedData[1] = 0x11;
+    ex_enableGpio(EX_GPIO_SPI_MLINE);
     if(initExactoFileManager())
     {
         printf("Can't run SD card\n");

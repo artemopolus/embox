@@ -21,6 +21,9 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_data_storage.h"
 
+
+#include "gpio/gpio.h"
+
 /**
  * @brief опредееляет количество данных, выделяемых в DMA
  * 
@@ -267,6 +270,10 @@ static int SPI1_FULL_DMA_tx_handler(struct lthread *self)
     _trg_buffer = (SPI1_FULL_DMA_buffer*) self;
     _trg_buffer->is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
+    if (ExOutputStorage[THR_SPI_RX].isready)
+    {
+        ex_enableGpio(EX_GPIO_SPI_MLINE);
+    }
     return 0;
 }
 /**
@@ -291,6 +298,10 @@ mutex_retry:
         ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     // receiveExactoDataStorage();
+    if (ExOutputStorage[THR_SPI_TX].isready)
+    {
+        ex_enableGpio(EX_GPIO_SPI_MLINE);
+    }
     return 0;
 }
 
