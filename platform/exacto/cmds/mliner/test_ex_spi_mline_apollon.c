@@ -166,7 +166,7 @@ void executeSpiTxRxStage()
         if (checkRxGetter())
         {
             TESMA_Rx_Counter++;
-            receiveExactoDataStorage();
+            // receiveExactoDataStorage();
         }
     }
     else
