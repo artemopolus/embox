@@ -173,6 +173,8 @@ static int SPI2_FULL_DMA_init(void)
 }
 void setupSPI2_FULL_DMA()
 {
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
@@ -232,7 +234,7 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
     ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
-    ex_updateCounter_ExDtStr(THR_SPI_TX);
+    // ex_updateCounter_ExDtStr(THR_SPI_TX);
 #ifdef SAM_REPORTER
     SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
     SAM_Ticker_Result = SAM_Ticker_Stop - SAM_Ticker_Start;
@@ -271,6 +273,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
+    ex_updateCounter_ExDtStr(THR_SPI_TX);
     return 0;
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)

@@ -117,6 +117,10 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         TESMAF_Sensors_GoodCnt++; //<======================================
         lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
     }
+    // else
+    // {
+    //     printk("s");
+    // }
 
     if (TESMAF_WindowPrinter_Marker == 1)
     {

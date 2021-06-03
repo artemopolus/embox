@@ -304,7 +304,7 @@ void executeStage()
 }
 static int runSendAndUploadThread(struct lthread * self)
 {
-    printk("@");
+    // printk("@");
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
     uint16_t enabled = 0;
@@ -358,7 +358,7 @@ static int runSendAndUploadThread(struct lthread * self)
         UploadSnsDataCounter++;
 
     }
-    printk("!");
+    // printk("!");
     return 0;
 }
 static int runSendThread(struct lthread * self)

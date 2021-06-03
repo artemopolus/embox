@@ -68,7 +68,7 @@ static int runTESMA_GpioReceiver_Lthread(struct lthread * self)
 
 static int runTESMA_TimReceiver_Lthread(struct lthread * self)
 {
-    printk("+");
+    // printk("+");
 
     if (TESMA_Sender_Counter < TESMA_Sender_Max)
     {
@@ -177,7 +177,7 @@ void executeSpiTxRxStage()
             turnOffSPI2_FULL_DMA();
         }
     } 
-    printk("-");
+    // printk("-");
 }
 
 int main(int argc, char *argv[]) {

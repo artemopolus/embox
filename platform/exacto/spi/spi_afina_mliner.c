@@ -200,6 +200,8 @@ static int SPI1_FULL_DMA_init(void)
 }
 void enableMasterSpiDma()
 {
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_RXTX_BUFFER_SIZE); //устанавливаем сколько символов передачть
+    LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
     LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
     LL_SPI_EnableDMAReq_RX(SPI1);
     LL_SPI_EnableDMAReq_TX(SPI1);
@@ -288,7 +290,7 @@ mutex_retry:
     if (SPI1_FULL_DMA_rx_buffer.dt_buffer[2] == 17)
         ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
-
+    // receiveExactoDataStorage();
     return 0;
 }
 

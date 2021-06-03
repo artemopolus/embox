@@ -436,12 +436,12 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     crc_refr += (uint32_t)(value << 16); 
     grbfst_exbu8(tmp_buffer, &value);
     crc_refr += (uint32_t)(value << 24); 
-    // if (crc_calc != crc_refr)
-    // {
-    //     ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_CRC_ERROR;
-    //     setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
-    //     return EXACTOLINK_CRC_ERROR;
-    // }
+    if (crc_calc != crc_refr)
+    {
+        ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_CRC_ERROR;
+        setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
+        return EXACTOLINK_CRC_ERROR;
+    }
     ExDtStr_TransmitSPI_BuffLen = i;
     ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_LSM303AH_TYPE0;
     return EXACTOLINK_LSM303AH_TYPE0;
