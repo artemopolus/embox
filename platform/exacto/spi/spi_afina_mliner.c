@@ -19,6 +19,7 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
+#include <kernel/printk.h>
 #include "commander/exacto_data_storage.h"
 
 
@@ -194,10 +195,10 @@ static int SPI1_FULL_DMA_init(void)
 
     //enable hardware for SPI and DMA
     // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
-    // LL_SPI_EnableDMAReq_RX(SPI1);
-    // LL_SPI_EnableDMAReq_TX(SPI1);
+    LL_SPI_EnableDMAReq_RX(SPI1);
+    LL_SPI_EnableDMAReq_TX(SPI1);
     // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
-    // LL_SPI_Enable(SPI1);
+    LL_SPI_Enable(SPI1);
     //SPI1_FULL_DMA_setdatalength(SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
     return 0;
 }
@@ -206,19 +207,19 @@ void enableMasterSpiDma()
     LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_RXTX_BUFFER_SIZE); //устанавливаем сколько символов передачть
     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
     LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_0); //enable receive
-    LL_SPI_EnableDMAReq_RX(SPI1);
-    LL_SPI_EnableDMAReq_TX(SPI1);
+    // LL_SPI_EnableDMAReq_RX(SPI1);
+    // LL_SPI_EnableDMAReq_TX(SPI1);
     LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
-    LL_SPI_Enable(SPI1);
+    // LL_SPI_Enable(SPI1);
 
 }
 void disableMasterSpiDma()
 {
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0); //enable receive
     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
-    LL_SPI_Disable(SPI1);
-    LL_SPI_DisableDMAReq_RX(SPI1);
-    LL_SPI_DisableDMAReq_TX(SPI1);
+    // LL_SPI_Disable(SPI1);
+    // LL_SPI_DisableDMAReq_RX(SPI1);
+    // LL_SPI_DisableDMAReq_TX(SPI1);
 
 }
 
@@ -306,6 +307,17 @@ mutex_retry:
     }
     // else
     // {
+    //     for (uint8_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+    //     {
+    //         if ((SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 0)&&(SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 255))
+    //         {
+    //             printk("_");
+    //         }
+    //     }
+        
+    // }
+    // else
+    // {
     //     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
     //     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
     //     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
@@ -325,7 +337,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
     if (ExOutputStorage[THR_SPI_RX].isready)
     {
-        for (uint8_t i = 2; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)                        //
+        for (uint8_t i = 1; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)                        //
             pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
         ExOutputStorage[THR_SPI_RX].isready = 0;
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
@@ -339,15 +351,16 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     _trg_thread = (thread_control_t *)self;
     const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
     if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
-        return 1;
-    // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);                //отлючаем поток передачи данных
-    uint8_t value = 0;
-    for (uint8_t i = 0; i < _datacount; i++)
     {
-        /* копирование данных */
-        //grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
-        grbfst_exbu8(&_trg_thread->datastorage, &value);
-        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+    // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);                //отлючаем поток передачи данных
+        uint8_t value = 0;
+        for (uint8_t i = 0; i < _datacount; i++)
+        {
+            /* копирование данных */
+            //grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
+            grbfst_exbu8(&_trg_thread->datastorage, &value);
+            SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+        }
     }
     _trg_thread->isready = 0;
 

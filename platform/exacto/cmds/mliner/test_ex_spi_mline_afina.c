@@ -273,6 +273,7 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
+    ex_setFreqHz(200);
     TESMAF_ReceivedData[0] = 0x11;
     TESMAF_ReceivedData[1] = 0x11;
     ex_enableGpio(EX_GPIO_SPI_MLINE);
