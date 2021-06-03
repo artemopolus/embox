@@ -78,15 +78,15 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     start:
     // printk("&");
     
-    disableMasterSpiDma();
-    // ex_enableGpio(EX_GPIO_SPI_MLINE);
+    // disableMasterSpiDma();
+    ex_enableGpio(EX_GPIO_SPI_MLINE);
     ex_disableGpio(EX_GPIO_SPI_MLINE);
-    enableMasterSpiDma();
+    // enableMasterSpiDma();
     TESMAF_DataCheck_Counter++; 
 
     setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK); 
     transmitExactoDataStorage();
-    receiveExactoDataStorage();
+    // receiveExactoDataStorage();
     mutex_retry:
 	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
         return lthread_yield(&&start, &&mutex_retry);
