@@ -25,6 +25,9 @@
 
 #include "gpio/gpio.h"
 
+
+static uint16_t SAM_PackageStart_Pointer = 2;
+
 /**
  * @brief опредееляет количество данных, выделяемых в DMA
  * 
@@ -296,7 +299,7 @@ mutex_retry:
     ExDtStorage.isEmpty = 0;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     // receiveExactoDataStorage();
-    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[1] == 17)
+    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[SAM_PackageStart_Pointer] == 17)
     {
         ex_updateCounter_ExDtStr(THR_SPI_RX);
         ExOutputStorage[THR_SPI_RX].isready = 1;
@@ -305,17 +308,17 @@ mutex_retry:
         //     ex_enableGpio(EX_GPIO_SPI_MLINE);
         // }
     }
-    // else
-    // {
-    //     for (uint8_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
-    //     {
-    //         if ((SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 0)&&(SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 255))
-    //         {
-    //             printk("_");
-    //         }
-    //     }
+    else
+    {
+        for (uint8_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+        {
+            if ((SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 0)&&(SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 255))
+            {
+                break;
+            }
+        }
         
-    // }
+    }
     // else
     // {
     //     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
@@ -337,7 +340,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
     if (ExOutputStorage[THR_SPI_RX].isready)
     {
-        for (uint8_t i = 1; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)                        //
+        for (uint8_t i = SAM_PackageStart_Pointer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)                        //
             pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
         ExOutputStorage[THR_SPI_RX].isready = 0;
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;

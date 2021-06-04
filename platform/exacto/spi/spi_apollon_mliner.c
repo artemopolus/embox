@@ -254,6 +254,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     {
         getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
         ExOutputStorage[THR_SPI_TX].isready = 0;
+        ex_updateCounter_ExDtStr(THR_SPI_TX);
     }
     if (ExOutputStorage[THR_SPI_RX].isready)
     {
@@ -265,7 +266,6 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
-    ex_updateCounter_ExDtStr(THR_SPI_TX);
     return 0;
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)

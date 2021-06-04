@@ -33,7 +33,7 @@ static cond_t           TESP_WindowPrinter_Signal;
 static struct mutex     TESP_WindowPrinter_Mutex;
 static struct lthread   TESP_WindowPrinter_Remainder_Lthread;
 uint8_t                 TESP_WindowPrinter_Counter = 0;
-uint8_t                 TESP_WindowPrinter_Max = 9;
+uint8_t                 TESP_WindowPrinter_Max = 19;
 uint8_t               TESMAF_WindowPrinter_Marker = 0;
 
 uint32_t TESP_TimReceiver_Counter = 0;
@@ -50,7 +50,7 @@ uint8_t TESMAF_DataToBuffer[TESMAF_MESSAGE_SIZE] = {0};
 uint8_t TESMAF_ReceivedData[TESMAF_MESSAGE_SIZE] = {0};
 
 uint8_t TESMAF_CheckDiv_Counter = 0;
-uint8_t TESMAF_CheckDiv_Max = 9;
+uint8_t TESMAF_CheckDiv_Max = 2;
 static struct lthread   TESMAF_CheckExactoStorage_Lthread;
 static struct mutex     TESMAF_CheckExactoStorage_Mutex; 
 
@@ -112,10 +112,10 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         TESMAF_Sensors_GoodCnt++; //<======================================
         lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
     }
-    // else
-    // {
-    //     printk("s");
-    // }
+    else
+    {
+        printk("s");
+    }
 
     if (TESMAF_WindowPrinter_Marker == 1)
     {
@@ -241,7 +241,7 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
             }
             if (TESMAF_Sync_Marker)
             {
-                ex_disableGpio(EX_GPIO_SPI_SYNC);
+                // ex_disableGpio(EX_GPIO_SPI_SYNC);
                 // TESMAF_Sync_Marker = 0;
             }
         }
@@ -273,7 +273,7 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
-    ex_setFreqHz(200);
+    ex_setFreqHz(100);
     TESMAF_ReceivedData[0] = 0x11;
     TESMAF_ReceivedData[1] = 0x11;
     ex_enableGpio(EX_GPIO_SPI_MLINE);
