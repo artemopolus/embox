@@ -73,26 +73,9 @@ static uint8_t TESMAF_Sensors_TickMax = 200;
 static uint8_t TESMAF_Sensors_GoodCnt = 0;
 static uint8_t TESMAF_Sensors_GoodMax = 5;
 
-static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
+static struct lthread   TESMAF_AfterCheckExStr_Lthread;
+static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
 {
-    start:
-    // printk("&");
-    
-    // disableMasterSpiDma();
-    ex_enableGpio(EX_GPIO_SPI_MLINE);
-    ex_disableGpio(EX_GPIO_SPI_MLINE);
-    // enableMasterSpiDma();
-    TESMAF_DataCheck_Counter++; 
-
-    setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK); 
-    transmitExactoDataStorage();
-    // receiveExactoDataStorage();
-    mutex_retry:
-	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
-        return lthread_yield(&&start, &&mutex_retry);
-	}
-    // getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
-    
     if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
     {
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
@@ -116,6 +99,29 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     {
         printk("s");
     }
+    return 0;
+}
+static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
+{
+    start:
+    // printk("&");
+    
+    // disableMasterSpiDma();
+    ex_enableGpio(EX_GPIO_SPI_MLINE);
+    ex_disableGpio(EX_GPIO_SPI_MLINE);
+    // enableMasterSpiDma();
+    TESMAF_DataCheck_Counter++; 
+
+    setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK); 
+    transmitExactoDataStorage();
+    // receiveExactoDataStorage();
+    mutex_retry:
+	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
+        return lthread_yield(&&start, &&mutex_retry);
+	}
+    // getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
+    
+    lthread_launch(&TESMAF_AfterCheckExStr_Lthread);
 
     if (TESMAF_WindowPrinter_Marker == 1)
     {
@@ -299,12 +305,16 @@ int main(int argc, char *argv[]) {
     lthread_init(&TESP_PrintToSD_Remainder_Lthread, runTESP_PrintToSD_Remainder_Lthread);
 
     lthread_init(&TESMAF_CheckExactoStorage_Lthread, runTESMAF_CheckExactoStorage_Lthread);
-    
+    lthread_init(&TESMAF_AfterCheckExStr_Lthread, runTESMAF_AfterCheckExStr_Lthread);
     
     schedee_priority_set(&TESP_PrintToSD_Thread->schedee, 200);
-    schedee_priority_set(&TESP_PrintToSD_Remainder_Lthread.schedee, 230);
+    schedee_priority_set(&TESP_PrintToSD_Remainder_Lthread.schedee, 220);
     schedee_priority_set(&TESP_WindowPrinter_Thread->schedee, 150);
     schedee_priority_set(&TESP_WindowPrinter_Remainder_Lthread.schedee, 210);
+
+    schedee_priority_set(&TESMAF_AfterCheckExStr_Lthread.schedee, 225);
+    schedee_priority_set(&TESMAF_CheckExactoStorage_Lthread.schedee, 230);
+
 
     lthread_launch(&TESP_Subscribe_Lthread);
     while(!TESP_Subscribe_Marker)

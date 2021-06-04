@@ -338,13 +338,13 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     //pack specific
     ExactoBufferUint8Type * tmp_buffer = NULL;
     *tmp_buffer = ExOutputStorage[THR_SPI_RX].datastorage;
-    if (ExOutputStorage[THR_SPI_RX].result != THR_CTRL_OK)
+    if (ExOutputStorage[THR_SPI_RX].result != THR_CTRL_WAIT)
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
         setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
         return EXACTOLINK_NO_DATA;
     }
-    ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
+    ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
     // if (!ExOutputStorage[THR_SPI_RX].isready)
     // // if (!grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))
     // {

@@ -336,40 +336,45 @@ mutex_retry:
  */
 static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
-    disableMasterSpiDma();
-    // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
-    if (ExOutputStorage[THR_SPI_RX].isready)
+    if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_OK))
     {
+        //Данные пришли на вход и проверены
+        disableMasterSpiDma();
         for (uint8_t i = SAM_PackageStart_Pointer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)                        //
             pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
         ExOutputStorage[THR_SPI_RX].isready = 0;
-        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
-    }
-    // LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
-    // LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
+        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
 
-
-
-    thread_control_t * _trg_thread;
-    _trg_thread = (thread_control_t *)self;
-    const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
-    if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
-    {
-    // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5);                //отлючаем поток передачи данных
-        uint8_t value = 0;
-        for (uint8_t i = 0; i < _datacount; i++)
+        thread_control_t * _trg_thread;
+        _trg_thread = (thread_control_t *)self;
+        const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
+        if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
         {
-            /* копирование данных */
-            //grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
-            grbfst_exbu8(&_trg_thread->datastorage, &value);
-            SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+            uint8_t value = 0;
+            for (uint8_t i = 0; i < _datacount; i++)
+            {
+                grbfst_exbu8(&_trg_thread->datastorage, &value);
+                SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+            }
         }
+        _trg_thread->isready = 0;
+        enableMasterSpiDma();
     }
-    _trg_thread->isready = 0;
-
-    // LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, _datacount); //устанавливаем сколько символов передачть
-    // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5);                 //включаем поток передачи данных
-    enableMasterSpiDma();
+    else if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_WAIT))
+    {
+        // Данные приходили, но не проверены: ничего не делать
+    }
+    else if (!ExOutputStorage[THR_SPI_RX].isready)
+    {
+        // данные не приходили, состояние не интересует : перезагрузить 
+        disableMasterSpiDma();
+        enableMasterSpiDma();
+    }
+    else
+    {
+        // Данные пришли, но состояние не известно : отправить на проверку
+        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
+    }
     return 0;
 }
 /**
