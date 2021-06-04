@@ -5,45 +5,64 @@
 #include <stdint.h>
 #include <commander/exacto_buffer.h>
 
-
+void setDataToBuffer(ExactoBufferUint8Type * buffer, uint8_t * src, const uint16_t length)
+{
+    for (uint16_t i = 0; i < length; i++)
+    {
+        pshfrc_exbu8(buffer, src[i]);
+    }
+}
+void getDataFromBuffer(ExactoBufferUint8Type * buffer, uint8_t * src, const uint16_t length)
+{
+    for (uint16_t i = 0; i < length; i++)
+    {
+        uint8_t value;
+        grbfst_exbu8(buffer, &value);
+        src[i] = value;
+    }
+}
+uint8_t checkBuffers(uint8_t * dst, uint8_t * src, const uint16_t length)
+{
+    for (uint16_t i = 0; i < length; i++)
+    {
+        if (dst[i] != src[i])
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
 int main(int argc, char *argv[]) {
     ExactoBufferUint8Type datastorage;
-    uint8_t buffer[64] = {0};
+    uint8_t buffer_str[EXACTO_BUFFER_UINT8_SZ] = {0};
+    uint8_t buffer_dst[EXACTO_BUFFER_UINT8_SZ] = {0};
     setini_exbu8(&datastorage);
 
-    for (uint8_t i = 0; i < 16; i++)
+    for (uint16_t i = 0; i < EXACTO_BUFFER_UINT8_SZ; i++)
     {
-        pshfrc_exbu8(&datastorage, i);
-        printf("lst: %d\n", datastorage.lst);
+        uint8_t value = (uint8_t) i;
+        buffer_str[i] = value;
+        // pshfrc_exbu8(&datastorage, value);
     }
-    printf("Datalen: %d\n", getlen_exbu8(&datastorage));
-    for (uint8_t i = 0; i < 5; i++)
+    uint16_t size = 100;
+    for (uint8_t i = 0; i < 3; i++)
     {
-        pshfrc_exbu8(&datastorage, i);
-        printf("lst: %d\n", datastorage.lst);
+        setDataToBuffer(&datastorage, buffer_str, size);
     }
-    printf("Datalen: %d\n", getlen_exbu8(&datastorage));
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
-        pshfrc_exbu8(&datastorage, i);
-        printf("lst: %d\n", datastorage.lst);
-    }    
-    printf("Data:lst: %d\n", datastorage.lst);
+        getDataFromBuffer(&datastorage, buffer_dst, size);
+        printf("Check data [%d]:", i);
+        if (checkBuffers(buffer_str, buffer_dst, size))
+        {
+            printf("Done\n");
+        }
+        else
+        {
+            printf("Failed\n");
+        }
+    }
     
-    printf("Datalen: %d\n", getlen_exbu8(&datastorage));
-    grball_exbu8(&datastorage, buffer);
-
-    printf("Data:lst: %d\n", datastorage.lst);
-    printf("Datalen: %d\n", getlen_exbu8(&datastorage));
-
-    for (uint8_t i = 0; i < 64; i++)
-    {
-        printf("%d ", buffer[i]);
-    }
-
-    setemp_exbu8(&datastorage);
-
-    printf("Datalen: %d\n", getlen_exbu8(&datastorage));
     printf("Datalen: %d\n", getlen_exbu8(&datastorage));
     return 0;
 }
