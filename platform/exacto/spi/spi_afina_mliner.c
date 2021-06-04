@@ -340,8 +340,17 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     {
         //Данные пришли на вход и проверены
         disableMasterSpiDma();
-        for (uint8_t i = SAM_PackageStart_Pointer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)                        //
-            pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+        setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
+        for (uint8_t i = SAM_PackageStart_Pointer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+        {
+            uint8_t value;                        
+            value = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
+            // if ((i == SAM_PackageStart_Pointer)&&(value != 17))
+                // printk("+");
+            
+            pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, value);
+            // pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+        }
         ExOutputStorage[THR_SPI_RX].isready = 0;
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
 
