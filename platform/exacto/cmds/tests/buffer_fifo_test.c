@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
         buffer_str[i] = value;
         // pshfrc_exbu8(&datastorage, value);
     }
-    uint16_t size = 100;
+    uint16_t size = 45;
     for (uint8_t i = 0; i < 3; i++)
     {
         setDataToBuffer(&datastorage, buffer_str, size);
