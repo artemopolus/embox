@@ -97,7 +97,7 @@ static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
     }
     else
     {
-        printk("s");
+        // printk("s");
     }
     return 0;
 }
