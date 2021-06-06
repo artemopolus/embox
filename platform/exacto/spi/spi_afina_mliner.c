@@ -375,9 +375,10 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     }
     else if (!ExOutputStorage[THR_SPI_RX].isready)
     {
-        // данные не приходили, состояние не интересует : перезагрузить 
-        disableMasterSpiDma();
-        enableMasterSpiDma();
+        // данные не приходили, состояние не интересует : перезагрузить отправку данных
+        LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+        LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_RXTX_BUFFER_SIZE); //устанавливаем сколько символов передачть
+        LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
     }
     else
     {
