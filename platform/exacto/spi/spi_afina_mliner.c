@@ -25,8 +25,8 @@
 
 #include "gpio/gpio.h"
 
-
-static uint16_t SAM_PackageStart_Pointer = 2;
+#define SAM_PACKAGE_START_POINTER 2
+static uint16_t SAM_PackageStart_Buffer = SAM_PACKAGE_START_POINTER;
 
 /**
  * @brief опредееляет количество данных, выделяемых в DMA
@@ -299,21 +299,21 @@ mutex_retry:
     ExDtStorage.isEmpty = 0;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
     // receiveExactoDataStorage();
-    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[SAM_PackageStart_Pointer] == 17)
+    if (SPI1_FULL_DMA_rx_buffer.dt_buffer[SAM_PACKAGE_START_POINTER] == EXACTOLINK_PCK_ID)
     {
         ex_updateCounter_ExDtStr(THR_SPI_RX);
         ExOutputStorage[THR_SPI_RX].isready = 1;
-        // if (ExOutputStorage[THR_SPI_TX].isready)
-        // {
-        //     ex_enableGpio(EX_GPIO_SPI_MLINE);
-        // }
+        SAM_PackageStart_Buffer = SAM_PACKAGE_START_POINTER;
     }
     else
     {
         for (uint8_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
         {
-            if ((SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 0)&&(SPI1_FULL_DMA_rx_buffer.dt_buffer[i] != 255))
+            if (SPI1_FULL_DMA_rx_buffer.dt_buffer[i] == EXACTOLINK_PCK_ID)
             {
+                SAM_PackageStart_Buffer = i;
+                ex_updateCounter_ExDtStr(THR_SPI_RX);
+                ExOutputStorage[THR_SPI_RX].isready = 1;
                 break;
             }
         }
@@ -341,7 +341,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
         //Данные пришли на вход и проверены
         disableMasterSpiDma();
         setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
-        for (uint8_t i = SAM_PackageStart_Pointer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+        for (uint8_t i = SAM_PackageStart_Buffer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
         {
             uint8_t value;                        
             value = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
@@ -373,12 +373,19 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     {
         // Данные приходили, но не проверены: ничего не делать
     }
+    else if ((!ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_NO_RESULT))
+    {
+        // Начальное состояние
+        ExOutputStorage[THR_SPI_RX].isready = 1;
+        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
+
+    }
     else if (!ExOutputStorage[THR_SPI_RX].isready)
     {
         // данные не приходили, состояние не интересует : перезагрузить отправку данных
-        LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
-        LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_RXTX_BUFFER_SIZE); //устанавливаем сколько символов передачть
-        LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+        // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+        // LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_RXTX_BUFFER_SIZE); //устанавливаем сколько символов передачть
+        // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
     }
     else
     {

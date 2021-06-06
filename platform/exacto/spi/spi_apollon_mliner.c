@@ -233,7 +233,7 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 {
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
-    ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
+    ExOutputStorage[THR_SPI_TX].result = THR_CTRL_NO_RESULT;
     // ex_updateCounter_ExDtStr(THR_SPI_TX);
 #ifdef SAM_REPORTER
     SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
