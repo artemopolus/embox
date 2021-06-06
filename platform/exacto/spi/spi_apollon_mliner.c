@@ -242,30 +242,58 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 #endif
     return 0;
 }
-static int SPI2_FULL_DMA_transmit(struct lthread * self)
+void SPI2_disableChannels()
 {
-#ifdef SAM_REPORTER
-    SAM_Ticker_Start = ex_dwt_cyccnt_start();
-#endif
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
-
-    if ((ExOutputStorage[THR_SPI_TX].result == THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
-    {
-        getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
-        ExOutputStorage[THR_SPI_TX].isready = 0;
-        ex_updateCounter_ExDtStr(THR_SPI_TX);
-    }
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
+}
+void SPI2_enableChannels()
+{
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
+}
+void SPI2_updateRx()
+{
     if (ExOutputStorage[THR_SPI_RX].isready)
     {
         for (uint8_t i = 0; i < SPI2_FULL_DMA_RXTX_BUFFER_SIZE; i++)
             pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
         ExOutputStorage[THR_SPI_RX].isready = 0;
     }
-    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
-    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
+}
+static int SPI2_FULL_DMA_transmit(struct lthread * self)
+{
+#ifdef SAM_REPORTER
+    SAM_Ticker_Start = ex_dwt_cyccnt_start();
+#endif
+    if ((ExOutputStorage[THR_SPI_TX].result == THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
+    {
+        //данные готовы к отправке и шлюз свободен
+        SPI2_disableChannels();
+        getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
+        ExOutputStorage[THR_SPI_TX].isready = 0;
+        ExOutputStorage[THR_SPI_TX].result = THR_CTRL_INIT;
+        ex_updateCounter_ExDtStr(THR_SPI_TX);
+        SPI2_updateRx();
+        SPI2_enableChannels();
+    }
+    else if ((ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
+    {
+        // данные не готовы, но шлюз свободен : ничего не делать
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+        SPI2_updateRx();
+        LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+        LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+    }
+    else // ! ExOutputStorage[THR_SPI_TX].isready
+    {
+        //шлюз занят, готовность данных не имеет значения : повторить отправку
+        SPI2_disableChannels();
+        SPI2_updateRx();
+        SPI2_enableChannels();
+    }
     return 0;
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)
