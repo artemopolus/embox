@@ -290,9 +290,10 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     else // ! ExOutputStorage[THR_SPI_TX].isready
     {
         //шлюз занят, готовность данных не имеет значения : повторить отправку
-        SPI2_disableChannels();
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
         SPI2_updateRx();
-        SPI2_enableChannels();
+        LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+        LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     }
     return 0;
 }
