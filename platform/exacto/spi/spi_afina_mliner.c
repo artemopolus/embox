@@ -274,10 +274,7 @@ static int SPI1_FULL_DMA_tx_handler(struct lthread *self)
     _trg_buffer = (SPI1_FULL_DMA_buffer*) self;
     _trg_buffer->is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
-    if (ExOutputStorage[THR_SPI_RX].isready)
-    {
-        ex_enableGpio(EX_GPIO_SPI_MLINE);
-    }
+    ex_enableGpio(EX_GPIO_SPI_MLINE); //теперь можно обновлять tx на аполлоне
     return 0;
 }
 /**
@@ -327,6 +324,18 @@ mutex_retry:
     // }
     return 0;
 }
+void SPI1_updateTx()
+{
+    if (!ExOutputStorage[THR_SPI_TX].isready)
+        return;
+    uint8_t value;
+    for (uint8_t i = 0; i < ExOutputStorage[THR_SPI_TX].datalen; i++)
+    {
+        grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
+        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+    }
+    ExOutputStorage[THR_SPI_TX].isready = 0;
+}
 
 /**
  * @brief записываем данные в массив передачи данных
@@ -353,20 +362,8 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
         }
         ExOutputStorage[THR_SPI_RX].isready = 0;
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
-
-        thread_control_t * _trg_thread;
-        _trg_thread = (thread_control_t *)self;
-        const uint32_t _datacount = getlen_exbu8(&_trg_thread->datastorage);
-        if (_datacount > SPI1_FULL_DMA_RXTX_BUFFER_SIZE)
-        {
-            uint8_t value = 0;
-            for (uint8_t i = 0; i < _datacount; i++)
-            {
-                grbfst_exbu8(&_trg_thread->datastorage, &value);
-                SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
-            }
-        }
-        _trg_thread->isready = 0;
+        SPI1_updateTx();
+        ex_disableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
         enableMasterSpiDma();
     }
     else if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_WAIT))
@@ -386,6 +383,10 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
         // LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
         // LL_DMA_SetDataLength    (DMA2, LL_DMA_STREAM_5, SPI1_FULL_DMA_RXTX_BUFFER_SIZE); //устанавливаем сколько символов передачть
         // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
+        disableMasterSpiDma();
+        SPI1_updateTx();
+        ex_disableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
+        enableMasterSpiDma();
     }
     else
     {

@@ -107,8 +107,8 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     // printk("&");
     
     // disableMasterSpiDma();
-    ex_enableGpio(EX_GPIO_SPI_MLINE);
-    ex_disableGpio(EX_GPIO_SPI_MLINE);
+    // ex_enableGpio(EX_GPIO_SPI_MLINE);
+    // ex_disableGpio(EX_GPIO_SPI_MLINE);
     // enableMasterSpiDma();
     TESMAF_DataCheck_Counter++; 
 
