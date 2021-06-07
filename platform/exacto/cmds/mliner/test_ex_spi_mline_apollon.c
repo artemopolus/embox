@@ -150,6 +150,7 @@ void executeSpiTxRxStage()
         lthread_launch(&TESMA_DownloadData_Lthread );
         TESMA_DownloadData_Counter = 0;
     }
+    transmitExactoDataStorage();
 
     if (!ex_checkGpio(EX_GPIO_SPI_MLINE))
     {
@@ -158,16 +159,10 @@ void executeSpiTxRxStage()
             TESMA_MlineSpiEnableMarker = 1;
             setupSPI2_FULL_DMA();
         }
-            transmitExactoDataStorage();
         if (checkTxSender())
-        {
             TESMA_Tx_Counter++;
-        }
         if (checkRxGetter())
-        {
             TESMA_Rx_Counter++;
-            // receiveExactoDataStorage();
-        }
     }
     else
     {

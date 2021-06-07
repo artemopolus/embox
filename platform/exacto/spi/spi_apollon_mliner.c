@@ -22,6 +22,8 @@
 #include "commander/exacto_data_storage.h"
 #include "ex_utils.h"
 
+#include "gpio/gpio.h"
+
 // #define SAM_REPORTER
 #ifdef SAM_REPORTER
 #include "kernel/printk.h"
@@ -271,17 +273,20 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     if ((ExOutputStorage[THR_SPI_TX].result == THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
     {
         //данные готовы к отправке и шлюз свободен
-        SPI2_disableChannels();
-        getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
-        ExOutputStorage[THR_SPI_TX].isready = 0;
-        ExOutputStorage[THR_SPI_TX].result = THR_CTRL_INIT;
-        ex_updateCounter_ExDtStr(THR_SPI_TX);
-        SPI2_updateRx();
-        SPI2_enableChannels();
+        if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
+        {
+            SPI2_disableChannels();
+            getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
+            ExOutputStorage[THR_SPI_TX].isready = 0;
+            ExOutputStorage[THR_SPI_TX].result = THR_CTRL_INIT;
+            ex_updateCounter_ExDtStr(THR_SPI_TX);
+            SPI2_updateRx();
+            SPI2_enableChannels();
+        }
     }
     else if ((ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
     {
-        // данные не готовы, но шлюз свободен : ничего не делать
+        // данные не готовы, но шлюз свободен : ничего не делать, только принимать что-либо
         LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
         SPI2_updateRx();
         LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
@@ -290,10 +295,12 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     else // ! ExOutputStorage[THR_SPI_TX].isready
     {
         //шлюз занят, готовность данных не имеет значения : повторить отправку
-        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
-        SPI2_updateRx();
-        LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
-        LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+        if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
+        {
+            SPI2_disableChannels();
+            SPI2_updateRx();
+            SPI2_enableChannels();
+        }
     }
     return 0;
 }
