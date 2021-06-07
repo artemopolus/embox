@@ -274,7 +274,7 @@ static int SPI1_FULL_DMA_tx_handler(struct lthread *self)
     _trg_buffer = (SPI1_FULL_DMA_buffer*) self;
     _trg_buffer->is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
-    ex_enableGpio(EX_GPIO_SPI_MLINE); //теперь можно обновлять tx на аполлоне
+    ex_disableGpio(EX_GPIO_SPI_MLINE); //теперь можно обновлять tx на аполлоне
     return 0;
 }
 /**
@@ -363,7 +363,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
         ExOutputStorage[THR_SPI_RX].isready = 0;
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
         SPI1_updateTx();
-        ex_disableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
+        ex_enableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
         enableMasterSpiDma();
     }
     else if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_WAIT))

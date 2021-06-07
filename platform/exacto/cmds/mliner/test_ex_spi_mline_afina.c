@@ -76,7 +76,8 @@ static uint8_t TESMAF_Sensors_GoodMax = 5;
 static struct lthread   TESMAF_AfterCheckExStr_Lthread;
 static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
 {
-    if (ex_checkData_ExDtStr() == EXACTOLINK_LSM303AH_TYPE0)
+    exactolink_package_result_t exactolink_result = ex_checkData_ExDtStr();
+    if (exactolink_result == EXACTOLINK_LSM303AH_TYPE0)
     {
         ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
         TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
