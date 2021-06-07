@@ -2,6 +2,7 @@
 #include "hardtools/basic.h"
 #include <embox/unit.h>
 // #include "blink/blinker.h"
+#include <kernel/printk.h>
 
 
 uint32_t ExDtStr_TransmitSPI_Counter = 0;
@@ -15,7 +16,12 @@ exactolink_package_info_t ExDtStr_TrasmitSPI_Info = {
     .is_data_available = 0,
     .packagetype = EXACTOLINK_NO_DATA,
 };
+exactolink_package_info_t ExDtStr_TrasmitSPI_Info_tmp = {
+    .is_data_available = 0,
+    .packagetype = EXACTOLINK_NO_DATA,
+};
 uint32_t ExDtStr_TrasmitSPI_RefCounter = 0;
+uint32_t ExDtStr_TrasmitSPI_RefCounterPrev = 0;
 /**
  * @brief store info and data about external input
  * 
@@ -338,6 +344,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     //pack specific
     ExactoBufferUint8Type * tmp_buffer = NULL;
     *tmp_buffer = ExOutputStorage[THR_SPI_RX].datastorage;
+    ex_getInfo_ExDtStr(&ExDtStr_TrasmitSPI_Info_tmp); //<===== сохраняем информацию о предыдущей итерации
     if (ExOutputStorage[THR_SPI_RX].result != THR_CTRL_WAIT)
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
@@ -345,16 +352,8 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         return EXACTOLINK_NO_DATA;
     }
     ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
-    // if (!ExOutputStorage[THR_SPI_RX].isready)
-    // // if (!grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))
-    // {
-    //     ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
-    //     setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
-    //     return EXACTOLINK_NO_DATA;
-    // }
-    grbfst_exbu8(tmp_buffer, &value); //[0] 
-    // ex_updateCRC(value); 
-    // grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value); //id
+ 
+    grbfst_exbu8(tmp_buffer, &value); //[0] id
     if (value != EXACTOLINK_PCK_ID)
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
@@ -362,21 +361,13 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         return EXACTOLINK_NO_DATA;
     }
     ExDtStr_TrasmitSPI_Info.is_data_available = 1;
-    grbfst_exbu8(tmp_buffer, &value); //[1]
-    // ex_updateCRC(value); 
-    // grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value); //lenL
+    grbfst_exbu8(tmp_buffer, &value); //[1]lenL
     uint16_t pck_length;
     pck_length = (uint16_t)value;
-    grbfst_exbu8(tmp_buffer, &value); //[2] 
-    // ex_updateCRC(value); 
-    // grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value); //lenH
+    grbfst_exbu8(tmp_buffer, &value); //[2] lenH
     pck_length += (uint16_t)(value << 8);
-    grbfst_exbu8(tmp_buffer, &value); //[3] 
-    // ex_updateCRC(value); 
-    //type
-    grbfst_exbu8(tmp_buffer, &value); //[4] 
-    // ex_updateCRC(value); 
-    //datatype
+    grbfst_exbu8(tmp_buffer, &value); //[3]type 
+    grbfst_exbu8(tmp_buffer, &value); //[4]datatype 
     if (value != EXACTOLINK_START_DATA_POINT_VAL)
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
@@ -389,33 +380,41 @@ exactolink_package_result_t ex_checkData_ExDtStr()
 
     ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[5] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.datatype += (uint16_t)(value << 8);
+
     grbfst_exbu8(tmp_buffer, &value); //[6] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.priority = value;
+
     grbfst_exbu8(tmp_buffer, &value); //[7] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.datasrc = (uint16_t)value;
     grbfst_exbu8(tmp_buffer, &value); //[8] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_Info.datasrc += (uint16_t)(value << 8);
+
+    ExDtStr_TrasmitSPI_RefCounterPrev = ExDtStr_TrasmitSPI_RefCounter;  //<=== сохраняем предудцщие данные
+    
     grbfst_exbu8(tmp_buffer, &value); //[9] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter = (uint32_t)value;
     ExDtStr_TrasmitSPI_Info.counter_raw[0] = value;
     grbfst_exbu8(tmp_buffer, &value); //[10] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter += (uint32_t)(value << 8);
     ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
     grbfst_exbu8(tmp_buffer, &value); //[11] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter += (uint32_t)(value << 16);
     ExDtStr_TrasmitSPI_Info.counter_raw[2] = value;
     grbfst_exbu8(tmp_buffer, &value); //[12] 
-    // ex_updateCRC(value); 
     ExDtStr_TrasmitSPI_RefCounter += (uint32_t)(value << 24);
     ExDtStr_TrasmitSPI_Info.counter_raw[3] = value;
+
+    if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) > 1)
+    {
+        // пропущены данные
+        printk("@");
+    }
+    else if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) == 0)
+    {
+        // дублирование данных
+        printk("#");
+    }
     ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
     ExDtStr_TransmitSPI_RxCounter++;
     uint16_t i;

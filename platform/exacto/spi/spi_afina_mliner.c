@@ -301,6 +301,7 @@ mutex_retry:
         ex_updateCounter_ExDtStr(THR_SPI_RX);
         ExOutputStorage[THR_SPI_RX].isready = 1;
         SAM_PackageStart_Buffer = SAM_PACKAGE_START_POINTER;
+        return 0;
     }
     else
     {
@@ -311,17 +312,12 @@ mutex_retry:
                 SAM_PackageStart_Buffer = i;
                 ex_updateCounter_ExDtStr(THR_SPI_RX);
                 ExOutputStorage[THR_SPI_RX].isready = 1;
-                break;
+                return 0;
             }
         }
         
     }
-    // else
-    // {
-    //     LL_DMA_DisableStream(DMA2, LL_DMA_STREAM_0);                    //отлючаем поток передачи данных
-    //     LL_DMA_SetDataLength    (DMA2, LL_DMA_CHANNEL_0, SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
-    //     LL_DMA_EnableStream (DMA2, LL_DMA_STREAM_0);
-    // }
+    printk("$");
     return 0;
 }
 void SPI1_updateTx()
