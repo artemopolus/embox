@@ -100,6 +100,7 @@ start:
     TESMAF_CounterBuffer_Input = cnt_buf;
 
     ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
+    TESMAF_ReceivedData_Counter++;
 mutex_chk:
 	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
         return lthread_yield(&&start, &&mutex_chk);
@@ -123,7 +124,6 @@ mutex_chk:
     {
         pshfrc_exbu8(&TESMAF_ReceivedData, 0x00);
     }
-    TESMAF_ReceivedData_Counter++;
 
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
     // TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
@@ -208,7 +208,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     uint32_t data_to_sd_cnt = 0;
     uint32_t lst_cnt = 0;
     uint32_t delta = 0;
-
+    uint16_t fast_write_cnt = 0;
     while(1)
     {
         uint32_t current_cnt = TESMAF_ReceivedData_Info.counter;
@@ -217,17 +217,22 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         {
             printk("&");
             lst_cnt++;
+            fast_write_cnt = 0;
         }
         else if ((current_cnt - data_to_sd_cnt) == 0)
         {
             printk("*");
         }
+        else
+        {
+            fast_write_cnt++;
+        }
         data_to_sd_cnt = current_cnt;
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
-        mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         ex_pshExBufToSD();
+        mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         // ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
         mutex_lock(&TESP_PrintToSD_Mutex);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
@@ -334,8 +339,10 @@ int main(int argc, char *argv[]) {
     ex_setFreqHz(100);
     // TESMAF_ReceivedData[0] = 0x11;
     // TESMAF_ReceivedData[1] = 0x11;
+    
     setini_exbu8(&TESMAF_ReceivedData);
     ex_enableGpio(EX_GPIO_SPI_MLINE);
+
     if(initExactoFileManager())
     {
         printf("Can't run SD card\n");
