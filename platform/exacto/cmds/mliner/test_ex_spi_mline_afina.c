@@ -76,30 +76,37 @@ static uint8_t TESMAF_Sensors_GoodMax = 5;
 static struct lthread   TESMAF_AfterCheckExStr_Lthread;
 static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
 {
-    exactolink_package_result_t exactolink_result = ex_checkData_ExDtStr();
-    if (exactolink_result == EXACTOLINK_LSM303AH_TYPE0)
-    {
-        ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
-        TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
-        TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
-        TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[0];
-        TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[1];
-        TESMAF_ReceivedData[6] = TESMAF_ReceivedData_Info.counter_raw[2];
-        TESMAF_ReceivedData[7] = TESMAF_ReceivedData_Info.counter_raw[3];
-        ex_getData_ExDtStr(&TESMAF_ReceivedData[8], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
-        TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
-        TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
-        TESMAF_DataCheck_Success++;
-        TESMAF_DataCheck_CntBuff = TESMAF_DataCheck_Counter;
-        TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
-        
-        TESMAF_Sensors_GoodCnt++; //<======================================
-        lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
-    }
-    else
+    exactolink_package_result_t exactolink_result;
+start:
+    exactolink_result = ex_checkData_ExDtStr();
+    if (exactolink_result != EXACTOLINK_LSM303AH_TYPE0)
     {
         printk("s");
+        return 0;
     }
+
+    ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
+    TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
+    TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
+    TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[0];
+    TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[1];
+    TESMAF_ReceivedData[6] = TESMAF_ReceivedData_Info.counter_raw[2];
+    TESMAF_ReceivedData[7] = TESMAF_ReceivedData_Info.counter_raw[3];
+    ex_getData_ExDtStr(&TESMAF_ReceivedData[8], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
+    TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
+    TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
+    TESMAF_DataCheck_Success++;
+    TESMAF_DataCheck_CntBuff = TESMAF_DataCheck_Counter;
+    TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
+    
+    TESMAF_Sensors_GoodCnt++; //<======================================
+    // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+mutex_retry:
+    if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
+        return lthread_yield(&&start, &&mutex_retry);
+    }
+    cond_signal(&TESP_PrintToSD_Signal);
+    mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
     return 0;
 }
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
@@ -161,8 +168,9 @@ void updateMline()
 
 static int runTESP_PrintToSD_Remainder_Lthread(struct lthread * self)
 {
+    mutex_retry:
 	if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
-        return 0;
+        return lthread_yield(&&mutex_retry, &&mutex_retry);
 	}
     cond_signal(&TESP_PrintToSD_Signal);
 	mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
@@ -172,6 +180,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
 {
     // uint8_t test_string[] = "Data from afina\n";
     uint32_t data_to_sd_cnt = 0;
+    uint32_t lst_cnt = 0;
 
     while(1)
     {
@@ -180,6 +189,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         if ((current_cnt - data_to_sd_cnt) > 1)
         {
             printk("&");
+            lst_cnt++;
         }
         else if ((current_cnt - data_to_sd_cnt) == 0)
         {
