@@ -84,3 +84,23 @@ uint8_t getlen_exbu8(ExactoBufferUint8Type * buffer)
     else
         return (buffer->lst + buffer->datalen - buffer->str);
 }
+uint8_t mvbckone_exbu8( ExactoBufferUint8Type * buffer )
+{
+    if ( !buffer->isExist || buffer->isEmpty )     return 0;
+    buffer->str = (buffer->str - 1) & buffer->mask;
+    if (buffer->lst == buffer->str)
+    {
+        buffer->str = (buffer->str + 1) & buffer->mask;
+        return 0;
+    }
+    return 1;
+}
+uint8_t mvbcksvr_exbu8( ExactoBufferUint8Type * buffer, const uint16_t length_back )
+{
+    for (uint8_t i = 0; i < length_back; i++)
+    {
+        if (!mvbckone_exbu8(buffer))
+        return 0;
+    }
+    return 1;
+}

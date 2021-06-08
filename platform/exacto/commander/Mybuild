@@ -12,6 +12,7 @@ module services{
 
 }
 module data_storage {
+	option number exactolinkbuffersz=128
 	source "exacto_data_storage.c"
 	@IncludeExport(path="commander")
 	source "exacto_data_storage.h"

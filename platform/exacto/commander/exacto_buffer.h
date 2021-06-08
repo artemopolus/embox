@@ -25,6 +25,12 @@
 #define EXACTO_BUFFER_UINT8_SZ  128 
 #elif MODOPS_BUFFER_SZ == 256
 #define EXACTO_BUFFER_UINT8_SZ  256 
+#elif MODOPS_BUFFER_SZ == 512
+#define EXACTO_BUFFER_UINT8_SZ  512 
+#elif MODOPS_BUFFER_SZ == 1024
+#define EXACTO_BUFFER_UINT8_SZ  1024 
+#elif MODOPS_BUFFER_SZ == 2048
+#define EXACTO_BUFFER_UINT8_SZ  2048 
 #else
 #error Unsupported exacto buffer sz
 #endif
@@ -32,12 +38,12 @@
 
 typedef struct{
     uint8_t data[EXACTO_BUFFER_UINT8_SZ];
-    uint8_t str;
-    uint8_t lst;
-    uint8_t isExist;
-    uint8_t datalen;
+    uint16_t str;
+    uint16_t lst;
+    uint16_t mask;
+    uint16_t datalen;
     uint8_t isEmpty;
-    uint8_t mask;
+    uint8_t isExist;
 } ExactoBufferUint8Type;
 
 
@@ -112,6 +118,8 @@ extern uint8_t clrsvr_exbu8(ExactoBufferUint8Type * buffer, const uint8_t cnt);
  * @return     успешна ли операция
  */
 extern uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer);
+extern uint8_t mvbckone_exbu8( ExactoBufferUint8Type * buffer );
+extern uint8_t mvbcksvr_exbu8( ExactoBufferUint8Type * buffer, const uint16_t length_back );
 
 
 #endif /* EXACTO_BUFFER_H_ */

@@ -7,6 +7,24 @@
 #include "commander/exacto_buffer.h"
 #include "commander/exacto_services.h"
 
+#include <framework/mod/options.h>
+#include <module/exacto/commander/data_storage.h>
+#define MODOPS_EXACTOLINK_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__data_storage, NUMBER, exactolinkbuffersz)
+
+#if MODOPS_EXACTOLINK_BUFFER_SZ == 16
+#define EXACTOLINK_MESSAGE_SIZE  16
+#elif MODOPS_EXACTOLINK_BUFFER_SZ == 32
+#define EXACTOLINK_MESSAGE_SIZE  32 
+#elif MODOPS_EXACTOLINK_BUFFER_SZ == 64
+#define EXACTOLINK_MESSAGE_SIZE  64
+#elif MODOPS_EXACTOLINK_BUFFER_SZ == 128
+#define EXACTOLINK_MESSAGE_SIZE  128 
+#elif MODOPS_EXACTOLINK_BUFFER_SZ == 256
+#define EXACTOLINK_MESSAGE_SIZE  256
+#else
+#error Unsupported exactolink buffer sz
+#endif
+
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_OUTPUT_TYPES_SZ 4
 #define SERVICES_COUNT 5
@@ -14,7 +32,6 @@
 #define EXACTOLINK_START_DATA_POINT_ADR 4
 #define EXACTOLINK_START_DATA_POINT_VAL 13
 #define EXACTOLINK_PCK_ID 17
-#define EXACTOLINK_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
 
 #include <stdint.h>
 // typedef enum{
