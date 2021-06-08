@@ -24,7 +24,8 @@ char ExFm_Session_Name[] = "YYMMDDHHMMSS";
 FILE * ExFm_Log_Pointer;
 int ExFm_File_Pointer;
 
-uint8_t ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
+uint8_t     ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
+uint16_t    ExFm_Data_length = 0;
 
 uint8_t ex_writeToLogChar(char * info)
 {
@@ -42,7 +43,12 @@ uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
         ExFm_Data_Buffer[length] = value;
         length++;
     }
-	if (write (ExFm_File_Pointer, ExFm_Data_Buffer, length)<=0) {
+    ExFm_Data_length = length;
+    return 0;
+}
+uint8_t ex_pshExBufToSD(  )
+{
+	if (write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length)<=0) {
         return 1;
     }
     return 0;

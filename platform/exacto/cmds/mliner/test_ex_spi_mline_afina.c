@@ -210,7 +210,6 @@ static void * runTESP_PrintToSD_Thread(void * arg)
 
     while(1)
     {
-        mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         uint32_t current_cnt = TESMAF_ReceivedData_Info.counter;
         if ((current_cnt - data_to_sd_cnt) > 1)
         {
@@ -222,10 +221,12 @@ static void * runTESP_PrintToSD_Thread(void * arg)
             printk("*");
         }
         data_to_sd_cnt = current_cnt;
+        mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
-        // ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
+        ex_pshExBufToSD();
+        // ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
         mutex_lock(&TESP_PrintToSD_Mutex);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
