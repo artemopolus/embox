@@ -121,6 +121,7 @@ extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t re
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
 extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
+extern uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type);
 extern uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info);
 extern void ex_updateCounter_ExDtStr(thread_type_t type);
 extern uint32_t ex_getCounter_ExDtStr(thread_type_t type);

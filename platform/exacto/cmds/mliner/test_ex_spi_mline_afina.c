@@ -47,7 +47,9 @@ static struct lthread   TESP_PrintToSD_Remainder_Lthread;
 //----------------------------------------------------------------------------
 #define TESMAF_MESSAGE_SIZE SPI_MLINER_BUFFER_SIZE
 uint8_t TESMAF_DataToBuffer[TESMAF_MESSAGE_SIZE] = {0};
-uint8_t TESMAF_ReceivedData[TESMAF_MESSAGE_SIZE] = {0};
+// uint8_t TESMAF_ReceivedData[TESMAF_MESSAGE_SIZE] = {0};
+static ExactoBufferUint8Type TESMAF_ReceivedData;
+
 
 uint8_t TESMAF_CheckDiv_Counter = 0;
 uint8_t TESMAF_CheckDiv_Max = 2;
@@ -86,13 +88,29 @@ start:
     }
 
     ex_getInfo_ExDtStr(&TESMAF_ReceivedData_Info);
-    TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
-    TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
-    TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[0];
-    TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[1];
-    TESMAF_ReceivedData[6] = TESMAF_ReceivedData_Info.counter_raw[2];
-    TESMAF_ReceivedData[7] = TESMAF_ReceivedData_Info.counter_raw[3];
-    ex_getData_ExDtStr(&TESMAF_ReceivedData[8], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
+mutex_chk:
+	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
+        return lthread_yield(&&start, &&mutex_chk);
+	}
+
+    pshfrc_exbu8(&TESMAF_ReceivedData, 0x11);
+    pshfrc_exbu8(&TESMAF_ReceivedData, 0x11);
+    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length_raw[0]);
+    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length_raw[1]);
+    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[0]);
+    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[1]);
+    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[2]);
+    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[3]);
+    ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length, THR_SPI_RX);
+
+	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
+    // TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
+    // TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
+    // TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[0];
+    // TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[1];
+    // TESMAF_ReceivedData[6] = TESMAF_ReceivedData_Info.counter_raw[2];
+    // TESMAF_ReceivedData[7] = TESMAF_ReceivedData_Info.counter_raw[3];
+    // ex_getData_ExDtStr(&TESMAF_ReceivedData[8], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
     TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
     TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
     TESMAF_DataCheck_Success++;
@@ -100,35 +118,23 @@ start:
     TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
     
     TESMAF_Sensors_GoodCnt++; //<======================================
-    // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
-mutex_retry:
-    if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
-        return lthread_yield(&&start, &&mutex_retry);
-    }
-    cond_signal(&TESP_PrintToSD_Signal);
-    mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
+    lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+// mutex_signal:
+//     if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
+//         return lthread_yield(&&start, &&mutex_signal);
+//     }
+//     cond_signal(&TESP_PrintToSD_Signal);
+//     mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
     return 0;
 }
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
-    start:
     // printk("&");
     
-    // disableMasterSpiDma();
-    // ex_enableGpio(EX_GPIO_SPI_MLINE);
-    // ex_disableGpio(EX_GPIO_SPI_MLINE);
-    // enableMasterSpiDma();
     TESMAF_DataCheck_Counter++; 
 
     setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK); 
     transmitExactoDataStorage();
-    // receiveExactoDataStorage();
-    mutex_retry:
-	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
-        return lthread_yield(&&start, &&mutex_retry);
-	}
-    // getDataFromExactoDataStorage(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE );
-    
     lthread_launch(&TESMAF_AfterCheckExStr_Lthread);
 
     if (TESMAF_WindowPrinter_Marker == 1)
@@ -137,13 +143,11 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         {
             for (uint8_t i = 0; i < 6; i++)
             {
-                ex_convertUint8ToInt16(&TESMAF_ReceivedData[8 + 2*i], &TESMAF_ReceivedData_Data[i]);
+                ex_convertUint8ToInt16(&TESMAF_ReceivedData.data[ TESMAF_ReceivedData.str + 8 + 2*i], &TESMAF_ReceivedData_Data[i]);
             }
             TESMAF_WindowPrinter_Marker = 2;
-            // lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
         }
     }
-	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
     return 0;
 }
 void updateMline()
@@ -196,7 +200,8 @@ static void * runTESP_PrintToSD_Thread(void * arg)
             printk("*");
         }
         data_to_sd_cnt = current_cnt;
-        ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
+        ex_saveExBufToFile(&TESMAF_ReceivedData);
+        // ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         mutex_lock(&TESP_PrintToSD_Mutex);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
@@ -301,8 +306,8 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
 }
 int main(int argc, char *argv[]) {
     ex_setFreqHz(100);
-    TESMAF_ReceivedData[0] = 0x11;
-    TESMAF_ReceivedData[1] = 0x11;
+    // TESMAF_ReceivedData[0] = 0x11;
+    // TESMAF_ReceivedData[1] = 0x11;
     ex_enableGpio(EX_GPIO_SPI_MLINE);
     if(initExactoFileManager())
     {

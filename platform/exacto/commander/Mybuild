@@ -27,7 +27,7 @@ module data_storage {
 	depends exacto.hardtools.basic
 }
 module buffer{
-	option number buffersz=128
+	option number buffersz=512
 	source "exacto_buffer.c"
 	@IncludeExport(path="commander")
 	source "exacto_buffer.h"

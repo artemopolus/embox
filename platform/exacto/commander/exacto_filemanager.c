@@ -23,6 +23,9 @@ char ExFm_Session_Name[] = "YYMMDDHHMMSS";
 
 FILE * ExFm_Log_Pointer;
 int ExFm_File_Pointer;
+
+uint8_t ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
+
 uint8_t ex_writeToLogChar(char * info)
 {
     if (ExFm_Log_Pointer == NULL)
@@ -30,7 +33,20 @@ uint8_t ex_writeToLogChar(char * info)
     fprintf(ExFm_Log_Pointer, info);
     return 0;
 }
-
+uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
+{
+    uint8_t value;
+    uint16_t length = 0;
+    while(grbfst_exbu8(buffer,&value))
+    {
+        ExFm_Data_Buffer[length] = value;
+        length++;
+    }
+	if (write (ExFm_File_Pointer, ExFm_Data_Buffer, length)<=0) {
+        return 1;
+    }
+    return 0;
+}
 uint8_t ex_saveToFile(uint8_t * data, uint16_t datalen)
 {
     // for (uint16_t i = 0; i < datalen; i++)
@@ -96,6 +112,7 @@ uint8_t initExactoFileManager(void)
         pointer = fopen(ExFm_Log_Path, "r");
         if (pointer != NULL)
         {
+            printf("\033[A\33[2K\r");
             printf("Find file %s\n", ExFm_Log_Path);
             fclose(pointer);
         }

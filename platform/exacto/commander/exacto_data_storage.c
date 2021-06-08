@@ -457,6 +457,14 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_LSM303AH_TYPE0;
     return EXACTOLINK_LSM303AH_TYPE0;
 }
+uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
+{
+    for (uint16_t i = 0; (i < buffer_length)&&(i < EXACTOLINK_MESSAGE_SIZE); i++)
+    {
+        pshfrc_exbu8(buffer,ExDtStr_TrasmitSPI_Buffer[i]);
+    }
+    return 0;
+}
 uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type)
 {
     for (uint16_t i = 0; (i < buffer_length)&&(i < EXACTOLINK_MESSAGE_SIZE); i++)
