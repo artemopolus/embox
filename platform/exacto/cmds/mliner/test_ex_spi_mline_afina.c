@@ -207,11 +207,13 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     // uint8_t test_string[] = "Data from afina\n";
     uint32_t data_to_sd_cnt = 0;
     uint32_t lst_cnt = 0;
+    uint32_t delta = 0;
 
     while(1)
     {
         uint32_t current_cnt = TESMAF_ReceivedData_Info.counter;
-        if ((current_cnt - data_to_sd_cnt) > 1)
+        delta = current_cnt - data_to_sd_cnt;
+        if ((delta) > 1)
         {
             printk("&");
             lst_cnt++;
