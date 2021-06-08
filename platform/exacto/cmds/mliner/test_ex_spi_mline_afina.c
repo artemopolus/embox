@@ -149,12 +149,12 @@ void updateMline()
     {
         lthread_launch(&TESMAF_CheckExactoStorage_Lthread);
         TESMAF_CheckDiv_Counter = 0;
-        if (TESMAF_ReceivedData[0] == EXACTOLINK_PCK_ID)
-        {
-            uint64_t counter = 0;
-            ex_convertUint8ToUint64(&TESMAF_ReceivedData[0], &counter);
+        // if (TESMAF_ReceivedData[0] == EXACTOLINK_PCK_ID)
+        // {
+            // uint64_t counter = 0;
+            // ex_convertUint8ToUint64(&TESMAF_ReceivedData[0], &counter);
             // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
-        }
+        // }
     }
 }
 //----------------------------------------------------------------------------
@@ -171,11 +171,21 @@ static int runTESP_PrintToSD_Remainder_Lthread(struct lthread * self)
 static void * runTESP_PrintToSD_Thread(void * arg)
 {
     // uint8_t test_string[] = "Data from afina\n";
+    uint32_t data_to_sd_cnt = 0;
 
     while(1)
     {
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
-        // ex_saveToFile(test_string, sizeof(test_string));
+        uint32_t current_cnt = TESMAF_ReceivedData_Info.counter;
+        if ((current_cnt - data_to_sd_cnt) > 1)
+        {
+            printk("&");
+        }
+        else if ((current_cnt - data_to_sd_cnt) == 0)
+        {
+            printk("*");
+        }
+        data_to_sd_cnt = current_cnt;
         ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         mutex_lock(&TESP_PrintToSD_Mutex);
