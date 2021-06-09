@@ -26,6 +26,7 @@ int ExFm_File_Pointer;
 
 uint8_t     ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
 uint16_t    ExFm_Data_length = 0;
+uint16_t    ExFm_Data_lengthmax = 768;
 
 uint8_t ex_writeToLogChar(char * info)
 {
@@ -42,6 +43,8 @@ uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
     {
         ExFm_Data_Buffer[length] = value;
         length++;
+        if (length > ExFm_Data_lengthmax)
+            break;
     }
     ExFm_Data_length = length;
     return 0;
