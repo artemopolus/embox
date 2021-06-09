@@ -96,7 +96,7 @@ start:
         return 0;
     }
     cnt_buf = TESMAF_ReceivedData_Info.counter;
-    if (TESMAF_CounterBuffer_Input != TESMAF_CounterBuffer_Middl)
+    if ((TESMAF_CounterBuffer_Input - TESMAF_CounterBuffer_Middl) > 5)
     {
         printk("?");
     }
