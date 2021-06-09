@@ -259,7 +259,7 @@ thread_control_result_t getStateExactoDataStorage()
 {
     return ExOutputStorage[THR_SPI_TX].result;
 }
-uint8_t setDataToExactoDataStorage(uint8_t * data, const uint8_t datacount, thread_control_result_t result)
+uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thread_control_result_t result)
 {
     if (result == THR_CTRL_INIT)
     {

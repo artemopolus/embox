@@ -31,6 +31,10 @@
 #define EXACTO_BUFFER_UINT8_SZ  1024 
 #elif MODOPS_BUFFER_SZ == 2048
 #define EXACTO_BUFFER_UINT8_SZ  2048 
+#elif MODOPS_BUFFER_SZ == 4096
+#define EXACTO_BUFFER_UINT8_SZ  4096 
+#elif MODOPS_BUFFER_SZ == 8192
+#define EXACTO_BUFFER_UINT8_SZ  8192 
 #else
 #error Unsupported exacto buffer sz
 #endif
