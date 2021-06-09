@@ -92,17 +92,20 @@ start:
     exactolink_result = ex_checkData_ExDtStr();
     if (exactolink_result != EXACTOLINK_LSM303AH_TYPE0)
     {
-        printk("s");
+        // printk("s");
+        //данные не прошли проверку валидности
         return 0;
     }
     cnt_buf = TESMAF_ReceivedData_Info.counter;
     if ((TESMAF_CounterBuffer_Input - TESMAF_CounterBuffer_Middl) > 5)
     {
-        printk("?");
+        //количество вызовов функций не совпадает с ее удачным завершением
+        // printk("?");
     }
     if ((cnt_buf - TESMAF_CounterBuffer_Input) > 1)
     {
-        printk(">");
+        //пропущены данные, которые отправлены от аполлона
+        // printk(">");
     }    
     TESMAF_CounterBuffer_Input = cnt_buf;
 
@@ -117,7 +120,8 @@ mutex_chk:
     cnt_buf2 = TESMAF_ReceivedData_Info.counter;
     if ((cnt_buf2 - TESMAF_CounterBuffer_Middl) > 1)
     {
-        printk("<");
+        // printk("<");
+        //были пропущены данные
     }    
     TESMAF_CounterBuffer_Middl = cnt_buf2;
     pshfrc_exbu8(&TESMAF_ReceivedData, 0x11);
@@ -135,13 +139,6 @@ mutex_chk:
     }
     TESMAF_test_uploaddatamarker = 0;
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
-    // TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
-    // TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
-    // TESMAF_ReceivedData[4] = TESMAF_ReceivedData_Info.counter_raw[0];
-    // TESMAF_ReceivedData[5] = TESMAF_ReceivedData_Info.counter_raw[1];
-    // TESMAF_ReceivedData[6] = TESMAF_ReceivedData_Info.counter_raw[2];
-    // TESMAF_ReceivedData[7] = TESMAF_ReceivedData_Info.counter_raw[3];
-    // ex_getData_ExDtStr(&TESMAF_ReceivedData[8], TESMAF_ReceivedData_Info.length, THR_SPI_RX);
     TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
     TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
     TESMAF_DataCheck_Success++;
@@ -150,12 +147,6 @@ mutex_chk:
     
     TESMAF_Sensors_GoodCnt++; //<======================================
     lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
-// mutex_signal:
-//     if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
-//         return lthread_yield(&&start, &&mutex_signal);
-//     }
-//     cond_signal(&TESP_PrintToSD_Signal);
-//     mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
     return 0;
 }
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
@@ -220,24 +211,24 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     uint16_t fast_write_cnt = 0;
     while(1)
     {
-        uint32_t current_cnt = TESMAF_ReceivedData_Info.counter;
+        mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
+        uint32_t current_cnt = TESMAF_CounterBuffer_Middl;
         delta = current_cnt - data_to_sd_cnt;
         if ((delta) > 1)
         {
-            printk("&");
+            // printk("&");
             lst_cnt++;
             fast_write_cnt = 0;
         }
         else if ((current_cnt - data_to_sd_cnt) == 0)
         {
-            printk("*");
+            // printk("*");
         }
         else
         {
             fast_write_cnt++;
         }
         data_to_sd_cnt = current_cnt;
-        mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         TESMAF_test_pushtosdmarker = 1;
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;

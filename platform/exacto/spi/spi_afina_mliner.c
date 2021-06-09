@@ -317,7 +317,7 @@ mutex_retry:
         }
         
     }
-    printk("$");
+    // printk("$");
     return 0;
 }
 void SPI1_updateTx()

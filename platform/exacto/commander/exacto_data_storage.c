@@ -444,12 +444,12 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     {
         // пропущены данные
         ExDtStr_TrasmitSPI_LostCnt++;
-        printk("@");
+        // printk("@");
     }
     else if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) == 0)
     {
         // дублирование данных
-        printk("#");
+        // printk("#");
     }
     ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
 
