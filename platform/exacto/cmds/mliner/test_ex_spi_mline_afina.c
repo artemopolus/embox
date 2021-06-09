@@ -124,19 +124,8 @@ mutex_chk:
         //были пропущены данные
     }    
     TESMAF_CounterBuffer_Middl = cnt_buf2;
-    pshfrc_exbu8(&TESMAF_ReceivedData, 0x11);
-    pshfrc_exbu8(&TESMAF_ReceivedData, 0x11);
-    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length_raw[0]);
-    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length_raw[1]);
-    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[0]);
-    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[1]);
-    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[2]);
-    pshfrc_exbu8(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.counter_raw[3]);
     ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length, THR_SPI_RX);
-    for (uint16_t i = 0 ; i < (TESMAF_MESSAGE_SIZE - 8 - TESMAF_ReceivedData_Info.length); i++)
-    {
-        pshfrc_exbu8(&TESMAF_ReceivedData, 0x00);
-    }
+
     TESMAF_test_uploaddatamarker = 0;
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
     TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
@@ -232,10 +221,11 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         TESMAF_test_pushtosdmarker = 1;
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
-        ex_pshExBufToSD();
         TESMAF_test_pushtosdmarker = 0;
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
-        // ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
+        ex_pshExBufToSD();
+        
+        
         mutex_lock(&TESP_PrintToSD_Mutex);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
