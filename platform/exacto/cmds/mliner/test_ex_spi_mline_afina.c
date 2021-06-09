@@ -79,6 +79,9 @@ static uint8_t TESMAF_Sensors_TickMax = 200;
 static uint8_t TESMAF_Sensors_GoodCnt = 0;
 static uint8_t TESMAF_Sensors_GoodMax = 5;
 
+static uint8_t TESMAF_test_uploaddatamarker = 0;
+static uint8_t TESMAF_test_pushtosdmarker = 0;
+
 static struct lthread   TESMAF_AfterCheckExStr_Lthread;
 static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
 {
@@ -93,6 +96,10 @@ start:
         return 0;
     }
     cnt_buf = TESMAF_ReceivedData_Info.counter;
+    if (TESMAF_CounterBuffer_Input != TESMAF_CounterBuffer_Middl)
+    {
+        printk("?");
+    }
     if ((cnt_buf - TESMAF_CounterBuffer_Input) > 1)
     {
         printk(">");
@@ -105,6 +112,8 @@ mutex_chk:
 	if (mutex_trylock_lthread(self, &TESMAF_CheckExactoStorage_Mutex) == -EAGAIN) {
         return lthread_yield(&&start, &&mutex_chk);
 	}
+    TESMAF_test_uploaddatamarker = 1;
+
     cnt_buf2 = TESMAF_ReceivedData_Info.counter;
     if ((cnt_buf2 - TESMAF_CounterBuffer_Middl) > 1)
     {
@@ -124,7 +133,7 @@ mutex_chk:
     {
         pshfrc_exbu8(&TESMAF_ReceivedData, 0x00);
     }
-
+    TESMAF_test_uploaddatamarker = 0;
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
     // TESMAF_ReceivedData[2] = TESMAF_ReceivedData_Info.length_raw[0];
     // TESMAF_ReceivedData[3] = TESMAF_ReceivedData_Info.length_raw[1];
@@ -229,9 +238,11 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         }
         data_to_sd_cnt = current_cnt;
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
+        TESMAF_test_pushtosdmarker = 1;
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
         ex_pshExBufToSD();
+        TESMAF_test_pushtosdmarker = 0;
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         // ex_saveToFile(TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE);
         mutex_lock(&TESP_PrintToSD_Mutex);
