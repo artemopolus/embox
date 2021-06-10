@@ -30,6 +30,20 @@
 #define USE_LOCAL_BUF OPTION_GET(BOOLEAN, use_local_buf)
 #define USE_IRQ       OPTION_GET(BOOLEAN,use_irq)
 
+#define MODOPS_SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
+
+#if MODOPS_SD_BUF_SIZE == 1024
+#undef BLOCKSIZE
+#define BLOCKSIZE  1024U
+#elif MODOPS_SD_BUF_SIZE == 2048
+#undef BLOCKSIZE
+#define BLOCKSIZE  2048U
+#elif MODOPS_SD_BUF_SIZE == 4096
+#undef BLOCKSIZE
+#define BLOCKSIZE  4096U
+#endif 
+
+
 #if USE_LOCAL_BUF
 static uint8_t sd_buf[BLOCKSIZE] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif
