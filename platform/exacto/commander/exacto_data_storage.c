@@ -373,7 +373,20 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
         return EXACTOLINK_NO_DATA;
     }
-
+    uint32_t crc_calc;
+    ex_getCRC(&ExOutputStorage[THR_SPI_RX].datastorage.data[0],(pck_length - 4), &crc_calc);
+    uint32_t crc_refr;
+    uint16_t crc_refr_pt = pck_length - 3;
+    crc_refr =  (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++]); 
+    crc_refr += (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++] << 8); 
+    crc_refr += (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++] << 16); 
+    crc_refr += (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++] << 24); 
+    if (crc_calc != crc_refr)
+    {
+        ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_CRC_ERROR;
+        setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
+        return EXACTOLINK_CRC_ERROR;
+    }
     ExDtStr_TrasmitSPI_Info.length = pck_length - value - 4;
     ExDtStr_TrasmitSPI_Info.length_raw[0] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length);
     ExDtStr_TrasmitSPI_Info.length_raw[1] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length >> 8);
@@ -445,23 +458,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         printk("@");
     }
 #endif
-    uint32_t crc_calc;
-    ex_getCRC(&ExOutputStorage[THR_SPI_RX].datastorage.data[0],(pck_length - 4), &crc_calc);
-    uint32_t crc_refr;
-    grbfst_exbu8(tmp_buffer, &value);
-    crc_refr = (uint32_t)(value); 
-    grbfst_exbu8(tmp_buffer, &value);
-    crc_refr += (uint32_t)(value << 8); 
-    grbfst_exbu8(tmp_buffer, &value);
-    crc_refr += (uint32_t)(value << 16); 
-    grbfst_exbu8(tmp_buffer, &value);
-    crc_refr += (uint32_t)(value << 24); 
-    if (crc_calc != crc_refr)
-    {
-        ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_CRC_ERROR;
-        setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
-        return EXACTOLINK_CRC_ERROR;
-    }
+    
     ExDtStr_TrasmitSPI_RefCounter = exdtstr_xtspi_refcnt;
     if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) > 1)
     {

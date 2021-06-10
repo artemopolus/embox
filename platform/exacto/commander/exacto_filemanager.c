@@ -42,7 +42,7 @@ uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
     while(grbfst_exbu8(buffer,&value))
     {
         ExFm_Data_Buffer[ExFm_Data_length++] = value;
-        if (ExFm_Data_length > ExFm_Data_lengthmax)
+        if (ExFm_Data_length >= ExFm_Data_lengthmax)
             break;
     }
     return 0;
