@@ -9,11 +9,11 @@
 typedef enum t_t_t{
     THR_SPI_RX = 0,
     THR_SPI_TX,
+    THR_STR_SD,
+    THR_STR_CALC,
     THR_I2C_RX,
     THR_I2C_TX,
     THR_TIM,
-    THR_STR_SD,
-    THR_STR_CALC,
     THR_NONE
 }thread_type_t;
 
