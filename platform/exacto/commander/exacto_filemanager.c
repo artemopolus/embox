@@ -45,6 +45,7 @@ uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
     uint8_t value;
     EFM_PushToBuffer_BasicCnt++;
     EFM_PushToBuffer_TmpCnt++;
+    ExFm_Data_length = 0;
     while(grbfst_exbu8(buffer,&value))
     {
         ExFm_Data_Buffer[ExFm_Data_length++] = value;
@@ -62,8 +63,12 @@ uint8_t ex_pshExBufToSD(  )
     }
     EFM_PushToBuffer_TmpCnt = 0;
     EFM_BufferToSD_BasicCnt++;
-	if (write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length)<=0) {
-        return 1;
+    uint8_t index = 0;
+    while(512*index < ExFm_Data_length)
+    {
+	    if (write (ExFm_File_Pointer, &ExFm_Data_Buffer[index*512], 512)<=0) {
+           return 1;
+        }
     }
     ExFm_Data_length = 0;
     return 0;
