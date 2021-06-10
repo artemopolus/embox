@@ -376,7 +376,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     uint32_t crc_calc;
     ex_getCRC(&ExOutputStorage[THR_SPI_RX].datastorage.data[0],(pck_length - 4), &crc_calc);
     uint32_t crc_refr;
-    uint16_t crc_refr_pt = pck_length - 3;
+    uint16_t crc_refr_pt = pck_length - 4;
     crc_refr =  (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++]); 
     crc_refr += (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++] << 8); 
     crc_refr += (uint32_t)(ExOutputStorage[THR_SPI_RX].datastorage.data[crc_refr_pt++] << 16); 
