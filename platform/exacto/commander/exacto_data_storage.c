@@ -486,7 +486,11 @@ uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_lengt
         {
             break;
         }
-        pshfrc_exbu8(buffer, value);
+        if (!pshsft_exbu8(buffer, value))
+        {
+            //переполнение
+            printk("|");
+        }
     }
     return 0;
 }

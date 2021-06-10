@@ -41,6 +41,19 @@ void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
         }
     //}
 }
+uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
+{
+    if(!buffer->isExist)     
+        return 0;
+    uint16_t nxt = (buffer->lst + 1) & buffer->mask;
+    if(nxt == buffer->str) 
+        return 0;
+    buffer->data[buffer->lst] = value;
+	if(buffer->isEmpty)	
+        buffer->isEmpty = 0;
+    buffer->lst = nxt;
+    return 1;
+}
 uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
 {
     if(!buffer->isExist || buffer->isEmpty)     return 0;

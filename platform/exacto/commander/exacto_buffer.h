@@ -86,6 +86,7 @@ extern uint8_t grbfst_exbu8(ExactoBufferUint8Type * buffer, uint8_t * fstval);
  * @param[in]  value   переменная, которая вставляется в буффер
  */
 extern void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value);
+extern uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value);
 
 /**
  * @brief      { забираем данные из буффера в массив }
