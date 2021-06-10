@@ -27,7 +27,7 @@ int ExFm_File_Pointer;
 
 uint8_t     ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
 uint16_t    ExFm_Data_length = 0;
-uint16_t    ExFm_Data_lengthmax = 4096;
+uint16_t    ExFm_Data_lengthmax = 8192;
 
 static uint32_t EFM_PushToBuffer_BasicCnt = 0;
 static uint32_t EFM_PushToBuffer_TmpCnt = 0;
@@ -63,13 +63,13 @@ uint8_t ex_pshExBufToSD(  )
     }
     EFM_PushToBuffer_TmpCnt = 0;
     EFM_BufferToSD_BasicCnt++;
-    uint8_t index = 0;
-    while(512*index < ExFm_Data_length)
-    {
-	    if (write (ExFm_File_Pointer, &ExFm_Data_Buffer[index*512], 512)<=0) {
+    // uint8_t index = 0;
+    // while(512*index < ExFm_Data_length)
+    // {
+	    if (pwrite (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length,0)<=0) {
            return 1;
         }
-    }
+    // }
     ExFm_Data_length = 0;
     return 0;
 }
