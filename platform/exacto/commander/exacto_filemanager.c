@@ -10,6 +10,7 @@
 #include <dirent.h>
 
 #include <fcntl.h>
+#include <kernel/printk.h>
 
 #define EX_FM_PATH_TO_FILE_PT 17
 #define EX_FM_PATH_TO_LOG_PT 12
@@ -38,22 +39,25 @@ uint8_t ex_writeToLogChar(char * info)
 uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
 {
     uint8_t value;
-    uint16_t length = 0;
     while(grbfst_exbu8(buffer,&value))
     {
-        ExFm_Data_Buffer[length] = value;
-        length++;
-        if (length > ExFm_Data_lengthmax)
+        ExFm_Data_Buffer[ExFm_Data_length++] = value;
+        if (ExFm_Data_length > ExFm_Data_lengthmax)
             break;
     }
-    ExFm_Data_length = length;
     return 0;
 }
 uint8_t ex_pshExBufToSD(  )
 {
+    if (ExFm_Data_length % EXACTOLINK_SD_FRAME_SIZE)
+    {
+        //почему то размеры буфера не совпадают
+        printk(".");
+    }
 	if (write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length)<=0) {
         return 1;
     }
+    ExFm_Data_length = 0;
     return 0;
 }
 uint8_t ex_saveToFile(uint8_t * data, uint16_t datalen)

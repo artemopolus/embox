@@ -77,7 +77,7 @@ uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer)
     buffer->isEmpty = 1;
     return 1;
 }
-uint8_t getlen_exbu8(ExactoBufferUint8Type * buffer)
+uint16_t getlen_exbu8(ExactoBufferUint8Type * buffer)
 {
     if( buffer->lst >= buffer->str)
         return (buffer->lst - buffer->str);

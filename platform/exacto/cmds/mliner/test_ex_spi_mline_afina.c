@@ -124,7 +124,7 @@ mutex_chk:
         //были пропущены данные
     }    
     TESMAF_CounterBuffer_Middl = cnt_buf2;
-    ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, TESMAF_ReceivedData_Info.length, THR_SPI_RX);
+    ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, EXACTOLINK_MESSAGE_SIZE*40, THR_SPI_RX);
 
     TESMAF_test_uploaddatamarker = 0;
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);

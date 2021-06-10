@@ -4,6 +4,7 @@
 // #include "blink/blinker.h"
 #include <kernel/printk.h>
 
+#define EXACTO_DATA_STORAGE_TEST
 
 uint32_t ExDtStr_TransmitSPI_Counter = 0;
 uint32_t ExDtStr_TransmitSPI_TxCounter = 0;
@@ -435,7 +436,15 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     {
         pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x00);
     }
-    
+    //проверка размера пакета (тестовое) 
+#ifdef EXACTO_DATA_STORAGE_TEST
+    uint16_t sd_storage_data_count = getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
+    if (sd_storage_data_count % EXACTOLINK_SD_FRAME_SIZE)
+    {
+        //не совпадает размер с тестовым
+        printk("@");
+    }
+#endif
     uint32_t crc_calc;
     ex_getCRC(&ExOutputStorage[THR_SPI_RX].datastorage.data[0],(pck_length - 4), &crc_calc);
     uint32_t crc_refr;
@@ -473,20 +482,26 @@ exactolink_package_result_t ex_checkData_ExDtStr()
 }
 uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
 {
-    for (uint16_t i = 0; (i < buffer_length)&&(i < EXACTOLINK_MESSAGE_SIZE); i++)
+    for (uint16_t i = 0; (i < buffer_length); i++)
     {
         uint8_t value;
-        grbfst_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, &value);
+        if(!grbfst_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, &value))
+        {
+            break;
+        }
         pshfrc_exbu8(buffer, value);
     }
     return 0;
 }
 uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type)
 {
-    for (uint16_t i = 0; (i < buffer_length)&&(i < EXACTOLINK_MESSAGE_SIZE); i++)
+    for (uint16_t i = 0; (i < buffer_length); i++)
     {
         uint8_t value;
-        grbfst_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, &value);
+        if (!grbfst_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, &value))
+        {
+            break;
+        }
         buffer[i] = value;
     }
     return 0;

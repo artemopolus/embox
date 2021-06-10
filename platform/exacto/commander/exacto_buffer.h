@@ -68,7 +68,7 @@ extern int  setini_exbu8(ExactoBufferUint8Type * buffer);
  *
  * @return     размер буфферв
  */
-extern uint8_t getlen_exbu8(ExactoBufferUint8Type * buffer);
+extern uint16_t getlen_exbu8(ExactoBufferUint8Type * buffer);
 /**
  * @brief      { забираем значение из начала буффера }
  *
