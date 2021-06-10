@@ -27,7 +27,11 @@ int ExFm_File_Pointer;
 
 uint8_t     ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
 uint16_t    ExFm_Data_length = 0;
-uint16_t    ExFm_Data_lengthmax = 768;
+uint16_t    ExFm_Data_lengthmax = 4096;
+
+static uint32_t EFM_PushToBuffer_BasicCnt = 0;
+static uint32_t EFM_PushToBuffer_TmpCnt = 0;
+static uint32_t EFM_BufferToSD_BasicCnt = 0;
 
 uint8_t ex_writeToLogChar(char * info)
 {
@@ -39,6 +43,8 @@ uint8_t ex_writeToLogChar(char * info)
 uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
 {
     uint8_t value;
+    EFM_PushToBuffer_BasicCnt++;
+    EFM_PushToBuffer_TmpCnt++;
     while(grbfst_exbu8(buffer,&value))
     {
         ExFm_Data_Buffer[ExFm_Data_length++] = value;
@@ -54,6 +60,8 @@ uint8_t ex_pshExBufToSD(  )
         //почему то размеры буфера не совпадают
         printk(".");
     }
+    EFM_PushToBuffer_TmpCnt = 0;
+    EFM_BufferToSD_BasicCnt++;
 	if (write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length)<=0) {
         return 1;
     }

@@ -14,13 +14,11 @@ uint8_t grbfst_exbu8(ExactoBufferUint8Type * buffer, uint8_t * fstval)
 {
     if(!buffer->isExist || buffer->isEmpty)     return 0;
     *fstval = buffer->data[buffer->str];
+    buffer->str = (buffer->str + 1) & buffer->mask;
     if(buffer->str == buffer->lst)  
     {
-        // buffer->isEmpty = 1;
         setemp_exbu8(buffer);   
-        return 0;
     }
-    buffer->str = (buffer->str + 1) & buffer->mask;
     return 1;
 }
 void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
