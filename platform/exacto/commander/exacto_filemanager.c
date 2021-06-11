@@ -165,7 +165,7 @@ uint8_t initExactoFileManager(void)
     //     fprintf(p_file, "%d", 12567);
     //     // fprintf(p_file, "y");
     //     // fprintf(p_file, "y");
-        ExFm_File_Pointer = creat(ExFm_File_Path,0);
+        ExFm_File_Pointer = open(ExFm_File_Path,O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
         if( 0 > ExFm_File_Pointer)
         {
             printf("Can't open Data file\n");
