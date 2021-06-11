@@ -21,7 +21,7 @@
 char ExFm_File_Path[] =   "/mnt/DATA/sessionYYMMDDHHMMSS.txt";
 char ExFm_Log_Path[] =    "/mnt/LOG/logYYMMDDHHMMSS.txt";
 char ExFm_Session_Name[] = "YYMMDDHHMMSS";
-
+int  ExFm_Session_Num  = 0;
 FILE * ExFm_Log_Pointer;
 int ExFm_File_Pointer;
 
@@ -29,11 +29,32 @@ uint8_t     ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
 uint16_t    ExFm_Data_length = 0;
 uint16_t    ExFm_Data_lengthmax = 8192;
 uint32_t    ExFm_Data_pulledcnt = 0;
+uint32_t    ExFm_Data_pulledmax = 5000;
 
 static uint32_t EFM_PushToBuffer_BasicCnt = 0;
 static uint32_t EFM_PushToBuffer_TmpCnt = 0;
 static uint32_t EFM_BufferToSD_BasicCnt = 0;
 
+void updateNamesForFileManager()
+{
+    ExFm_Session_Num++;
+    itoa(ExFm_Session_Num, ExFm_Session_Name, 10);
+    int len = 12;
+    for (int y = 0; y < 12; y++)
+    {
+        if (ExFm_Session_Name[y] == '\0')
+        {
+            len = y;
+            break;
+        }
+    }
+    for (int y = 0; y < len; y++)
+    {
+        char value = ExFm_Session_Name[len - y - 1 ];
+        ExFm_Log_Path[EX_FM_PATH_TO_LOG_PT + 11 - y] = value;
+        ExFm_File_Path[EX_FM_PATH_TO_FILE_PT + 11 - y] = value;
+    } 
+}
 uint8_t ex_writeToLogChar(char * info)
 {
     if (ExFm_Log_Pointer == NULL)
@@ -77,6 +98,12 @@ uint8_t ex_pshExBufToSD(  )
         return 1;
     EFM_BufferToSD_BasicCnt++;
     ExFm_Data_pulledcnt += ExFm_Data_length;
+    if (ExFm_Data_pulledcnt > ExFm_Data_pulledmax)
+    {
+        close(ExFm_File_Pointer);
+        updateNamesForFileManager();
+        ExFm_File_Pointer = open(ExFm_File_Path,O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
+    }
     ExFm_Data_length = 0;
     return 0;
 }
@@ -142,6 +169,7 @@ uint8_t initExactoFileManager(void)
             ExFm_Log_Path[EX_FM_PATH_TO_LOG_PT + 11 - y] = value;
             ExFm_File_Path[EX_FM_PATH_TO_FILE_PT + 11 - y] = value;
         }
+        ExFm_Session_Num = i;
         pointer = fopen(ExFm_Log_Path, "r");
         if (pointer != NULL)
         {
