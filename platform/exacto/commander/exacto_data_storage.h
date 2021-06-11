@@ -25,7 +25,7 @@
 #error Unsupported exactolink buffer sz
 #endif
 
-#define EXACTOLINK_SD_FRAME_SIZE 128
+#define EXACTOLINK_SD_FRAME_SIZE 80
 
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_OUTPUT_TYPES_SZ 4
