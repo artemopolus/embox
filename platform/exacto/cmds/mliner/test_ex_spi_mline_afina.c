@@ -81,6 +81,8 @@ static uint8_t TESMAF_Sensors_GoodMax = 5;
 
 static uint8_t TESMAF_test_uploaddatamarker = 0;
 static uint8_t TESMAF_test_pushtosdmarker = 0;
+static uint8_t TESMAF_test_PushToSdMarkerGood = 0;
+static uint8_t TESMAF_test_PushToSdMarkerBad = 0;
 
 static struct lthread   TESMAF_AfterCheckExStr_Lthread;
 static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
@@ -223,7 +225,14 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         TESMAF_ReceivedData_Counter = 0;
         TESMAF_test_pushtosdmarker = 0;
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
-        ex_pshExBufToSD();
+        if(ex_pshExBufToSD())
+        {
+            TESMAF_test_PushToSdMarkerBad++;
+        }
+        else
+        {
+            TESMAF_test_PushToSdMarkerGood++;
+        }
         
         
         mutex_lock(&TESP_PrintToSD_Mutex);

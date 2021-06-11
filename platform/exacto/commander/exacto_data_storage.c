@@ -9,6 +9,7 @@
 uint32_t ExDtStr_TransmitSPI_Counter = 0;
 uint32_t ExDtStr_TransmitSPI_TxCounter = 0;
 uint32_t ExDtStr_TransmitSPI_RxCounter = 0;
+uint32_t EDS_SPI_pullcount = 0;
 
 //temporary
 exactolink_package_info_t ExDtStr_TrasmitSPI_Info = {
@@ -449,6 +450,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     {
         pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x00);
     }
+    EDS_SPI_pullcount += getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
     //проверка размера пакета (тестовое) 
 #ifdef EXACTO_DATA_STORAGE_TEST
     uint16_t sd_storage_data_count = getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
