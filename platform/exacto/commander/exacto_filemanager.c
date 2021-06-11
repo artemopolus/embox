@@ -66,10 +66,12 @@ uint8_t ex_pshExBufToSD(  )
     // uint8_t index = 0;
     // while(512*index < ExFm_Data_length)
     // {
-    int res = pwrite (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length,0);
-	    if (res<=0) {
-           return 1;
-        }
+    // int res = pwrite (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length, ExFm_Data_pulledcnt);
+    int res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+	if (res<=0) 
+    {
+        return 1;
+    }
     // }
     if (res != ExFm_Data_length)
         return 1;
