@@ -100,9 +100,9 @@ uint8_t ex_pshExBufToSD(  )
     ExFm_Data_pulledcnt += ExFm_Data_length;
     if (ExFm_Data_pulledcnt > ExFm_Data_pulledmax)
     {
-        close(ExFm_File_Pointer);
-        updateNamesForFileManager();
-        ExFm_File_Pointer = open(ExFm_File_Path,O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
+        
+        // updateNamesForFileManager();
+        // ExFm_File_Pointer = open(ExFm_File_Path,O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
     }
     ExFm_Data_length = 0;
     return 0;
