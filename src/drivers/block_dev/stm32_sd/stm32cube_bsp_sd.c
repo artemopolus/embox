@@ -27,14 +27,19 @@
 
 #define STM32F7_SD_DEVNAME "sd_card"
 
-#define USE_LOCAL_BUF OPTION_GET(BOOLEAN, use_local_buf)
-#define USE_IRQ       OPTION_GET(BOOLEAN,use_irq)
+// #define USE_LOCAL_BUF OPTION_GET(BOOLEAN, use_local_buf)
+#define USE_LOCAL_BUF true
+// #define USE_IRQ       OPTION_GET(BOOLEAN,use_irq)
+#define USE_IRQ      true 
 
  
 
 
 #if USE_LOCAL_BUF
 static uint8_t sd_buf[BLOCKSIZE] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+static uint8_t SCBS_sd_buf[BLOCKSIZE*8] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+static uint32_t SCBS_sd_pt = 0;
+static blkno_t SCBS_blkno_prev;
 #endif
 
 #define DMA_TRANSFER_STATE_IDLE      (0)
@@ -227,7 +232,28 @@ static int stm32_sd_write_block(char *buf, blkno_t blkno) {
 
 	return BLOCKSIZE;
 }
+static int stm32_sd_write_multiblock(char *buf, blkno_t blkno, uint32_t numblck) {
+	int res;
 
+	res = stm32_transfer_prepare(DMA_TRANSFER_STATE_TX_START);
+	if (res) {
+		return res;
+	}
+
+	res = stm32_transfer_write((uint32_t *) buf, blkno, numblck);
+	if (res != 0) {
+		log_error("stm32_transfer_write failed, blkno=%d res=%d", blkno, res);
+		stm32_transfer_abort(DMA_TRANSFER_STATE_IDLE);
+		return -1;
+	}
+
+	res = stm32_transfer_wait(DMA_TRANSFER_STATE_TX_FIN);
+	if (res) {
+		return res;
+	}
+
+	return BLOCKSIZE;
+}
 static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	char *tmp_buf;
 	int res;
@@ -236,6 +262,29 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 	assert(bsize == BLOCKSIZE);
 
 #if USE_LOCAL_BUF
+	if (SCBS_sd_pt < 8)
+	{
+		SCBS_sd_pt++;
+		memcpy(&SCBS_sd_buf[SCBS_sd_pt*BLOCKSIZE], buf, bsize);
+		if ((SCBS_sd_pt == 7)||((SCBS_sd_pt != 0)&&(SCBS_blkno_prev == blkno)))
+		{
+			//record
+			tmp_buf = (char *)SCBS_sd_buf;
+			res = stm32_sd_write_multiblock(tmp_buf, blkno, (SCBS_sd_pt + 1));
+			SCBS_sd_pt = 0;
+			log_debug("written=%d res %d", blkno, res);
+			if (res < 0) {
+				return res;
+			}
+		}
+		SCBS_blkno_prev = blkno;
+		return bsize;
+	}
+	else
+	{
+		//как???
+		return 0;
+	}
 	memcpy(sd_buf, buf, bsize);
 	tmp_buf = (char *)sd_buf;
 #else
