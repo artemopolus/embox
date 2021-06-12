@@ -39,7 +39,7 @@
 static uint8_t sd_buf[BLOCKSIZE] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 static uint8_t SCBS_sd_buf[BLOCKSIZE*8] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 static uint32_t SCBS_sd_pt = 0;
-static blkno_t SCBS_blkno_prev;
+static blkno_t SCBS_blkno_prev = 0;
 #endif
 
 #define DMA_TRANSFER_STATE_IDLE      (0)
@@ -264,13 +264,13 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 #if USE_LOCAL_BUF
 	if (SCBS_sd_pt < 8)
 	{
-		SCBS_sd_pt++;
-		memcpy(&SCBS_sd_buf[SCBS_sd_pt*BLOCKSIZE], buf, bsize);
-		if ((SCBS_sd_pt == 7)||((SCBS_sd_pt != 0)&&(SCBS_blkno_prev == blkno)))
+		if ((SCBS_blkno_prev != blkno)||(SCBS_sd_pt == 0))
+			memcpy(&SCBS_sd_buf[(SCBS_sd_pt++)*BLOCKSIZE], buf, bsize);
+		if ((SCBS_sd_pt == 8)||((SCBS_sd_pt != 1)&&(SCBS_blkno_prev == blkno)))
 		{
 			//record
 			tmp_buf = (char *)SCBS_sd_buf;
-			res = stm32_sd_write_multiblock(tmp_buf, blkno, (SCBS_sd_pt + 1));
+			res = stm32_sd_write_multiblock(tmp_buf, blkno, SCBS_sd_pt);
 			SCBS_sd_pt = 0;
 			log_debug("written=%d res %d", blkno, res);
 			if (res < 0) {
