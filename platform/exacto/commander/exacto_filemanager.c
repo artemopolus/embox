@@ -16,8 +16,8 @@
 #define EX_FM_PATH_TO_LOG_PT 12
 #define EX_FM_LEN 12
 
-#define EFM_BUFF_SIZE 1024
-#define EFM_MESS_THRE 512
+#define EFM_BUFF_SIZE 4096
+#define EFM_MESS_THRE 3584
 //                         0123456789012345678901234567890123456
 char ExFm_File_Path[] =   "/mnt/DATA/sessionYYMMDDHHMMSS.txt";
 char ExFm_Log_Path[] =    "/mnt/LOG/logYYMMDDHHMMSS.txt";
