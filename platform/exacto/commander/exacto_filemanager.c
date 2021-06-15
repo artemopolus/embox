@@ -16,8 +16,8 @@
 #define EX_FM_PATH_TO_LOG_PT 12
 #define EX_FM_LEN 12
 
-#define EFM_BUFF_SIZE 4096
-#define EFM_MESS_THRE 3584
+#define EFM_BUFF_SIZE 8192
+#define EFM_MESS_THRE 512
 //                         0123456789012345678901234567890123456
 char ExFm_File_Path[] =   "/mnt/DATA/sessionYYMMDDHHMMSS.txt";
 char ExFm_Log_Path[] =    "/mnt/LOG/logYYMMDDHHMMSS.txt";
@@ -69,12 +69,13 @@ uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
     EFM_PushToBuffer_BasicCnt++;
     EFM_PushToBuffer_TmpCnt++;
     ExFm_Data_length = 0;
-    // if (getlen_exbu8(buffer) < EFM_MESS_THRE)
-        // return 1;
+    if (getlen_exbu8(buffer) < EFM_MESS_THRE)
+        return 1;
     while(grbfst_exbu8(buffer,&value))
     {
         ExFm_Data_Buffer[ExFm_Data_length++] = value;
-        if (ExFm_Data_length >= EFM_BUFF_SIZE)
+        if (ExFm_Data_length >= ExFm_Data_lengthmax)
+        // if (ExFm_Data_length >= EFM_BUFF_SIZE)
             break;
     }
     return 0;
@@ -83,6 +84,7 @@ uint8_t ex_pshExBufToSD(  )
 {
     if (ExFm_Data_length < EFM_MESS_THRE)
         return 1;
+    // if (ExFm_Data_length > ExFm_Data_lengthmax)
     if (ExFm_Data_length > EFM_BUFF_SIZE)
     {
         //почему то размеры буфера не совпадают
@@ -105,8 +107,9 @@ uint8_t ex_pshExBufToSD(  )
     }
     // }
     // }
-    // if (res != ExFm_Data_length)
-        // return 1;
+    if (res != ExFm_Data_length)
+    // if (res != EFM_BUFF_SIZE)
+        return 1;
     EFM_BufferToSD_BasicCnt++;
     ExFm_Data_pulledcnt += ExFm_Data_length;
     if (ExFm_Data_pulledcnt > ExFm_Data_pulledmax)
