@@ -37,7 +37,7 @@ uint32_t    SAM_Ticker_Start,
 typedef struct
 {
     uint8_t dt_buffer[SPI2_FULL_DMA_RXTX_BUFFER_SIZE];
-    uint8_t dt_count;
+    uint16_t dt_count;
     struct mutex dt_mutex;
     struct lthread dt_lth;
     uint8_t is_full;

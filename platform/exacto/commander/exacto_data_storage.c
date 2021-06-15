@@ -288,7 +288,7 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
     // }
     return 0;
 }
-uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length)
+uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length)
 {
     if (receiver_length < getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage))
         return 1;

@@ -92,7 +92,7 @@ void printBufferData()
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
     printf("\033[A\33[2K\r");
-    uint8_t length = TESMA_DATA_MESSAGE_SIZE;
+    uint16_t length = TESMA_DATA_MESSAGE_SIZE;
     uint8_t start_point = 4;
     // for (uint8_t i = 0; i < TESMA_DATA_MESSAGE_SIZE; i++)
     // {
