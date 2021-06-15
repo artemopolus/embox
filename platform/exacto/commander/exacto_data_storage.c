@@ -268,7 +268,7 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
     }
     // ExactoBufferUint8Type * tmp_buffer = NULL;
     // // *tmp_buffer = ExOutputStorage[THR_SPI_TX].datastorage;
-    for (uint8_t i = 0; i < datacount; i++)
+    for (uint16_t i = 0; i < datacount; i++)
     {
         // pshfrc_exbu8(tmp_buffer, data[i]);
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
@@ -333,7 +333,7 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
     if (!ExOutputStorage[THR_SPI_RX].isready)
         return 1;
     uint8_t value;
-    for (uint8_t i = 0; ((grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))&&(i < receiver_length)); i++)
+    for (uint16_t i = 0; ((grbfst_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, &value))&&(i < receiver_length)); i++)
     {
         receiver[i] = value;
     }

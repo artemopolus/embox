@@ -260,7 +260,7 @@ void SPI2_updateRx()
 {
     if (ExOutputStorage[THR_SPI_RX].isready)
     {
-        for (uint8_t i = 0; i < SPI2_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+        for (uint16_t i = 0; i < SPI2_FULL_DMA_RXTX_BUFFER_SIZE; i++)
             pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
         ExOutputStorage[THR_SPI_RX].isready = 0;
     }
@@ -312,7 +312,7 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
     if (SPI2_FULL_DMA_rx_buffer.is_full == 0)
         return 1;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-    for (uint8_t i = 0; i < _datacount; i++)
+    for (uint16_t i = 0; i < _datacount; i++)
         pshfrc_exbu8(&_trg_thread->datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
     SPI2_FULL_DMA_rx_buffer.is_full = 0;
     _trg_thread->isready = 0;

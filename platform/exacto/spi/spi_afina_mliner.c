@@ -305,7 +305,7 @@ mutex_retry:
     }
     else
     {
-        for (uint8_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+        for (uint16_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
         {
             if (SPI1_FULL_DMA_rx_buffer.dt_buffer[i] == EXACTOLINK_PCK_ID)
             {
@@ -325,7 +325,7 @@ void SPI1_updateTx()
     if (!ExOutputStorage[THR_SPI_TX].isready)
         return;
     uint8_t value;
-    for (uint8_t i = 0; i < ExOutputStorage[THR_SPI_TX].datalen; i++)
+    for (uint16_t i = 0; i < ExOutputStorage[THR_SPI_TX].datalen; i++)
     {
         grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value);
         SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
@@ -346,7 +346,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
         //Данные пришли на вход и проверены
         disableMasterSpiDma();
         setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
-        for (uint8_t i = SAM_PackageStart_Buffer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
+        for (uint16_t i = SAM_PackageStart_Buffer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
         {
             uint8_t value;                        
             value = SPI1_FULL_DMA_rx_buffer.dt_buffer[i];
