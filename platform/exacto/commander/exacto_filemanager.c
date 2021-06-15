@@ -97,8 +97,8 @@ uint8_t ex_pshExBufToSD(  )
     // int res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
     // for (uint8_t index = 0; index < ExFm_Data_length; index += 512)
     // {
-    res = write (ExFm_File_Pointer, ExFm_Data_Buffer, EFM_BUFF_SIZE);
-    // res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+    // res = write (ExFm_File_Pointer, ExFm_Data_Buffer, EFM_BUFF_SIZE);
+    res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
 	if (res<=0) 
     {
         return 1;
