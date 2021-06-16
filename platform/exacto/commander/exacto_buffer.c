@@ -120,3 +120,19 @@ uint8_t mvbcksvr_exbu8( ExactoBufferUint8Type * buffer, const uint16_t length_ba
     }
     return 1;
 }
+uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length_back )
+{
+    if(!buffer->isExist || buffer->isEmpty)     return 0;
+    uint16_t i = 0, adr = buffer->lst;
+    uint16_t trg_len = getlen_exbu8(buffer);
+    if (trg_len > length_back)
+        trg_len = length_back;
+    do
+	{	
+        adr = (buffer->lst - trg_len + i) & buffer->mask;
+        dst[i] = buffer->data[adr];
+        i++;
+	}
+	while(adr != buffer->lst);
+    return 1;
+}

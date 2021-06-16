@@ -25,6 +25,8 @@ exactolink_package_info_t ExDtStr_TrasmitSPI_Info_tmp = {
 uint32_t ExDtStr_TrasmitSPI_RefCounter = 0;
 uint32_t ExDtStr_TrasmitSPI_RefCounterPrev = 0;
 uint32_t ExDtStr_TrasmitSPI_LostCnt = 0;
+
+static uint32_t EDS_DataStorage_UdtCnt = 0;
 /**
  * @brief store info and data about external input
  * 
@@ -292,35 +294,58 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
     for (uint16_t i = 0; i < datacount; i++)
     {
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
+        EDS_DataStorage_UdtCnt++;
     }
     ExOutputStorage[THR_SPI_TX].result = result;
+    switch (EDS_CurrentExactolinkType)
+    {
+    case EXACTOLINK_LSM303AH_TYPE0:
+        if (result == THR_CTRL_WAIT)
+        {
+            pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
+            pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
+        }
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length)
+{
+    watchsvr_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver, receiver_length);
     return 0;
 }
 uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length)
 {
+    if (!ExOutputStorage[THR_SPI_TX].isready)
+        return 1;
     uint8_t type = 1;
     const uint8_t pck_id = EXACTOLINK_PCK_ID;
     uint16_t address = 1;
-    const uint8_t addrH = (uint8_t) (address << 8);
+    const uint8_t addrH = (uint8_t) (address >> 8);
     const uint8_t addrL = (uint8_t) (address);
-    uint16_t length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage) + EXACTOLINK_START_DATA_POINT_VAL;
-    const uint8_t lenH = (uint8_t) (length << 8);
-    const uint8_t lenL = (uint8_t) (length);
-    const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
-    if (receiver_length <  4)
-        return 1;
-    //header
-    receiver[0] = pck_id;
-    receiver[1] = lenL;
-    receiver[2] = lenH;
-    receiver[3] = type;
+    uint8_t lenH, lenL, data_start_point;
     uint32_t crc;
+    uint16_t data_body_length, length;
     switch (EDS_CurrentExactolinkType)
     {
     case EXACTOLINK_LSM303AH_TYPE0:
         //начало пакета
         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
             return 1;
+        data_body_length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+        if (data_body_length > EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*10)
+            data_body_length = EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*10;
+        length =  EXACTOLINK_START_DATA_POINT_VAL + data_body_length + 4;
+        lenH = (uint8_t) (length >> 8);
+        lenL = (uint8_t) (length);
+        data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
+        //header
+        receiver[0] = pck_id;
+        receiver[1] = lenL;
+        receiver[2] = lenH;
+        receiver[3] = type;
         receiver[4] = data_start_point; //datatype
         receiver[5] = 0;
         receiver[6] = 0xff;  //priority
@@ -332,8 +357,7 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
         receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
 
-        for (uint16_t i = 0; i < (receiver_length
-                                     - (EXACTOLINK_START_DATA_POINT_VAL + 4 + EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)); 
+        for (uint16_t i = 0; i < ( data_body_length); 
                                      i += EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)
         {
             for (uint16_t y = 0; y < EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH; y++)
@@ -343,7 +367,7 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
                 {
                     goto getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker; //GOTO осторожно!!!
                 }
-                receiver[i + y] = value;
+                receiver[EXACTOLINK_START_DATA_POINT_VAL + i + y] = value;
             }
             
         }

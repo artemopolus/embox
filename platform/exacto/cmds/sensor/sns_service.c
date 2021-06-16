@@ -107,6 +107,7 @@ static uint8_t SNSSRV_SensorCheck_Max = 0;
 static uint8_t SNSSRV_SensorCheck_Counter = 0;
 static uint8_t SNSSRV_UploadData_Max = 0;
 static uint8_t SNSSRV_UploadData_Counter = 0;
+static uint32_t SNSSRV_PackRecv_Counter = 0;
 //========================================================================
 void executeStage();
 void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value);
@@ -195,7 +196,6 @@ void uploadRecevedData( const uint8_t pt, const uint16_t start, const uint16_t d
 }
 static int runSensorTickerThread(struct lthread * self)
 {
-    SensorTickerCounter++;
     
     executeStage(); 
     return 0;
@@ -339,6 +339,11 @@ static int runSendAndUploadThread(struct lthread * self)
                     enabled++;
                 }
             }
+        }
+        SensorTickerCounter++;
+        if (enabled > 0)
+        {
+            SNSSRV_PackRecv_Counter += enabled;
         }
         SNSSRV_SensorCheck_Counter = 0;
     }
