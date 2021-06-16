@@ -314,6 +314,7 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
     receiver[1] = lenL;
     receiver[2] = lenH;
     receiver[3] = type;
+    uint32_t crc;
     switch (EDS_CurrentExactolinkType)
     {
     case EXACTOLINK_LSM303AH_TYPE0:
@@ -350,7 +351,6 @@ getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
         // grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
         //очищение
         // clearExactoDataStorage();
-        uint32_t crc;
         ex_getCRC(&receiver[0], (length - 4), &crc);
         receiver[length - 4] = (uint8_t)(crc);
         receiver[length - 3] = (uint8_t)(crc >> 8);
