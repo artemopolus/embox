@@ -89,6 +89,8 @@ typedef enum{
     EXACTO_DENY,
     EXACTO_ERROR
 }exacto_process_result_t;
+
+#define EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH 6
 typedef enum{
     EXACTOLINK_NO_DATA = 0,
     EXACTOLINK_LSM303AH_TYPE0,
@@ -115,6 +117,10 @@ extern ex_service_info_t ExDataStorageServicesInfo;
 extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 extern exactodatastorage ExDtStorage;
 extern ex_io_thread_t ExSpi;
+//
+extern uint8_t ex_setExactolinkType( exactolink_package_result_t new_type);
+extern uint8_t ex_getExactolinkType( exactolink_package_result_t * type);
+//
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
 extern uint8_t transmitExactoDataStorage();

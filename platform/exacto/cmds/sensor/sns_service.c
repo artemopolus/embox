@@ -349,7 +349,7 @@ static int runSendAndUploadThread(struct lthread * self)
     }
     else
     {
-        setDataToExactoDataStorage(Ender, 4, THR_CTRL_OK);
+        setDataToExactoDataStorage(Ender, 0, THR_CTRL_OK);
         SNSSRV_UploadData_Counter = 0;
     }
 

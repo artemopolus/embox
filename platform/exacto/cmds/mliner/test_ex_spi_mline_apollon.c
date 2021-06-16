@@ -50,7 +50,8 @@ void executeSpiTxRxStage();
 static int runTESMA_ChangeMode_Lthread(struct lthread * self)
 {
     ex_setFreqHz(400);
-    ex_switchStage_SnsService(EXACTOLINK_LSM303AH_TYPE0);
+    ex_switchStage_SnsService   (EXACTOLINK_LSM303AH_TYPE0);
+    ex_setExactolinkType        (EXACTOLINK_LSM303AH_TYPE0);
     TESMA_DownloadData_Marker = 0;
     TESMA_DownloadData_Counter = 0;
     TESMA_DownloadData_Max = 39;

@@ -11,6 +11,8 @@ uint32_t ExDtStr_TransmitSPI_TxCounter = 0;
 uint32_t ExDtStr_TransmitSPI_RxCounter = 0;
 uint32_t EDS_SPI_pullcount = 0;
 
+exactolink_package_result_t EDS_CurrentExactolinkType;
+
 //temporary
 exactolink_package_info_t ExDtStr_TrasmitSPI_Info = {
     .is_data_available = 0,
@@ -46,6 +48,16 @@ thread_control_t TickReactionThread = {
     .result = THR_CTRL_WAIT,
 };
 
+uint8_t ex_setExactolinkType( exactolink_package_result_t new_type)
+{
+    EDS_CurrentExactolinkType = new_type;
+    return 0;
+}
+uint8_t ex_getExactolinkType( exactolink_package_result_t * type)
+{
+    *type = EDS_CurrentExactolinkType;
+    return 0;
+}
 static int runTickReactionThread(struct lthread * self)
 {
     TickReactionThread.datalen++;
@@ -261,37 +273,31 @@ thread_control_result_t getStateExactoDataStorage()
 }
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thread_control_result_t result)
 {
-    if (result == THR_CTRL_INIT)
+    switch (result)
     {
-        clearExactoDataStorage();
-        // setHeaderExactoDataStorage(1,1,64);
+    case THR_CTRL_INIT:
+        /* code */
+        // clearExactoDataStorage();
+        //начало итерации записи данных
+        break;
+    case THR_CTRL_OK:
+        //конец итерации записи
+        break;
+    case THR_CTRL_UNKNOWN_ERROR:
+    case THR_CTRL_NO_RESULT:
+        return 1;
+    default:
+        break;
     }
-    // ExactoBufferUint8Type * tmp_buffer = NULL;
-    // // *tmp_buffer = ExOutputStorage[THR_SPI_TX].datastorage;
     for (uint16_t i = 0; i < datacount; i++)
     {
-        // pshfrc_exbu8(tmp_buffer, data[i]);
         pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
     }
     ExOutputStorage[THR_SPI_TX].result = result;
-    // if (result == THR_CTRL_OK)
-    // {
-    //     uint32_t crc_value = ex_getResultCRC();
-    //     uint8_t input = (uint8_t)(crc_value);
-    //     pshfrc_exbu8(tmp_buffer, input);
-    //     input = (uint8_t)(crc_value >> 8);
-    //     pshfrc_exbu8(tmp_buffer, input);
-    //     input = (uint8_t)(crc_value >> 16);
-    //     pshfrc_exbu8(tmp_buffer, input);
-    //     input = (uint8_t)(crc_value >> 24);
-    //     pshfrc_exbu8(tmp_buffer, input);
-    // }
     return 0;
 }
 uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length)
 {
-    if (receiver_length < getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage))
-        return 1;
     uint8_t type = 1;
     const uint8_t pck_id = EXACTOLINK_PCK_ID;
     uint16_t address = 1;
@@ -301,30 +307,60 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
     const uint8_t lenH = (uint8_t) (length << 8);
     const uint8_t lenL = (uint8_t) (length);
     const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
+    if (receiver_length <  4)
+        return 1;
     //header
     receiver[0] = pck_id;
     receiver[1] = lenL;
     receiver[2] = lenH;
     receiver[3] = type;
-    //
-    receiver[4] = data_start_point; //datatype
-    receiver[5] = 0;
-    receiver[6] = 0xff;  //priority
-    receiver[7] = addrL;
-    receiver[8] = addrH; //datasrc
+    switch (EDS_CurrentExactolinkType)
+    {
+    case EXACTOLINK_LSM303AH_TYPE0:
+        //начало пакета
+        if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
+            return 1;
+        receiver[4] = data_start_point; //datatype
+        receiver[5] = 0;
+        receiver[6] = 0xff;  //priority
+        receiver[7] = addrL;
+        receiver[8] = addrH; //datasrc
+        //счетчик
+        receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;    //counter
+        receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
+        receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
+        receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
 
-    receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;    //counter
-    receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
-    receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
-    receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
-
-    grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
-    uint32_t crc;
-    ex_getCRC(&receiver[0], (length - 4), &crc);
-    receiver[length - 4] = (uint8_t)(crc);
-    receiver[length - 3] = (uint8_t)(crc >> 8);
-    receiver[length - 2] = (uint8_t)(crc >> 16);
-    receiver[length - 1] = (uint8_t)(crc >> 24);
+        for (uint16_t i = 0; i < (receiver_length
+                                     - (EXACTOLINK_START_DATA_POINT_VAL + 4 + EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)); 
+                                     i += EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)
+        {
+            for (uint16_t y = 0; y < EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH; y++)
+            {
+                uint8_t value;
+                if(!grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value))
+                {
+                    goto getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker; //GOTO осторожно!!!
+                }
+                receiver[i + y] = value;
+            }
+            
+        }
+getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
+        // grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
+        //очищение
+        // clearExactoDataStorage();
+        uint32_t crc;
+        ex_getCRC(&receiver[0], (length - 4), &crc);
+        receiver[length - 4] = (uint8_t)(crc);
+        receiver[length - 3] = (uint8_t)(crc >> 8);
+        receiver[length - 2] = (uint8_t)(crc >> 16);
+        receiver[length - 1] = (uint8_t)(crc >> 24);        
+        break;
+    
+    default:
+        break;
+    }
     return 0;
 
 }
