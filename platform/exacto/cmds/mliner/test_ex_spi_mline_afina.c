@@ -154,11 +154,17 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     {
         if (TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_LSM303AH_TYPE0)
         {
-            for (uint8_t i = 0; i < 6; i++)
+            uint8_t tmp_buffer[18 + 8];
+            uint64_t cnt;
+            if (grbsvr_exbu8(&TESMAF_ReceivedData,tmp_buffer,18))
             {
-                ex_convertUint8ToInt16(&TESMAF_ReceivedData.data[ TESMAF_ReceivedData.str + 8 + 2*i], &TESMAF_ReceivedData_Data[i]);
+                ex_convertUint8ToUint64(&tmp_buffer[2], &cnt);
+                for (uint8_t i = 0; i < 6; i++)
+                {
+                    ex_convertUint8ToInt16(&tmp_buffer[2 + 4 + 7 + 2*i], &TESMAF_ReceivedData_Data[i]);
+                }
+                TESMAF_WindowPrinter_Marker = 2;
             }
-            TESMAF_WindowPrinter_Marker = 2;
         }
     }
     return 0;

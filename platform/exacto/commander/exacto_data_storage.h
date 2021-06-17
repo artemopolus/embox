@@ -129,7 +129,7 @@ extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);
 extern uint8_t clearExactoDataStorage();
 extern thread_control_result_t getStateExactoDataStorage();
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thread_control_result_t result);
-extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length);
+extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
 extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();

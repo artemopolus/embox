@@ -311,9 +311,16 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
     }
     return 0;
 }
-uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length)
+uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type)
 {
-    watchsvr_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver, receiver_length);
+    if (type == 0)
+    {
+        watchsvr_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver, receiver_length);
+    }
+    else if (type == 1)
+    {
+        grbsvr_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, receiver, receiver_length);
+    }
     return 0;
 }
 uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length)

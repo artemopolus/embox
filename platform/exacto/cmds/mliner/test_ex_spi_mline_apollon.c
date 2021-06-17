@@ -123,7 +123,11 @@ void printBufferData()
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 2], &y);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 4], &z);
 
-    printf("%d\t%d\t%d\n", x, y, z);
+    printf("%d\t%d\t%d|%d %d|%d %d|%d %d|\n", x, y, z,
+                                TESMA_ReceivedData[start_point], TESMA_ReceivedData[start_point + 1],
+                                TESMA_ReceivedData[start_point+2], TESMA_ReceivedData[start_point + 3],
+                                TESMA_ReceivedData[start_point+4], TESMA_ReceivedData[start_point + 5]
+                                 );
     printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer, TESMA_Tim_Buffer);
 #endif
     return; 
@@ -134,7 +138,7 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
     if(!TESMA_DownloadData_Marker)
     {
         // getMailFromExactoDataStorage(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE);
-        watchPackFromExactoDataStorage(TESMA_ReceivedData, 8);
+        watchPackFromExactoDataStorage(TESMA_ReceivedData, 8, 0);
         TESMA_DownloadData_Marker = 1;
         TESMA_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
         TESMA_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);

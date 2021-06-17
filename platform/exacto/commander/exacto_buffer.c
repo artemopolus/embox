@@ -55,14 +55,31 @@ uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
 uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
 {
     if(!buffer->isExist || buffer->isEmpty)     return 0;
-    uint8_t i = 0, adr = buffer->str;
+    uint16_t i = 0, adr = buffer->str;
     do
-		{	
-			adr = (buffer->str + i) & buffer->mask;
-			dst[i] = buffer->data[adr];
-			i++;
-		}
-		while(adr != buffer->lst);
+    {	
+        adr = (buffer->str + i) & buffer->mask;
+        dst[i] = buffer->data[adr];
+        i++;
+    }
+	while(adr != buffer->lst);
+    return 1;
+}
+uint8_t grbsvr_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length)
+{
+    if(!buffer->isExist || buffer->isEmpty)     return 0;
+    uint16_t i = 0, adr, pt;
+    uint16_t trg_len = getlen_exbu8(buffer);
+    if (trg_len > length)
+        trg_len = length;
+    pt = (buffer->str + length) & buffer->mask;
+    do
+    {	
+        adr = (buffer->str + i) & buffer->mask;
+        dst[i] = buffer->data[adr];
+        i++;
+    }
+    while(adr != pt);
     return 1;
 }
 uint8_t clrval_exbu8(ExactoBufferUint8Type * buffer)
