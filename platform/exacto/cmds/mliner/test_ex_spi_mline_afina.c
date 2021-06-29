@@ -84,6 +84,19 @@ static uint8_t TESMAF_test_pushtosdmarker = 0;
 static uint8_t TESMAF_test_PushToSdMarkerGood = 0;
 static uint8_t TESMAF_test_PushToSdMarkerBad = 0;
 
+static uint32_t TESMAF_test_CallFunTooManyFailed = 0;
+static uint32_t TESMAF_test_InputLst = 0;
+static uint32_t TESMAF_test_UpdteLst = 0;
+
+static uint32_t TESMAF_print_CallFunTooManyFailed = 0;
+static uint32_t TESMAF_print_InputLst = 0;
+static uint32_t TESMAF_print_UpdteLst = 0;
+
+static uint32_t TESMAF_print_LostCnt = 0;
+static uint32_t TESMAF_print_DbleCnt = 0;
+static uint32_t TESMAF_print_OverFlw = 0;
+
+
 static struct lthread   TESMAF_AfterCheckExStr_Lthread;
 static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
 {
@@ -102,12 +115,14 @@ start:
     if ((TESMAF_CounterBuffer_Input - TESMAF_CounterBuffer_Middl) > 5)
     {
         //количество вызовов функций не совпадает с ее удачным завершением
+        TESMAF_test_CallFunTooManyFailed++;
         // printk("?");
     }
     if ((cnt_buf - TESMAF_CounterBuffer_Input) > 1)
     {
         //пропущены данные, которые отправлены от аполлона
         // printk(">");
+        TESMAF_test_InputLst++;
     }    
     TESMAF_CounterBuffer_Input = cnt_buf;
 
@@ -124,6 +139,7 @@ mutex_chk:
     {
         // printk("<");
         //были пропущены данные
+        TESMAF_test_UpdteLst++;
     }    
     TESMAF_CounterBuffer_Middl = cnt_buf2;
     ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, EXACTOLINK_MESSAGE_SIZE*40, THR_SPI_RX);
@@ -152,6 +168,12 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 
     if (TESMAF_WindowPrinter_Marker == 1)
     {
+        TESMAF_print_DbleCnt = ExDtStr_TrasmitSPI_DbleCnt;
+        TESMAF_print_LostCnt = ExDtStr_TrasmitSPI_LostCnt;
+        TESMAF_print_OverFlw = ExDtStr_TrasmitSPI_OverFlw;
+        TESMAF_print_InputLst = TESMAF_test_InputLst;
+        TESMAF_print_UpdteLst = TESMAF_test_UpdteLst;
+        TESMAF_print_CallFunTooManyFailed = TESMAF_test_CallFunTooManyFailed;
         if (TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_LSM303AH_TYPE0)
         {
             uint8_t tmp_buffer[18 + 8];
@@ -275,9 +297,10 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         {
             printf("%d\t",TESMAF_ReceivedData_Data[i]);
         }
-        printf("\nRefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d\n", TESMAF_ReceivedData_Info.counter,
+        printf("\nRefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d ", TESMAF_ReceivedData_Info.counter,
                      TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
-
+        printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
+                        TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
         TESMAF_WindowPrinter_Marker = 0;
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
         mutex_unlock(&TESP_WindowPrinter_Mutex);

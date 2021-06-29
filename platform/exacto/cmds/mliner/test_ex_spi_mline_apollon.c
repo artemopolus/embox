@@ -47,6 +47,9 @@ uint8_t TESMA_Sync_Marker = 1;
 
 static struct lthread TESMA_ChangeMode_Lthread;
 
+static uint8_t TESMA_print_OutOverFlw_Marker = 0;
+static uint32_t TESMA_print_OutOverFlw_Value = 0;
+
 void executeSpiTxRxStage();
 static int runTESMA_ChangeMode_Lthread(struct lthread * self)
 {
@@ -119,6 +122,7 @@ void printBufferData()
     //     printf("%d\t", value);
     // }
     int16_t x, y, z;
+    uint16_t buffer_length = ex_getLength_ExDtStr(THR_SPI_TX);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point], &x);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 2], &y);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 4], &z);
@@ -128,7 +132,18 @@ void printBufferData()
                                 TESMA_ReceivedData[start_point+2], TESMA_ReceivedData[start_point + 3],
                                 TESMA_ReceivedData[start_point+4], TESMA_ReceivedData[start_point + 5]
                                  );
-    printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d\n", TESMA_MlineSpiEnableMarker, TESMA_Tx_Buffer, TESMA_Rx_Buffer, TESMA_Tim_Buffer);
+    printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d | Buf: %d",
+                        TESMA_MlineSpiEnableMarker, 
+                        TESMA_Tx_Buffer, 
+                        TESMA_Rx_Buffer, 
+                        TESMA_Tim_Buffer,
+                        buffer_length);
+    if (TESMA_print_OutOverFlw_Marker)
+    {
+        TESMA_print_OutOverFlw_Marker = 0;
+        printf("| ovr: %d", TESMA_print_OutOverFlw_Value);
+    }
+    printf("\n");
 #endif
     return; 
 }
@@ -138,6 +153,11 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
     if(!TESMA_DownloadData_Marker)
     {
         // getMailFromExactoDataStorage(TESMA_ReceivedData, TESMA_DATA_MESSAGE_SIZE);
+        if (TESMA_print_OutOverFlw_Marker == 0)
+        {
+            TESMA_print_OutOverFlw_Marker = 1;
+            TESMA_print_OutOverFlw_Value = ExDtStr_OutputSPI_OverFlw;
+        }
         watchPackFromExactoDataStorage(TESMA_ReceivedData, 8, 0);
         TESMA_DownloadData_Marker = 1;
         TESMA_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);

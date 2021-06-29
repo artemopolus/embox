@@ -110,14 +110,20 @@ typedef struct{
     exactolink_package_result_t packagetype;
 }exactolink_package_info_t;
 
-
+// переменные
 extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
 
 extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 extern exactodatastorage ExDtStorage;
 extern ex_io_thread_t ExSpi;
-//
+extern uint32_t ExDtStr_TrasmitSPI_LostCnt;
+extern uint32_t ExDtStr_TrasmitSPI_DbleCnt;
+extern uint32_t ExDtStr_TrasmitSPI_OverFlw;
+extern uint32_t ExDtStr_OutputSPI_OverFlw;
+
+// функции
+extern uint16_t ex_getLength_ExDtStr(thread_type_t type);
 extern uint8_t ex_setExactolinkType( exactolink_package_result_t new_type);
 extern uint8_t ex_getExactolinkType( exactolink_package_result_t * type);
 //

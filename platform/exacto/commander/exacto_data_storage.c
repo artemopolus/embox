@@ -24,7 +24,12 @@ exactolink_package_info_t ExDtStr_TrasmitSPI_Info_tmp = {
 };
 uint32_t ExDtStr_TrasmitSPI_RefCounter = 0;
 uint32_t ExDtStr_TrasmitSPI_RefCounterPrev = 0;
+
 uint32_t ExDtStr_TrasmitSPI_LostCnt = 0;
+uint32_t ExDtStr_TrasmitSPI_DbleCnt = 0;
+uint32_t ExDtStr_TrasmitSPI_OverFlw = 0;
+
+uint32_t ExDtStr_OutputSPI_OverFlw = 0;
 
 static uint32_t EDS_DataStorage_UdtCnt = 0;
 /**
@@ -273,6 +278,14 @@ thread_control_result_t getStateExactoDataStorage()
 {
     return ExOutputStorage[THR_SPI_TX].result;
 }
+void updateData2EDS(uint8_t value)
+{
+    // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, value);
+    if (!pshsft_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, value))
+    {
+        ExDtStr_OutputSPI_OverFlw++;
+    }
+}
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thread_control_result_t result)
 {
     switch (result)
@@ -293,7 +306,8 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
     }
     for (uint16_t i = 0; i < datacount; i++)
     {
-        pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
+        // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, data[i]);
+        updateData2EDS(data[i]);
         EDS_DataStorage_UdtCnt++;
     }
     ExOutputStorage[THR_SPI_TX].result = result;
@@ -302,8 +316,10 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
     case EXACTOLINK_LSM303AH_TYPE0:
         if (result == THR_CTRL_WAIT)
         {
-            pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
-            pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
+            // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
+            // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
+            updateData2EDS(0x00);
+            updateData2EDS(0x00);
         }
         break;
     default:
@@ -539,6 +555,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     {
         // дублирование данных
         // printk("#");
+        ExDtStr_TrasmitSPI_DbleCnt++;
     }
     ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
 
@@ -559,6 +576,7 @@ uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_lengt
         {
             //переполнение
             printk("|");
+            ExDtStr_TrasmitSPI_OverFlw++;
         }
     }
     return 0;
@@ -622,7 +640,23 @@ uint32_t ex_getCounter_ExDtStr(thread_type_t type)
     }
     return 0;
 }
+uint16_t ex_getLength_ExDtStr(thread_type_t type)
+{
+    uint16_t value = 0;
+    switch (type)
+    {
+    case THR_SPI_RX:
+        value = getlen_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
+        break;
+    case THR_SPI_TX:
+        value = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+        break;
+    default:
+        break;
+    }
 
+    return value;
+}
 uint8_t resetExactoDataStorage()
 {
     lthread_launch(&ResetThread);

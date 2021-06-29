@@ -5,6 +5,9 @@
 #include <errno.h>
 #include "exacto_buffer.h"
 #include "exacto_data_storage.h"
+//переменные
+// extern uint32_t EFM_
+//функции
 extern uint8_t ex_writeToLogChar(char * info);
 extern uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer );
 extern uint8_t ex_pshExBufToSD(  );
