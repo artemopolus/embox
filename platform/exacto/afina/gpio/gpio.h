@@ -17,6 +17,7 @@ extern void ex_disableLed(ex_led_type_t type);
 extern void ex_toggleLed(ex_led_type_t type);
 extern void ex_enableGpio(exacto_gpio_types_t type);
 extern void ex_disableGpio(exacto_gpio_types_t type);
+extern void ex_toggleGpio(exacto_gpio_types_t type);
 extern uint32_t ex_checkGpio(exacto_gpio_types_t type);
 // extern uint8_t ex_subscribeOnGpioEvent( exacto_gpio_types_t type ,int (*run)(struct lthread *));
 extern void ex_setOutputGpio(exacto_gpio_types_t type);

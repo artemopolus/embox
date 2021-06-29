@@ -62,6 +62,20 @@ void ex_toggleLed(ex_led_type_t type)
     }
 
 }
+void ex_toggleGpio(exacto_gpio_types_t type)
+{
+    switch (type)
+    {
+    case EX_GPIO_SPI_MLINE:
+        LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_12);
+        break;
+    case EX_GPIO_SPI_SYNC:
+        LL_GPIO_TogglePin(GPIOF, LL_GPIO_PIN_15);
+        break;
+    default:
+        break;
+    }
+}
 void ex_enableGpio(exacto_gpio_types_t type)
 {
     switch (type)

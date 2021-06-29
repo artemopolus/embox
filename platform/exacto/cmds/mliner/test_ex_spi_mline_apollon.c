@@ -68,6 +68,9 @@ static int runTESMA_GpioReceiver_Lthread(struct lthread * self)
        ex_frcTimReload(); 
        TESMA_Sync_Marker = 0;
     }
+    TESMA_Sender_Counter = TESMA_Sender_Max;
+    turnOffSPI2_FULL_DMA();
+    setupSPI2_FULL_DMA();
     return 0;
 }
 
@@ -180,26 +183,26 @@ void executeSpiTxRxStage()
     }
     transmitExactoDataStorage();
 
-    if (!ex_checkGpio(EX_GPIO_SPI_MLINE))
-    {
-        if (!TESMA_MlineSpiEnableMarker)
-        {
-            TESMA_MlineSpiEnableMarker = 1;
-            setupSPI2_FULL_DMA();
-        }
-        if (checkTxSender())
-            TESMA_Tx_Counter++;
-        if (checkRxGetter())
-            TESMA_Rx_Counter++;
-    }
-    else
-    {
-        if (TESMA_MlineSpiEnableMarker)
-        {
-            TESMA_MlineSpiEnableMarker = 0;
-            turnOffSPI2_FULL_DMA();
-        }
-    } 
+    // if (!ex_checkGpio(EX_GPIO_SPI_MLINE))
+    // {
+    //     if (!TESMA_MlineSpiEnableMarker)
+    //     {
+    //         TESMA_MlineSpiEnableMarker = 1;
+    //         setupSPI2_FULL_DMA();
+    //     }
+    //     if (checkTxSender())
+    //         TESMA_Tx_Counter++;
+    //     if (checkRxGetter())
+    //         TESMA_Rx_Counter++;
+    // }
+    // else
+    // {
+    //     if (TESMA_MlineSpiEnableMarker)
+    //     {
+    //         TESMA_MlineSpiEnableMarker = 0;
+    //         turnOffSPI2_FULL_DMA();
+    //     }
+    // } 
     // printk("-");
 }
 

@@ -62,6 +62,9 @@ static SPI1_FULL_DMA_buffer SPI1_FULL_DMA_tx_buffer = {
     .dt_count = SPI1_FULL_DMA_RXTX_BUFFER_SIZE,
     .is_full = 0,
 };
+
+static uint8_t SPI1_Sync_Marker = 0;
+
 static irq_return_t SPI1_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data);
 static irq_return_t SPI1_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data);
 static int SPI1_FULL_DMA_rx_handler(struct lthread *self);
@@ -389,6 +392,10 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
         // Данные пришли, но состояние не известно : отправить на проверку
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
     }
+    if (SPI1_Sync_Marker)
+    {
+        ex_toggleGpio(EX_GPIO_SPI_SYNC);    
+    }
     return 0;
 }
 /**
@@ -429,4 +436,8 @@ struct mutex SPI1_FULL_DMA_wait_rx_data(void)
 uint8_t SPI1_FULL_DMA_is_full(void)
 {
     return SPI1_FULL_DMA_rx_buffer.is_full;
+}
+void syncMasterSpiDma()
+{
+    SPI1_Sync_Marker = 1;
 }

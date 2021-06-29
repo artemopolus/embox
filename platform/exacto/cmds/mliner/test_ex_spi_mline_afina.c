@@ -162,7 +162,12 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     
     TESMAF_DataCheck_Counter++; 
 
-    setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK); 
+    setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK);
+    if (ExDtStr_TrasmitSPI_DbleCnt > 100)
+    {
+        ExDtStr_TrasmitSPI_DbleCnt = 0;
+        syncMasterSpiDma();
+    } 
     transmitExactoDataStorage();
     lthread_launch(&TESMAF_AfterCheckExStr_Lthread);
 
@@ -371,7 +376,7 @@ int main(int argc, char *argv[]) {
     // TESMAF_ReceivedData[1] = 0x11;
     
     setini_exbu8(&TESMAF_ReceivedData);
-    ex_enableGpio(EX_GPIO_SPI_MLINE);
+    // ex_enableGpio(EX_GPIO_SPI_MLINE);
 
     if(initExactoFileManager())
     {
