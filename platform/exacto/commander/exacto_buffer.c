@@ -29,15 +29,16 @@ void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
 	if(buffer->isEmpty)	
     {
         buffer->isEmpty = 0;
-    }
-    //else 
-    //{
         buffer->lst = (buffer->lst + 1) & buffer->mask;
+    }
+    else 
+    {
         if(buffer->lst == buffer->str) 
         {
             buffer->str = (buffer->str + 1) & buffer->mask;
         }
-    //}
+        buffer->lst = (buffer->lst + 1) & buffer->mask;
+    }
 }
 uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
 {
@@ -112,7 +113,7 @@ uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer)
 }
 uint16_t getlen_exbu8(ExactoBufferUint8Type * buffer)
 {
-    if( buffer->lst >= buffer->str)
+    if( buffer->lst > buffer->str)
         return (buffer->lst - buffer->str);
     else
         return (buffer->lst + buffer->datalen - buffer->str);

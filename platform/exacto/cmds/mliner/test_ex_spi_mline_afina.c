@@ -161,7 +161,7 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
                 ex_convertUint8ToUint64(&tmp_buffer[2], &cnt);
                 for (uint8_t i = 0; i < 6; i++)
                 {
-                    ex_convertUint8ToInt16(&tmp_buffer[2 + 4 + 7 + 2*i], &TESMAF_ReceivedData_Data[i]);
+                    ex_convertUint8ToInt16(&tmp_buffer[2 + 4 + 0 + 2*i], &TESMAF_ReceivedData_Data[i]);
                 }
                 TESMAF_WindowPrinter_Marker = 2;
             }
