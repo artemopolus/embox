@@ -358,8 +358,8 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
             return 1;
         data_body_length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
-        if (data_body_length > EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*10)
-            data_body_length = EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*10;
+        if (data_body_length > EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*30)
+            data_body_length = EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*30;
         length =  EXACTOLINK_START_DATA_POINT_VAL + data_body_length + 4;
         lenH = (uint8_t) (length >> 8);
         lenL = (uint8_t) (length);
