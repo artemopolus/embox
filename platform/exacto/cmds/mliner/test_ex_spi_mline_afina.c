@@ -165,8 +165,8 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , THR_CTRL_OK);
     if (ExDtStr_TrasmitSPI_DbleCnt > 100)
     {
-        ExDtStr_TrasmitSPI_DbleCnt = 0;
-        syncMasterSpiDma();
+        // ExDtStr_TrasmitSPI_DbleCnt = 0;
+        // syncMasterSpiDma();
     } 
     transmitExactoDataStorage();
     lthread_launch(&TESMAF_AfterCheckExStr_Lthread);
