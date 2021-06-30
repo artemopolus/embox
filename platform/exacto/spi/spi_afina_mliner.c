@@ -344,6 +344,10 @@ void SPI1_updateTx()
  */
 static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
+    if (SPI1_Sync_Marker)
+    {
+        ex_toggleGpio(EX_GPIO_SPI_SYNC);    
+    }
     if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_OK))
     {
         //Данные пришли на вход и проверены
@@ -391,10 +395,6 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     {
         // Данные пришли, но состояние не известно : отправить на проверку
         ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
-    }
-    if (SPI1_Sync_Marker)
-    {
-        ex_toggleGpio(EX_GPIO_SPI_SYNC);    
     }
     return 0;
 }

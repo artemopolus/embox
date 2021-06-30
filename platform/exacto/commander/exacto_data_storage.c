@@ -578,7 +578,7 @@ uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_lengt
         if (!pshsft_exbu8(buffer, value))
         {
             //переполнение
-            printk("|");
+            // printk("|");
             ExDtStr_TrasmitSPI_OverFlw++;
         }
     }

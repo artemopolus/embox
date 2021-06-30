@@ -376,7 +376,8 @@ int main(int argc, char *argv[]) {
     // TESMAF_ReceivedData[1] = 0x11;
     
     setini_exbu8(&TESMAF_ReceivedData);
-    // ex_enableGpio(EX_GPIO_SPI_MLINE);
+    ex_enableGpio(EX_GPIO_SPI_MLINE);
+    // syncMasterSpiDma();
 
     if(initExactoFileManager())
     {
