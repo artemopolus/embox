@@ -424,9 +424,6 @@ static int initSnsService(void)
 // int initSnsService(void)
 {
     ex_initServiceMsg(&BufferToData);
-#ifdef PRINT_ON
-    printf("Start send data throw spi\n");
-#endif
     lthread_init(&SubscribeThread, runSubscribeThread);
     lthread_init(&SendThread, runSendThread);
     lthread_init(&SendAndUploadThread.thread, runSendAndUploadThread);
@@ -448,36 +445,19 @@ static int initSnsService(void)
     SendAndUploadThread.sns[1].datalen = 16;
     SendAndUploadThread.sns[1].pt2buffer = 6;
     SendAndUploadThread.sns[1].shift = 4;
-#ifdef PRINT_ON
-    printf("lsm303ah XL\n");
-#endif
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
         printReceivedData();
     }
-#ifdef PRINT_ON
-    printf("whoami:");
-    if (PackageToGett.data[0]== LSM303AH_ID_XL)
-        printf("Done\n");
-    else
-        printf("Failed\n");
-    printf("ism330\n");
-#endif
+
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
         printReceivedData();
     }
 
-#ifdef PRINT_ON
-    printf("whoami:");
-    if (PackageToGett.data[0]== ISM330DLC_ID)
-        printf("Done\n");
-    else
-        printf("Failed\n");
-    printf("lsm303ah MG\n");
-#endif
+
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
@@ -487,14 +467,7 @@ static int initSnsService(void)
     sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, 0x44); //0100 01 0 0
     sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, 0x48); //0100 01 0 0
 
-#ifdef PRINT_ON
-    printf("whoami:");
-    if (PackageToGett.data[0]== LSM303AH_ID_MG)
-        printf("Done\n");
-    else
-        printf("Failed\n");
-    printf("ism330 data read\n");
-#endif
+
 #ifdef SNS_SERVICE_TESTING
     StartTickerIsEnabled = 1;
 #endif
@@ -502,36 +475,18 @@ static int initSnsService(void)
     {
         sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
         printReceivedData();
-#ifdef PRINT_ON
-        printf("\n");
-#endif
         printDataValues(&PackageToGett.data[SendAndUploadThread.sns[1].shift], 6);
-#ifdef PRINT_ON
-        printf("\n");
-#endif
     }
 
-#ifdef PRINT_ON
-    printf("Ticker counter result: %d\n", ResultTicker);
-#endif
     
 
     sendOptions(LSM303AH, LSM303AH_CTRL1_A, 0xC5);
 
-#ifdef PRINT_ON
-    printf("lsm303 data read\n");
-#endif
     for (uint8_t i = 0; i < 6; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
         printReceivedData();
-#ifdef PRINT_ON
-        printf("\n");
-#endif
         printDataValues(&PackageToGett.data[SendAndUploadThread.sns[0].shift], 3);
-#ifdef PRINT_ON
-        printf("\n");
-#endif
     }
 
     MarkerStage = 0;

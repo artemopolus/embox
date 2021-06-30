@@ -45,11 +45,16 @@ uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
     if(!buffer->isExist)     
         return 0;
     uint16_t nxt = (buffer->lst + 1) & buffer->mask;
-    if(nxt == buffer->str) 
-        return 0;
-    buffer->data[buffer->lst] = value;
-	if(buffer->isEmpty)	
+	if(buffer->isEmpty)
+    {	
         buffer->isEmpty = 0;
+    }
+    else
+    {
+        if(nxt == (buffer->str + 1)) 
+            return 0;
+    }
+    buffer->data[buffer->lst] = value;
     buffer->lst = nxt;
     return 1;
 }

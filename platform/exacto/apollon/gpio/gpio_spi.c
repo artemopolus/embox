@@ -69,7 +69,7 @@ void ex_disableGpio(exacto_gpio_types_t type)
 }
 uint32_t ex_checkGpio(exacto_gpio_types_t type)
 {
-    uint32_t result;
+    uint32_t result = 0;
     switch (type)
     {
     case EX_GPIO_SPI_MLINE:

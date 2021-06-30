@@ -127,10 +127,10 @@ return 0;
 static int functionForExDtStorageHandler(struct lthread *self)
 {
     thread_control_t *_trg_lthread;
+    _trg_lthread = (thread_control_t*)self;
     goto *lthread_resume(self, &&start);
 start:
      /* инициализация */
-    _trg_lthread = (thread_control_t*)self;
 
 mutex_retry:
     // do       something
@@ -318,8 +318,8 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thr
         {
             // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
             // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
-            updateData2EDS(0x00);
-            updateData2EDS(0x00);
+            // updateData2EDS(0x00);
+            // updateData2EDS(0x00);
         }
         break;
     default:
