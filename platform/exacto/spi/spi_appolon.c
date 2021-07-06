@@ -81,6 +81,8 @@ uint8_t ex_runTransmiter()
     return 0;
 }
 
+#define SPI_APPOLON_INDEX_MAX 1000
+#define SPI_APPOLON_INDEX_SZ_INT uint16_t
 
 uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 {
@@ -91,14 +93,38 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
     // remember to reset CS -->LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
 	// LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
     // LL_SPI_Enable(SPI1);
-
-    while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+    SPI_APPOLON_INDEX_SZ_INT i = 0;
+    i = 0;
+    while(!LL_SPI_IsActiveFlag_TXE(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
 	// while(LL_SPI_IsActiveFlag_BSY(SPI1));
     LL_SPI_TransmitData8(SPI1, mask);
-    while(!LL_SPI_IsActiveFlag_TXE(SPI1));
+    i = 0;
+    while(!LL_SPI_IsActiveFlag_TXE(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
 	LL_SPI_TransmitData8(SPI1, value);
-	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
-	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+    i = 0;
+	while(!LL_SPI_IsActiveFlag_TXE(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
+    i = 0;
+	while(LL_SPI_IsActiveFlag_BSY(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
     // LL_SPI_Disable(SPI1);
 	// remember to set CS -->LL_GPIO_SetOutputPin(GPIOA,LL_GPIO_PIN_4);
     return 0;
@@ -114,8 +140,21 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     // LL_SPI_Enable(SPI1);
 	LL_SPI_TransmitData8(SPI1, value);
 	// while(LL_SPI_IsActiveFlag_BSY(SPI1));
-	while(!LL_SPI_IsActiveFlag_TXE(SPI1));
-	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+    SPI_APPOLON_INDEX_SZ_INT i = 0;
+    i = 0;
+	while(!LL_SPI_IsActiveFlag_TXE(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
+    i = 0;
+	while(LL_SPI_IsActiveFlag_BSY(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
     // LL_SPI_Disable(SPI1);
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
     // LL_SPI_Enable(SPI1);
@@ -128,10 +167,22 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     }
 	// while(!LL_SPI_IsActiveFlag_TXE(SPI1));
 	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1));
-	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+    i = 0;
+	while(LL_SPI_IsActiveFlag_BSY(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
     // LL_SPI_Disable(SPI1);
-	while(!LL_SPI_IsActiveFlag_RXNE(SPI1));
+    i = 0;
+	while(!LL_SPI_IsActiveFlag_RXNE(SPI1))
+    {
+        i++;
+        if (i > SPI_APPOLON_INDEX_MAX)
+            return 1;
+    }
     output->data[output->datalen - 1] = LL_SPI_ReceiveData8(SPI1);
 	// while(LL_SPI_IsActiveFlag_BSY(SPI1));
 	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1));

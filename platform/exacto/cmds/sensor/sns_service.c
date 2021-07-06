@@ -322,13 +322,13 @@ void executeStage()
         break;
     }
 }
+    uint8_t tmp_buffer_data[40] = {0};
 static int runSendAndUploadThread(struct lthread * self)
 {
     // printk("@");
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
     uint16_t enabled = 0;
-    uint8_t tmp_buffer_data[40] = {0};
     uint8_t tmp_buffer_index = 1;
     if (SNSSRV_UploadData_Counter == 0)
     {
@@ -363,9 +363,16 @@ static int runSendAndUploadThread(struct lthread * self)
                     for (uint8_t i = 0; i < tmp_length; i++)
                     {
                         tmp_buffer_data[tmp_buffer_index + i] = PackageToGett.data[i + shift];
-                    }
-                    
+                    }   
                     enabled++;
+                }
+                else
+                {
+                    for (uint8_t i = 0; i < tmp_length; i++)
+                    {
+                        tmp_buffer_data[tmp_buffer_index + i] = 0;
+                    }   
+
                 }
                 tmp_buffer_index += tmp_length;
             }
