@@ -116,7 +116,9 @@ void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t
 uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
 {
     exacto_tim_states_t state = ex_getFreqHz_TIM();
-    uint8_t value_sns_option_lsm303ah = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+    uint8_t value_sns_option_lsm303ah = 0xC5;       //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+    uint8_t value_sns_option_ism330dlc_xl = 0x44;   //0100 01 0 0 : 104 Hz 16g 
+    uint8_t value_sns_option_ism330dlc_gr = 0x4c;   //0100 11 0 0 : 104 Hz 2000 dps 
     switch (state)
     {
     case EXACTO_TIM_10:
@@ -129,11 +131,15 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
         SNSSRV_UploadData_Max = 2;
         SNSSRV_SensorCheck_Max = 0;
         value_sns_option_lsm303ah = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+        value_sns_option_ism330dlc_xl = 0x50;
+        value_sns_option_ism330dlc_gr = 0x5c; //0101 11 0 0
         break;
     case EXACTO_TIM_400:
         SNSSRV_UploadData_Max = 4;
         SNSSRV_SensorCheck_Max = 0;
         value_sns_option_lsm303ah = 0xE5;//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
+        value_sns_option_ism330dlc_xl = 0x60;
+        value_sns_option_ism330dlc_gr = 0x6c; //0110 11 00
         break;
     default:
         break;
@@ -158,7 +164,21 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
             }
         }
         break;
-
+    case EXACTOLINK_SNS_XLXLGR:
+        sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl);
+        sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr);
+        for (uint8_t i = 0; i < SendAndUploadThread.sns_count; i++)
+        {
+            if ((SendAndUploadThread.sns[i].sns == LSM303AH)||(SendAndUploadThread.sns[i].sns == ISM330DLC))
+            {
+                SendAndUploadThread.sns[i].isenabled = 1;
+            }
+            else
+            {
+                SendAndUploadThread.sns[i].isenabled = 0;
+            }
+        }
+        break;
     default:
         break;
     }
@@ -308,6 +328,8 @@ static int runSendAndUploadThread(struct lthread * self)
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
     uint16_t count = trg->sns_count;
     uint16_t enabled = 0;
+    uint8_t tmp_buffer_data[40] = {0};
+    uint8_t tmp_buffer_index = 1;
     if (SNSSRV_UploadData_Counter == 0)
     {
         setDataToExactoDataStorage(Ender, 0, THR_CTRL_INIT); 
@@ -335,9 +357,16 @@ static int runSendAndUploadThread(struct lthread * self)
                 if(isXlGrDataReady(sns, PackageToGett.data[0]))
                 {
                     uploadRecevedData(pt, shift, datalen);
-                    setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
+                    // setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
+                    tmp_buffer_data[0] |= (uint8_t)sns;
+                    for (uint8_t i = shift; i < (datalen - shift); i++)
+                    {
+                        tmp_buffer_data[tmp_buffer_index + i - shift] = PackageToGett.data[i];
+                    }
+                    
                     enabled++;
                 }
+                tmp_buffer_index += (datalen - shift);
             }
         }
         SensorTickerCounter++;
@@ -346,6 +375,7 @@ static int runSendAndUploadThread(struct lthread * self)
             SNSSRV_PackRecv_Counter += enabled;
         }
         SNSSRV_SensorCheck_Counter = 0;
+        setDataToExactoDataStorage(tmp_buffer_data, tmp_buffer_index, THR_CTRL_WAIT);
     }
 
     if (SNSSRV_UploadData_Counter < SNSSRV_UploadData_Max)

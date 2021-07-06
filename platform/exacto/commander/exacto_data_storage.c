@@ -29,7 +29,7 @@ uint32_t ExDtStr_TrasmitSPI_LostCnt = 0;
 uint32_t ExDtStr_TrasmitSPI_DbleCnt = 0;
 uint32_t ExDtStr_TrasmitSPI_OverFlw = 0;
 
-uint32_t ExDtStr_OutputSPI_OverFlw = 0;
+uint16_t ExDtStr_OutputSPI_OverFlw = 0;
 
 static uint32_t EDS_DataStorage_UdtCnt = 0;
 /**
@@ -174,8 +174,8 @@ static int initExactoDataStorage(void)
     lthread_init(&TickReactionThread.thread, runTickReactionThread);
     ExOutputStorage[0].type = THR_SPI_RX;
     ExOutputStorage[1].type = THR_SPI_TX;
-    ExOutputStorage[2].type = THR_STR_SD;
-    ExOutputStorage[3].type = THR_STR_CALC;
+    ExOutputStorage[2].type = THR_STR_CALC;
+    ExOutputStorage[3].type = THR_STR_SD;
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
         ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
@@ -343,7 +343,7 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
 {
     if (!ExOutputStorage[THR_SPI_TX].isready)
         return 1;
-    uint8_t type = 1;
+    uint8_t type = EDS_CurrentExactolinkType;
     const uint8_t pck_id = EXACTOLINK_PCK_ID;
     uint16_t address = 1;
     const uint8_t addrH = (uint8_t) (address >> 8);
@@ -355,19 +355,71 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
     {
     case EXACTOLINK_LSM303AH_TYPE0:
         //начало пакета
+//         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
+//             return 1;
+//         data_body_length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
+//         if (data_body_length > EXACTOLINK_APOLLON_SPI_PACK_SIZE)
+//             data_body_length = EXACTOLINK_APOLLON_SPI_PACK_SIZE;
+//         length =  EXACTOLINK_START_DATA_POINT_VAL + data_body_length + 4;
+//         lenH = (uint8_t) (length >> 8);
+//         lenL = (uint8_t) (length);
+//         data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
+//         //header
+//         receiver[0] = pck_id;
+//         receiver[1] = lenL;
+//         receiver[2] = lenH;
+//         receiver[3] = type;
+//         receiver[4] = data_start_point; //datatype
+//         receiver[5] = 0;
+//         receiver[6] = 0xff;  //priority
+//         receiver[7] = addrL;
+//         receiver[8] = addrH; //datasrc
+//         //счетчик
+//         receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;    //counter
+//         receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
+//         receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
+//         receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
+
+//         for (uint16_t i = 0; i < ( data_body_length); 
+//                                      i += EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)
+//         {
+//             for (uint16_t y = 0; y < EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH; y++)
+//             {
+//                 uint8_t value;
+//                 if(!grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value))
+//                 {
+//                     goto getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker; //GOTO осторожно!!!
+//                 }
+//                 receiver[EXACTOLINK_START_DATA_POINT_VAL + i + y] = value;
+//             }
+            
+//         }
+// getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
+//         // grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
+//         //очищение
+//         // clearExactoDataStorage();
+//         ex_getCRC(&receiver[0], (length - 4), &crc);
+//         receiver[length - 4] = (uint8_t)(crc);
+//         receiver[length - 3] = (uint8_t)(crc >> 8);
+//         receiver[length - 2] = (uint8_t)(crc >> 16);
+//         receiver[length - 1] = (uint8_t)(crc >> 24);        
+//         break;
+    case EXACTOLINK_SNS_XLXLGR:
+        //начало пакета
         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
             return 1;
         data_body_length = getlen_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage);
-        if (data_body_length > EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*30)
-            data_body_length = EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*30;
-        length =  EXACTOLINK_START_DATA_POINT_VAL + data_body_length + 4;
+        if (data_body_length > EXACTOLINK_APOLLON_SPI_PACK_SIZE)
+            data_body_length = EXACTOLINK_APOLLON_SPI_PACK_SIZE;
+        data_start_point = EXACTOLINK_XLXLGR_START_DATA_POINT_VAL;
+        length =  data_start_point + data_body_length + 4;
         lenH = (uint8_t) (length >> 8);
         lenL = (uint8_t) (length);
-        data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
         //header
         receiver[0] = pck_id;
         receiver[1] = lenL;
         receiver[2] = lenH;
+        //body header
         receiver[3] = type;
         receiver[4] = data_start_point; //datatype
         receiver[5] = 0;
@@ -375,36 +427,35 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         receiver[7] = addrL;
         receiver[8] = addrH; //datasrc
         //счетчик
-        receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;    //counter
+        receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;   
         receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
         receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
         receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
-
-        for (uint16_t i = 0; i < ( data_body_length); 
-                                     i += EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)
+        
+        receiver[13] = (uint8_t)(ExDtStr_OutputSPI_OverFlw );
+        receiver[14] = (uint8_t)(ExDtStr_OutputSPI_OverFlw >> 8);
+        receiver[15] = 0;
+        receiver[16] = 0;
+        receiver[17] = 0;
+        receiver[18] = 0;
+        receiver[19] = 0;
+        //data
+        for (uint16_t i = 0; i < ( data_body_length); i ++)
         {
-            for (uint16_t y = 0; y < EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH; y++)
+            uint8_t value;
+            if(!grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value))
             {
-                uint8_t value;
-                if(!grbfst_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &value))
-                {
-                    goto getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker; //GOTO осторожно!!!
-                }
-                receiver[EXACTOLINK_START_DATA_POINT_VAL + i + y] = value;
+                break; 
             }
-            
+            receiver[data_start_point + i] = value;
         }
-getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
-        // grball_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
-        //очищение
-        // clearExactoDataStorage();
+        // CRC
         ex_getCRC(&receiver[0], (length - 4), &crc);
         receiver[length - 4] = (uint8_t)(crc);
         receiver[length - 3] = (uint8_t)(crc >> 8);
         receiver[length - 2] = (uint8_t)(crc >> 16);
         receiver[length - 1] = (uint8_t)(crc >> 24);        
-        break;
-    
+        break;  
     default:
         break;
     }
@@ -425,6 +476,7 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
 exactolink_package_result_t ex_checkData_ExDtStr()
 {
     uint8_t value = 0;
+    exactolink_package_result_t exactolink_type = EXACTOLINK_NO_DATA;
     //pack specific
     ExactoBufferUint8Type * tmp_buffer = NULL;
     *tmp_buffer = ExOutputStorage[THR_SPI_RX].datastorage;
@@ -451,8 +503,10 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     grbfst_exbu8(tmp_buffer, &value); //[2] lenH
     pck_length += (uint16_t)(value << 8);
     grbfst_exbu8(tmp_buffer, &value); //[3]type 
+    exactolink_type = value;
     grbfst_exbu8(tmp_buffer, &value); //[4]datatype 
-    if (value != EXACTOLINK_START_DATA_POINT_VAL)
+    if ((value != EXACTOLINK_START_DATA_POINT_VAL)||
+         (value != EXACTOLINK_XLXLGR_START_DATA_POINT_VAL))
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
         return EXACTOLINK_NO_DATA;
@@ -471,100 +525,196 @@ exactolink_package_result_t ex_checkData_ExDtStr()
         setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
         return EXACTOLINK_CRC_ERROR;
     }
-    ExDtStr_TrasmitSPI_Info.length = pck_length - value - 4;
-    ExDtStr_TrasmitSPI_Info.length_raw[0] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length);
-    ExDtStr_TrasmitSPI_Info.length_raw[1] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length >> 8);
-
-    ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
-    grbfst_exbu8(tmp_buffer, &value); //[5] 
-    ExDtStr_TrasmitSPI_Info.datatype += (uint16_t)(value << 8);
-
-    grbfst_exbu8(tmp_buffer, &value); //[6] 
-    ExDtStr_TrasmitSPI_Info.priority = value;
-
-    grbfst_exbu8(tmp_buffer, &value); //[7] 
-    ExDtStr_TrasmitSPI_Info.datasrc = (uint16_t)value;
-    grbfst_exbu8(tmp_buffer, &value); //[8] 
-    ExDtStr_TrasmitSPI_Info.datasrc += (uint16_t)(value << 8);
-
-    ExDtStr_TrasmitSPI_RefCounterPrev = ExDtStr_TrasmitSPI_RefCounter;  //<=== сохраняем предудцщие данные
-    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x11);
-    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x11);
-    
-    uint32_t exdtstr_xtspi_refcnt = 0;
-    grbfst_exbu8(tmp_buffer, &value); //[9] 
-    exdtstr_xtspi_refcnt = (uint32_t)value;
-    ExDtStr_TrasmitSPI_Info.counter_raw[0] = value;
-    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
-    //===================================================================
-    grbfst_exbu8(tmp_buffer, &value); //[10] 
-    exdtstr_xtspi_refcnt += (uint32_t)(value << 8);
-    ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
-    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
-    //===================================================================
-    grbfst_exbu8(tmp_buffer, &value); //[11] 
-    exdtstr_xtspi_refcnt += (uint32_t)(value << 16);
-    ExDtStr_TrasmitSPI_Info.counter_raw[2] = value;
-    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
-    //===================================================================
-    grbfst_exbu8(tmp_buffer, &value); //[12] 
-    exdtstr_xtspi_refcnt += (uint32_t)(value << 24);
-    ExDtStr_TrasmitSPI_Info.counter_raw[3] = value;
-    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
-    //===================================================================
-    ExDtStr_TrasmitSPI_RefCounter = exdtstr_xtspi_refcnt;
-    if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) > 1)
-    {
-        // пропущены данные
-        ExDtStr_TrasmitSPI_LostCnt++;
-        // printk("@");
-    }
-    else if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) == 0)
-    {
-        // дублирование данных
-        // printk("#");
-        ExDtStr_TrasmitSPI_DbleCnt++;
-        ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
-        return EXACTOLINK_NO_DATA;
-    }
-    ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
-
-    uint16_t frame_index = 6;
-    ExDtStr_TransmitSPI_RxCounter++;
+    uint32_t exdtstr_xtspi_refcnt;
     uint16_t i;
-    //[13]
-    for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length); i++)
+    uint16_t frame_index;
+    switch(exactolink_type)
     {
-        if (!grbfst_exbu8(tmp_buffer, &value))
-        {
-            break;
-        }
-        else
-        {
-            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage,value);
-            frame_index++;
-            // ex_updateCRC(value); 
-        }
-    }
-    for (uint16_t i = frame_index; i < EXACTOLINK_SD_FRAME_SIZE; i++)
-    {
-        pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x00);
-    }
-    EDS_SPI_pullcount += getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
-    //проверка размера пакета (тестовое) 
-#ifdef EXACTO_DATA_STORAGE_TEST
-    uint16_t sd_storage_data_count = getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
-    if (sd_storage_data_count % EXACTOLINK_SD_FRAME_SIZE)
-    {
-        //не совпадает размер с тестовым
-        printk("@");
-    }
-#endif
-    
+        case EXACTOLINK_LSM303AH_TYPE0:
 
-    // ExDtStr_TransmitSPI_BuffLen = i;
-    ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_LSM303AH_TYPE0;
-    return EXACTOLINK_LSM303AH_TYPE0;
+        //     ExDtStr_TrasmitSPI_Info.length = pck_length - value - 4;
+        //     ExDtStr_TrasmitSPI_Info.length_raw[0] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length);
+        //     ExDtStr_TrasmitSPI_Info.length_raw[1] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length >> 8);
+
+        //     ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
+        //     grbfst_exbu8(tmp_buffer, &value); //[5] 
+        //     ExDtStr_TrasmitSPI_Info.datatype += (uint16_t)(value << 8);
+
+        //     grbfst_exbu8(tmp_buffer, &value); //[6] 
+        //     ExDtStr_TrasmitSPI_Info.priority = value;
+
+        //     grbfst_exbu8(tmp_buffer, &value); //[7] 
+        //     ExDtStr_TrasmitSPI_Info.datasrc = (uint16_t)value;
+        //     grbfst_exbu8(tmp_buffer, &value); //[8] 
+        //     ExDtStr_TrasmitSPI_Info.datasrc += (uint16_t)(value << 8);
+
+        //     ExDtStr_TrasmitSPI_RefCounterPrev = ExDtStr_TrasmitSPI_RefCounter;  //<=== сохраняем предудцщие данные
+        //     pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x11);
+        //     pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x11);
+            
+        //     exdtstr_xtspi_refcnt = 0;
+        //     grbfst_exbu8(tmp_buffer, &value); //[9] 
+        //     exdtstr_xtspi_refcnt = (uint32_t)value;
+        //     ExDtStr_TrasmitSPI_Info.counter_raw[0] = value;
+        //     pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+        //     //===================================================================
+        //     grbfst_exbu8(tmp_buffer, &value); //[10] 
+        //     exdtstr_xtspi_refcnt += (uint32_t)(value << 8);
+        //     ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
+        //     pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+        //     //===================================================================
+        //     grbfst_exbu8(tmp_buffer, &value); //[11] 
+        //     exdtstr_xtspi_refcnt += (uint32_t)(value << 16);
+        //     ExDtStr_TrasmitSPI_Info.counter_raw[2] = value;
+        //     pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+        //     //===================================================================
+        //     grbfst_exbu8(tmp_buffer, &value); //[12] 
+        //     exdtstr_xtspi_refcnt += (uint32_t)(value << 24);
+        //     ExDtStr_TrasmitSPI_Info.counter_raw[3] = value;
+        //     pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+        //     //===================================================================
+        //     ExDtStr_TrasmitSPI_RefCounter = exdtstr_xtspi_refcnt;
+        //     if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) > 1)
+        //     {
+        //         // пропущены данные
+        //         ExDtStr_TrasmitSPI_LostCnt++;
+        //         // printk("@");
+        //     }
+        //     else if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) == 0)
+        //     {
+        //         // дублирование данных
+        //         // printk("#");
+        //         ExDtStr_TrasmitSPI_DbleCnt++;
+        //         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
+        //         return EXACTOLINK_NO_DATA;
+        //     }
+        //     ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
+
+        //     frame_index = 6;
+        //     ExDtStr_TransmitSPI_RxCounter++;
+        //     //[13]
+        //     for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length); i++)
+        //     {
+        //         if (!grbfst_exbu8(tmp_buffer, &value))
+        //         {
+        //             break;
+        //         }
+        //         else
+        //         {
+        //             pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage,value);
+        //             frame_index++;
+        //             // ex_updateCRC(value); 
+        //         }
+        //     }
+        //     for (uint16_t i = frame_index; i < EXACTOLINK_SD_FRAME_SIZE; i++)
+        //     {
+        //         pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x00);
+        //     }
+        //     EDS_SPI_pullcount += getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
+        //     //проверка размера пакета (тестовое) 
+        // #ifdef EXACTO_DATA_STORAGE_TEST
+        //     uint16_t sd_storage_data_count = getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
+        //     if (sd_storage_data_count % EXACTOLINK_SD_FRAME_SIZE)
+        //     {
+        //         //не совпадает размер с тестовым
+        //         printk("@");
+        //     }
+        // #endif
+            
+
+        //     // ExDtStr_TransmitSPI_BuffLen = i;
+        //     ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_LSM303AH_TYPE0;
+        //     return EXACTOLINK_LSM303AH_TYPE0;
+        case EXACTOLINK_SNS_XLXLGR:
+            ExDtStr_TrasmitSPI_Info.length = pck_length - value - 4;
+            ExDtStr_TrasmitSPI_Info.length_raw[0] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length);
+            ExDtStr_TrasmitSPI_Info.length_raw[1] = (uint8_t)(ExDtStr_TrasmitSPI_Info.length >> 8);
+
+            ExDtStr_TrasmitSPI_Info.datatype = (uint16_t)value;
+            grbfst_exbu8(tmp_buffer, &value); //[5] 
+            ExDtStr_TrasmitSPI_Info.datatype += (uint16_t)(value << 8);
+
+            grbfst_exbu8(tmp_buffer, &value); //[6] 
+            ExDtStr_TrasmitSPI_Info.priority = value;
+
+            grbfst_exbu8(tmp_buffer, &value); //[7] 
+            ExDtStr_TrasmitSPI_Info.datasrc = (uint16_t)value;
+            grbfst_exbu8(tmp_buffer, &value); //[8] 
+            ExDtStr_TrasmitSPI_Info.datasrc += (uint16_t)(value << 8);
+
+            ExDtStr_TrasmitSPI_RefCounterPrev = ExDtStr_TrasmitSPI_RefCounter;  //<=== сохраняем предудцщие данные
+            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x11);
+            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, EXACTOLINK_SNS_XLXLGR);
+            
+            exdtstr_xtspi_refcnt = 0;
+            grbfst_exbu8(tmp_buffer, &value); //[9] 
+            exdtstr_xtspi_refcnt = (uint32_t)value;
+            ExDtStr_TrasmitSPI_Info.counter_raw[0] = value;
+            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+            //===================================================================
+            grbfst_exbu8(tmp_buffer, &value); //[10] 
+            exdtstr_xtspi_refcnt += (uint32_t)(value << 8);
+            ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
+            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+            //===================================================================
+            grbfst_exbu8(tmp_buffer, &value); //[11] 
+            exdtstr_xtspi_refcnt += (uint32_t)(value << 16);
+            ExDtStr_TrasmitSPI_Info.counter_raw[2] = value;
+            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+            //===================================================================
+            grbfst_exbu8(tmp_buffer, &value); //[12] 
+            exdtstr_xtspi_refcnt += (uint32_t)(value << 24);
+            ExDtStr_TrasmitSPI_Info.counter_raw[3] = value;
+            pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, value);
+            //===================================================================
+            ExDtStr_TrasmitSPI_RefCounter = exdtstr_xtspi_refcnt;
+            if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) > 1)
+            {
+                // пропущены данные
+                ExDtStr_TrasmitSPI_LostCnt++;
+            }
+            else if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) == 0)
+            {
+                // дублирование данных
+                ExDtStr_TrasmitSPI_DbleCnt++;
+                ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
+                return EXACTOLINK_NO_DATA;
+            }
+            ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
+
+            ExDtStr_TransmitSPI_RxCounter++;
+            grbfst_exbu8(tmp_buffer, &value); //[13] 
+            grbfst_exbu8(tmp_buffer, &value); //[14] 
+            grbfst_exbu8(tmp_buffer, &value); //[15] 
+            grbfst_exbu8(tmp_buffer, &value); //[16] 
+            grbfst_exbu8(tmp_buffer, &value); //[17] 
+            grbfst_exbu8(tmp_buffer, &value); //[18] 
+            grbfst_exbu8(tmp_buffer, &value); //[19] 
+            //[20]
+            frame_index = EXACTOLINK_SD_PT_DATA_START;
+            for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length); i++)
+            {
+                if (!grbfst_exbu8(tmp_buffer, &value))
+                {
+                    break;
+                }
+                else
+                {
+                    pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage,value);
+                    frame_index++;
+                }
+            }
+            for (uint16_t i = frame_index; i < EXACTOLINK_SD_FRAME_SIZE; i++)
+            {
+                pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage, 0x00);
+            }
+            EDS_SPI_pullcount += getlen_exbu8(&ExOutputStorage[THR_STR_SD].datastorage);
+            ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_SNS_XLXLGR;
+            return EXACTOLINK_SNS_XLXLGR;
+        default:
+            break;
+    }
+    return EXACTOLINK_NO_DATA;
 }
 uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
 {

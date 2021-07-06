@@ -30,6 +30,10 @@
 #endif
 
 #define EXACTOLINK_SD_FRAME_SIZE 288
+#define EXACTOLINK_SD_PT_ID 0
+#define EXACTOLINK_SD_PT_TYPE 1
+#define EXACTOLINK_SD_PT_COUNTER 2
+#define EXACTOLINK_SD_PT_DATA_START 6
 
 #define THREAD_CONTROL_BUFFER_SZ 16
 #define THREAD_OUTPUT_TYPES_SZ 4
@@ -37,7 +41,11 @@
 
 #define EXACTOLINK_START_DATA_POINT_ADR 4
 #define EXACTOLINK_START_DATA_POINT_VAL 13
+#define EXACTOLINK_XLXLGR_START_DATA_POINT_VAL 20
 #define EXACTOLINK_PCK_ID 17
+
+#define EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH 8
+#define EXACTOLINK_APOLLON_SPI_PACK_SIZE EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*30
 
 #include <stdint.h>
 // typedef enum{
@@ -90,10 +98,10 @@ typedef enum{
     EXACTO_ERROR
 }exacto_process_result_t;
 
-#define EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH 8
 typedef enum{
     EXACTOLINK_NO_DATA = 0,
     EXACTOLINK_LSM303AH_TYPE0,
+    EXACTOLINK_SNS_XLXLGR,
     EXACTOLINK_CRC_ERROR,
     EXACTOLINK_UNKNOWN_ERROR
 }exactolink_package_result_t;
@@ -108,6 +116,7 @@ typedef struct{
     uint8_t counter_raw[4];
     uint8_t is_data_available;
     exactolink_package_result_t packagetype;
+    uint16_t overflow;
 }exactolink_package_info_t;
 
 // переменные
@@ -120,7 +129,7 @@ extern ex_io_thread_t ExSpi;
 extern uint32_t ExDtStr_TrasmitSPI_LostCnt;
 extern uint32_t ExDtStr_TrasmitSPI_DbleCnt;
 extern uint32_t ExDtStr_TrasmitSPI_OverFlw;
-extern uint32_t ExDtStr_OutputSPI_OverFlw;
+extern uint16_t ExDtStr_OutputSPI_OverFlw;
 
 // функции
 extern uint16_t ex_getLength_ExDtStr(thread_type_t type);

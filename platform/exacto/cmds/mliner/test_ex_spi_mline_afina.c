@@ -45,7 +45,8 @@ static struct mutex     TESP_PrintToSD_Mutex;
 static struct lthread   TESP_PrintToSD_Remainder_Lthread;
 
 //----------------------------------------------------------------------------
-#define TESMAF_MESSAGE_SIZE SPI_MLINER_BUFFER_SIZE
+
+#define TESMAF_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
 uint8_t TESMAF_DataToBuffer[TESMAF_MESSAGE_SIZE] = {0};
 // uint8_t TESMAF_ReceivedData[TESMAF_MESSAGE_SIZE] = {0};
 static ExactoBufferUint8Type    TESMAF_ReceivedData;
@@ -105,7 +106,8 @@ static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
     uint32_t cnt_buf2 = 0;
 start:
     exactolink_result = ex_checkData_ExDtStr();
-    if (exactolink_result != EXACTOLINK_LSM303AH_TYPE0)
+    if   ((exactolink_result != EXACTOLINK_LSM303AH_TYPE0) ||
+          (exactolink_result != EXACTOLINK_SNS_XLXLGR))
     {
         // printk("s");
         //данные не прошли проверку валидности
@@ -142,7 +144,7 @@ mutex_chk:
         TESMAF_test_UpdteLst++;
     }    
     TESMAF_CounterBuffer_Middl = cnt_buf2;
-    ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, EXACTOLINK_MESSAGE_SIZE*40, THR_SPI_RX);
+    ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE, THR_SPI_RX);
 
     TESMAF_test_uploaddatamarker = 0;
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);

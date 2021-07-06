@@ -4,9 +4,9 @@
 #include <stdint.h>
 #define EX_SNS_CMDS_COUNT 6
 typedef enum {
-    LSM303AH = 0,
-    ISM330DLC,
-    BMP280
+    LSM303AH = 1,
+    ISM330DLC = 2,
+    BMP280 = 4
 }exacto_sensors_list_t;
 typedef struct{
     exacto_sensors_list_t sns;
