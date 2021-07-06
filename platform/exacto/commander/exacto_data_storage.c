@@ -505,8 +505,8 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     grbfst_exbu8(tmp_buffer, &value); //[3]type 
     exactolink_type = value;
     grbfst_exbu8(tmp_buffer, &value); //[4]datatype 
-    if ((value != EXACTOLINK_START_DATA_POINT_VAL)||
-         (value != EXACTOLINK_XLXLGR_START_DATA_POINT_VAL))
+    if (!(( value == EXACTOLINK_START_DATA_POINT_VAL)||
+         (  value == EXACTOLINK_XLXLGR_START_DATA_POINT_VAL)))
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
         return EXACTOLINK_NO_DATA;

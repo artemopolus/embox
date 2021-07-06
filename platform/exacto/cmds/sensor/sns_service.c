@@ -354,19 +354,20 @@ static int runSendAndUploadThread(struct lthread * self)
                 enableExactoSensor(sns);
                 ex_gettSpiSns(&PackageToGett);
                 disableExactoSensor(sns);
+                uint8_t tmp_length = (datalen - shift);
                 if(isXlGrDataReady(sns, PackageToGett.data[0]))
                 {
                     uploadRecevedData(pt, shift, datalen);
                     // setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
                     tmp_buffer_data[0] |= (uint8_t)sns;
-                    for (uint8_t i = shift; i < (datalen - shift); i++)
+                    for (uint8_t i = 0; i < tmp_length; i++)
                     {
-                        tmp_buffer_data[tmp_buffer_index + i - shift] = PackageToGett.data[i];
+                        tmp_buffer_data[tmp_buffer_index + i] = PackageToGett.data[i + shift];
                     }
                     
                     enabled++;
                 }
-                tmp_buffer_index += (datalen - shift);
+                tmp_buffer_index += tmp_length;
             }
         }
         SensorTickerCounter++;
@@ -460,7 +461,7 @@ static int initSnsService(void)
     lthread_init(&DownloadCmdToSendThread, runDownloadCmdToSendThread);
     lthread_launch(&SubscribeThread);
     sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
-    sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x0c);
+    sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c); // 0 1 0 0 1 1 0 0
     resetExactoDataStorage();
     SendAndUploadThread.sns_count = 2;
     SendAndUploadThread.sns[0].isenabled = 1;
@@ -478,7 +479,7 @@ static int initSnsService(void)
     for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
-        printReceivedData();
+        // printReceivedData();
     }
 
     for (uint8_t i = 0; i < 3; i++)

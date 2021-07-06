@@ -106,8 +106,8 @@ static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
     uint32_t cnt_buf2 = 0;
 start:
     exactolink_result = ex_checkData_ExDtStr();
-    if   ((exactolink_result != EXACTOLINK_LSM303AH_TYPE0) ||
-          (exactolink_result != EXACTOLINK_SNS_XLXLGR))
+    if   (!((   exactolink_result == EXACTOLINK_LSM303AH_TYPE0) ||
+          (     exactolink_result == EXACTOLINK_SNS_XLXLGR)))
     {
         // printk("s");
         //данные не прошли проверку валидности
@@ -181,7 +181,8 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         TESMAF_print_InputLst = TESMAF_test_InputLst;
         TESMAF_print_UpdteLst = TESMAF_test_UpdteLst;
         TESMAF_print_CallFunTooManyFailed = TESMAF_test_CallFunTooManyFailed;
-        if (TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_LSM303AH_TYPE0)
+        if ((TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_LSM303AH_TYPE0)||
+            (TESMAF_ReceivedData_Info.packagetype == EXACTOLINK_SNS_XLXLGR))
         {
             uint8_t tmp_buffer[18 + 8];
             uint64_t cnt;
@@ -295,7 +296,6 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
     printf("Start reporter!\n\n\n");
     while(1)
     {
-        mutex_lock(&TESP_WindowPrinter_Mutex);
         printf("\033[A\33[2K\r");
         printf("\033[A\33[2K\r");
         printf("\033[A\33[2K\r");
@@ -309,6 +309,7 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
                         TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
         TESMAF_WindowPrinter_Marker = 0;
+        mutex_lock(&TESP_WindowPrinter_Mutex);
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
         mutex_unlock(&TESP_WindowPrinter_Mutex);
     }
@@ -379,7 +380,7 @@ int main(int argc, char *argv[]) {
     
     setini_exbu8(&TESMAF_ReceivedData);
     ex_enableGpio(EX_GPIO_SPI_MLINE);
-    // syncMasterSpiDma();
+    syncMasterSpiDma();
 
     if(initExactoFileManager())
     {
