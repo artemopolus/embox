@@ -148,7 +148,9 @@ mutex_chk:
     ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE, THR_SPI_RX);
 
     TESMAF_test_uploaddatamarker = 0;
+    printk("-");
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
+    printk("+");
     TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
     TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
     TESMAF_DataCheck_Success++;
@@ -243,6 +245,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     while(1)
     {
         printk("[");
+        mutex_lock(&TESP_PrintToSD_Mutex);
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         uint32_t current_cnt = TESMAF_CounterBuffer_Middl;
         delta = current_cnt - data_to_sd_cnt;
@@ -279,7 +282,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         }
         printk("~d");
         
-        mutex_lock(&TESP_PrintToSD_Mutex);
+        // mutex_lock(&TESP_PrintToSD_Mutex);
         printk("]");
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
@@ -288,11 +291,11 @@ static void * runTESP_PrintToSD_Thread(void * arg)
 }
 static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
 {
-    // start:
-    // mutex_retry:
+    start:
+    mutex_retry:
 	if (mutex_trylock_lthread(self, &TESP_WindowPrinter_Mutex) == -EAGAIN) {
-        // return lthread_yield(&&start, &&mutex_retry);
-        return 0;
+        return lthread_yield(&&start, &&mutex_retry);
+        // return 0;
 	}
     printk("@");
     TESP_TimReceiver_Buffer = TESP_TimReceiver_Counter;
@@ -303,22 +306,25 @@ static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
 static void * runTESP_WindowPrinter_Thread(void * arg)
 {
     printf("Start reporter!\n\n\n");
+    uint8_t value = 0;
     while(1)
     {
+        value++;
         // printf("\033[A\33[2K\r");
         // printf("\033[A\33[2K\r");
         // printf("\033[A\33[2K\r");
-        printf("Data received:\n");
-        for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
-        {
-            printf("%d\t",TESMAF_ReceivedData_Data[i]);
-        }
-        printf("\nRefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d ", TESMAF_ReceivedData_Info.counter,
-                     TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
-        printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
-                        TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
-        TESMAF_WindowPrinter_Marker = 0;
         mutex_lock(&TESP_WindowPrinter_Mutex);
+        printf("Data received:\n");
+        // for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
+        // {
+        //     printf("%d\t",TESMAF_ReceivedData_Data[i]);
+        // }
+        // printf("\n|%d|RefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d ", value, TESMAF_ReceivedData_Info.counter,
+        //              TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
+        // printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
+        //                 TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
+        TESMAF_WindowPrinter_Marker = 0;
+        // mutex_lock(&TESP_WindowPrinter_Mutex);
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
         mutex_unlock(&TESP_WindowPrinter_Mutex);
     }
