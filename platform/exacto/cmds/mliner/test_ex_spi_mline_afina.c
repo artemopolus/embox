@@ -242,6 +242,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     uint16_t fast_write_cnt = 0;
     while(1)
     {
+        printk("[");
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         uint32_t current_cnt = TESMAF_CounterBuffer_Middl;
         delta = current_cnt - data_to_sd_cnt;
@@ -261,9 +262,11 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         }
         data_to_sd_cnt = current_cnt;
         TESMAF_test_pushtosdmarker = 1;
+        printk("[a");
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
         TESMAF_test_pushtosdmarker = 0;
+        printk("[b");
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         if(ex_pshExBufToSD())
         {
@@ -273,9 +276,10 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         {
             TESMAF_test_PushToSdMarkerGood++;
         }
-        
+        printk("[c");
         
         mutex_lock(&TESP_PrintToSD_Mutex);
+        printk("]");
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
     }    
