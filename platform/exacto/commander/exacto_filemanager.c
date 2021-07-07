@@ -100,7 +100,10 @@ uint8_t ex_pshExBufToSD(  )
     // for (uint8_t index = 0; index < ExFm_Data_length; index += 512)
     // {
     // res = write (ExFm_File_Pointer, ExFm_Data_Buffer, EFM_BUFF_SIZE);
+    printk("~%d~", ExFm_Data_length);
+    printk("~o");
     res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+    printk("~e");
 	if (res<=0) 
     {
         return 1;
