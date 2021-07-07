@@ -262,12 +262,13 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         }
         data_to_sd_cnt = current_cnt;
         TESMAF_test_pushtosdmarker = 1;
-        printk("[a");
+        printk("~a");
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
         TESMAF_test_pushtosdmarker = 0;
-        printk("[b");
+        printk("~b");
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
+        printk("~c");
         if(ex_pshExBufToSD())
         {
             TESMAF_test_PushToSdMarkerBad++;
@@ -276,7 +277,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         {
             TESMAF_test_PushToSdMarkerGood++;
         }
-        printk("[c");
+        printk("~d");
         
         mutex_lock(&TESP_PrintToSD_Mutex);
         printk("]");
