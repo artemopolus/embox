@@ -106,6 +106,7 @@ static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
     uint32_t cnt_buf2 = 0;
 start:
     exactolink_result = ex_checkData_ExDtStr();
+    printk("^");
     if   (!((   exactolink_result == EXACTOLINK_LSM303AH_TYPE0) ||
           (     exactolink_result == EXACTOLINK_SNS_XLXLGR)))
     {
@@ -156,11 +157,13 @@ mutex_chk:
     
     TESMAF_Sensors_GoodCnt++; //<======================================
     lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+    printk("&");
     return 0;
 }
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     // printk("&");
+    printk("$");
     
     TESMAF_DataCheck_Counter++; 
 
@@ -225,6 +228,7 @@ static int runTESP_PrintToSD_Remainder_Lthread(struct lthread * self)
 	if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
         return lthread_yield(&&mutex_retry, &&mutex_retry);
 	}
+    printk("#");
     cond_signal(&TESP_PrintToSD_Signal);
 	mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
     return 0;
@@ -285,7 +289,7 @@ static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
         // return lthread_yield(&&start, &&mutex_retry);
         return 0;
 	}
-    // printk("after mutex\n");
+    printk("@");
     TESP_TimReceiver_Buffer = TESP_TimReceiver_Counter;
     cond_signal(&TESP_WindowPrinter_Signal);
 	mutex_unlock_lthread(self, &TESP_WindowPrinter_Mutex);
@@ -296,9 +300,9 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
     printf("Start reporter!\n\n\n");
     while(1)
     {
-        printf("\033[A\33[2K\r");
-        printf("\033[A\33[2K\r");
-        printf("\033[A\33[2K\r");
+        // printf("\033[A\33[2K\r");
+        // printf("\033[A\33[2K\r");
+        // printf("\033[A\33[2K\r");
         printf("Data received:\n");
         for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
         {
@@ -317,6 +321,8 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
 }
 static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 {
+    printk("!");
+
     TESP_TimReceiver_Counter++;
     if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
     {
