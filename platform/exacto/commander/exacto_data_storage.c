@@ -718,6 +718,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
 }
 uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
 {
+    uint8_t is_overflowed = 0;
     for (uint16_t i = 0; (i < buffer_length); i++)
     {
         uint8_t value;
@@ -727,11 +728,14 @@ uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_lengt
         }
         if (!pshsft_exbu8(buffer, value))
         {
+            if (!is_overflowed)
+                is_overflowed = 1;
             //переполнение
-            printk("q");
             ExDtStr_TrasmitSPI_OverFlw++;
         }
     }
+    if (is_overflowed)
+        printk("qqqqqqqqqqqqqqqqqq");
     return 0;
 }
 uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type)

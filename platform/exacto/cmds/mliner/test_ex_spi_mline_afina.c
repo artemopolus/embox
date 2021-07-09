@@ -24,6 +24,12 @@
 #include "sensors/exacto_datatools.h"
 #include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
+#include "ex_utils.h"
+
+static uint32_t     TESMAF_Ticker_Start = 0, 
+                    TESMAF_Ticker_Stop = 0, 
+                    TESMAF_Ticker_Result = 0;
+
 
 static struct lthread TESP_Subscribe_Lthread;
 uint8_t               TESP_Subscribe_Marker = 0;
@@ -247,6 +253,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         printk("[");
         mutex_lock(&TESP_PrintToSD_Mutex);
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
+        TESMAF_Ticker_Start = ex_dwt_cyccnt_start();
         uint32_t current_cnt = TESMAF_CounterBuffer_Middl;
         delta = current_cnt - data_to_sd_cnt;
         if ((delta) > 1)
@@ -283,7 +290,9 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         printk("~d");
         
         // mutex_lock(&TESP_PrintToSD_Mutex);
-        printk("]");
+        TESMAF_Ticker_Stop = ex_dwt_cyccnt_stop();
+        TESMAF_Ticker_Result = TESMAF_Ticker_Stop - TESMAF_Ticker_Start;
+        printk("~%d]", TESMAF_Ticker_Result);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
     }    
@@ -391,6 +400,7 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
+    ex_dwt_cyccnt_reset();
     ex_setFreqHz(100);
     // TESMAF_ReceivedData[0] = 0x11;
     // TESMAF_ReceivedData[1] = 0x11;
