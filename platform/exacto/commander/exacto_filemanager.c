@@ -11,6 +11,7 @@
 
 #include <fcntl.h>
 #include <kernel/printk.h>
+#include <kernel/sched/sched_lock.h>
 
 #define EX_FM_PATH_TO_FILE_PT 17
 #define EX_FM_PATH_TO_LOG_PT 12
@@ -102,7 +103,9 @@ uint8_t ex_pshExBufToSD(  )
     // res = write (ExFm_File_Pointer, ExFm_Data_Buffer, EFM_BUFF_SIZE);
     printk("~%d~", ExFm_Data_length);
     printk("~o");
+    sched_lock();
     res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+    sched_unlock();
     printk("~e");
 	if (res<=0) 
     {
