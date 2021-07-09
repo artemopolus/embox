@@ -102,11 +102,16 @@ uint8_t ex_pshExBufToSD(  )
     // {
     // res = write (ExFm_File_Pointer, ExFm_Data_Buffer, EFM_BUFF_SIZE);
     printk("~%d~", ExFm_Data_length);
-    printk("~o");
+	// ipl_t sp;
     sched_lock();
-    res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+    // sp = ipl_save();
+    {
+        printk("~o");
+        res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+        printk("~e");
+    }
+    // ipl_restore(sp);
     sched_unlock();
-    printk("~e");
 	if (res<=0) 
     {
         return 1;

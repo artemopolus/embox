@@ -253,7 +253,6 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         printk("[");
         mutex_lock(&TESP_PrintToSD_Mutex);
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
-        TESMAF_Ticker_Start = ex_dwt_cyccnt_start();
         uint32_t current_cnt = TESMAF_CounterBuffer_Middl;
         delta = current_cnt - data_to_sd_cnt;
         if ((delta) > 1)
@@ -279,6 +278,7 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         printk("~b");
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
         printk("~c");
+        TESMAF_Ticker_Start = ex_dwt_cyccnt_start();
         if(ex_pshExBufToSD())
         {
             TESMAF_test_PushToSdMarkerBad++;
@@ -287,10 +287,10 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         {
             TESMAF_test_PushToSdMarkerGood++;
         }
+        TESMAF_Ticker_Stop = ex_dwt_cyccnt_stop();
         printk("~d");
         
         // mutex_lock(&TESP_PrintToSD_Mutex);
-        TESMAF_Ticker_Stop = ex_dwt_cyccnt_stop();
         TESMAF_Ticker_Result = TESMAF_Ticker_Stop - TESMAF_Ticker_Start;
         printk("~%d]", TESMAF_Ticker_Result);
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);

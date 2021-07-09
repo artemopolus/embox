@@ -29,7 +29,7 @@
 #error Unsupported exactolink buffer sz
 #endif
 
-#define EXACTOLINK_SD_FRAME_SIZE 288
+#define EXACTOLINK_SD_FRAME_SIZE 512
 #define EXACTOLINK_SD_PT_ID 0
 #define EXACTOLINK_SD_PT_TYPE 1
 #define EXACTOLINK_SD_PT_COUNTER 2
