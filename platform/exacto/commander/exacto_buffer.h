@@ -35,19 +35,22 @@
 #define EXACTO_BUFFER_UINT8_SZ  4096 
 #elif MODOPS_BUFFER_SZ == 8192
 #define EXACTO_BUFFER_UINT8_SZ  8192 
+#elif MODOPS_BUFFER_SZ == 16384
+#define EXACTO_BUFFER_UINT8_SZ  16384 
 #else
 #error Unsupported exacto buffer sz
 #endif
 
 
 typedef struct{
-    uint8_t data[EXACTO_BUFFER_UINT8_SZ];
+    // uint8_t data[EXACTO_BUFFER_UINT8_SZ];
     uint16_t str;
     uint16_t lst;
     uint16_t mask;
     uint16_t datalen;
     uint8_t isEmpty;
     uint8_t isExist;
+    uint8_t *data;
 } ExactoBufferUint8Type;
 
 
