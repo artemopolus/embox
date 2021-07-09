@@ -1,16 +1,19 @@
 #include <commander/exacto_buffer.h>
-// #include <malloc.h>
+#include <stdlib.h>
 
 int setini_exbu8(ExactoBufferUint8Type * buffer)
 {
+    uint16_t cnt = EXACTO_BUFFER_UINT8_SZ;
+    uint8_t * p = (uint8_t*)calloc(cnt,sizeof(uint8_t));
+    if (p == NULL)
+        return 1;
+    buffer->data = p;
     buffer->str = 0;
     buffer->lst = 0;
     buffer->isExist = 1;
     buffer->isEmpty = 1;
     buffer->datalen = EXACTO_BUFFER_UINT8_SZ;
     buffer->mask = EXACTO_BUFFER_UINT8_SZ - 1;
-    uint16_t cnt = EXACTO_BUFFER_UINT8_SZ;
-    buffer->data = (uint8_t*)malloc(cnt*sizeof(uint8_t));
     return 0;
 }
 uint8_t grbfst_exbu8_ns(ExactoBufferUint8Type * buffer, uint8_t * fstval)
