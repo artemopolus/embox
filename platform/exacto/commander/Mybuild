@@ -28,6 +28,7 @@ module data_storage {
 }
 module buffer{
 	option number buffersz=512
+	option number extbuffersz=1024
 	source "exacto_buffer.c"
 	@IncludeExport(path="commander")
 	source "exacto_buffer.h"

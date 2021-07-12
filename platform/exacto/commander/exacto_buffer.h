@@ -7,7 +7,8 @@
 
 #include <framework/mod/options.h>
 #include <module/exacto/commander/buffer.h>
-#define MODOPS_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__buffer,NUMBER, buffersz)
+#define MODOPS_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__buffer, NUMBER, buffersz)
+#define MODOPS_EXTENDED_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__buffer, NUMBER, extbuffersz)
 
 #if MODOPS_BUFFER_SZ == 2
 #define EXACTO_BUFFER_UINT8_SZ  2 
@@ -41,6 +42,27 @@
 #error Unsupported exacto buffer sz
 #endif
 
+#if MODOPS_EXTENDED_BUFFER_SZ == 128
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ 128
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          256 
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     256
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          512 
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     512
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          1024 
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     1024
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          2048 
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     2048
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          4096 
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     4096
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          8192 
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     8192
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          16384
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     16384
+#elif MODOPS_EXTENDED_BUFFER_SZ ==          32768
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ     32768
+#else
+#error Unsupported exacto extended buffer sz
+#endif
 
 typedef struct{
     uint16_t str;
@@ -53,7 +75,6 @@ typedef struct{
     // uint8_t *data;
 } ExactoBufferUint8Type;
 
-#define EXACTO_EXTENDED_BUFFER_UINT8_SZ 16384
 
 typedef struct{
     uint16_t str;
@@ -151,5 +172,6 @@ extern uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, 
 extern int      setini_exbextu8(ExactoBufferExtended * buffer);
 extern void     pshfrc_exbextu8(ExactoBufferExtended * buffer,const uint8_t value);
 extern uint8_t  grbfst_exbextu8(ExactoBufferExtended * buffer, uint8_t * fstval);
+extern uint16_t getlen_exbextu8(ExactoBufferExtended * buffer);
 
 #endif /* EXACTO_BUFFER_H_ */

@@ -124,6 +124,9 @@ extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
 
 extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
+
+extern ExactoBufferExtended ExDtStr_SD_buffer;
+
 extern exactodatastorage ExDtStorage;
 extern ex_io_thread_t ExSpi;
 extern uint32_t ExDtStr_TrasmitSPI_LostCnt;
