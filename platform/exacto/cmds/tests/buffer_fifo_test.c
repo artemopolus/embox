@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <commander/exacto_buffer.h>
 #include <kernel/lthread/lthread.h>
+#include <mem/sysmalloc.h>
 
 static struct lthread Basic; 
     ExactoBufferUint8Type datastorage;
@@ -39,7 +40,6 @@ uint8_t checkBuffers(uint8_t * dst, uint8_t * src, const uint16_t length)
 }
 static int runBasicLthread( struct lthread * self)
 {
-    setini_exbu8(&datastorage);
     DoneMarker = 1;
     return 0;
 }
@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
     while (!DoneMarker)
     {
     }
+    setini_exbu8(&datastorage);
     
 
     for (uint16_t i = 0; i < EXACTO_BUFFER_UINT8_SZ; i++)
