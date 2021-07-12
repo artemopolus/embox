@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <commander/exacto_buffer.h>
+#include <kernel/lthread/lthread.h>
+
+static struct lthread Basic; 
+    ExactoBufferUint8Type datastorage;
+    uint8_t DoneMarker = 0;
 
 void setDataToBuffer(ExactoBufferUint8Type * buffer, uint8_t * src, const uint16_t length)
 {
@@ -32,11 +37,21 @@ uint8_t checkBuffers(uint8_t * dst, uint8_t * src, const uint16_t length)
     }
     return 1;
 }
+static int runBasicLthread( struct lthread * self)
+{
+    setini_exbu8(&datastorage);
+    DoneMarker = 1;
+    return 0;
+}
 int main(int argc, char *argv[]) {
-    ExactoBufferUint8Type datastorage;
     uint8_t buffer_str[EXACTO_BUFFER_UINT8_SZ] = {0};
     uint8_t buffer_dst[EXACTO_BUFFER_UINT8_SZ] = {0};
-    setini_exbu8(&datastorage);
+    lthread_init(&Basic, runBasicLthread);
+    lthread_launch(&Basic);
+    while (!DoneMarker)
+    {
+    }
+    
 
     for (uint16_t i = 0; i < EXACTO_BUFFER_UINT8_SZ; i++)
     {

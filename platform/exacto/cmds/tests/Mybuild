@@ -160,6 +160,7 @@ AUTHOR Kuznetcov
 module buffer_fifo_test{
 	source "buffer_fifo_test.c"
 	depends exacto.commander.buffer	
+	depends embox.kernel.lthread.lthread
 }
 @AutoCmd
 @Cmd(name="test_lights", help=" Test for lights ", man='''
