@@ -3,11 +3,11 @@
 
 int setini_exbu8(ExactoBufferUint8Type * buffer)
 {
-    uint16_t cnt = EXACTO_BUFFER_UINT8_SZ;
-    uint8_t * p = (uint8_t*)sysmalloc(cnt*sizeof(uint8_t));
-    if (p == NULL)
-        return 1;
-    buffer->data = p;
+    // uint16_t cnt = EXACTO_BUFFER_UINT8_SZ;
+    // uint8_t * p = (uint8_t*)sysmalloc(cnt*sizeof(uint8_t));
+    // if (p == NULL)
+    //     return 1;
+    // buffer->data = p;
     buffer->str = 0;
     buffer->lst = 0;
     buffer->isExist = 1;
@@ -213,4 +213,24 @@ uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uin
 	}
 	while(adr != buffer->lst);
     return 1;
+}
+int      setini_exbextu8(ExactoBufferExtended * buffer)
+{
+    buffer->str = 0;
+    buffer->lst = 0;
+    buffer->isExist = 1;
+    buffer->isEmpty = 1;
+    buffer->datalen = EXACTO_EXTENDED_BUFFER_UINT8_SZ;
+    buffer->mask = EXACTO_EXTENDED_BUFFER_UINT8_SZ - 1;
+    return 0;
+}
+void     pshfrc_exbextu8(ExactoBufferExtended * buffer,const uint8_t value)
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
+    pshfrc_exbu8(tmp, value);
+}
+uint8_t  grbfst_exbextu8(ExactoBufferExtended * buffer, uint8_t * fstval)
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
+    return grbfst_exbu8(tmp, fstval);
 }

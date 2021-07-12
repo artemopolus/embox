@@ -4,12 +4,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <commander/exacto_buffer.h>
-#include <kernel/lthread/lthread.h>
-#include <mem/sysmalloc.h>
+#define TEST_BFT_SZ 512
+#define TEST_BFT_TRY_CNT 50
 
-static struct lthread Basic; 
-    ExactoBufferUint8Type datastorage;
-    uint8_t DoneMarker = 0;
+ExactoBufferUint8Type datastorage;
+ExactoBufferExtended bigdatastorage;
 
 void setDataToBuffer(ExactoBufferUint8Type * buffer, uint8_t * src, const uint16_t length)
 {
@@ -38,38 +37,39 @@ uint8_t checkBuffers(uint8_t * dst, uint8_t * src, const uint16_t length)
     }
     return 1;
 }
-static int runBasicLthread( struct lthread * self)
-{
-    DoneMarker = 1;
-    return 0;
-}
-int main(int argc, char *argv[]) {
-    uint8_t buffer_str[EXACTO_BUFFER_UINT8_SZ] = {0};
-    uint8_t buffer_dst[EXACTO_BUFFER_UINT8_SZ] = {0};
-    lthread_init(&Basic, runBasicLthread);
-    lthread_launch(&Basic);
-    while (!DoneMarker)
-    {
-    }
-    setini_exbu8(&datastorage);
-    
 
-    for (uint16_t i = 0; i < EXACTO_BUFFER_UINT8_SZ; i++)
+int main(int argc, char *argv[]) {
+    // uint8_t buffer_str[EXACTO_BUFFER_UINT8_SZ] = {0};
+    // uint8_t buffer_dst[EXACTO_BUFFER_UINT8_SZ] = {0};
+
+    uint8_t buffer_pck_src[TEST_BFT_SZ] = {0};
+    uint8_t buffer_pck_dst[TEST_BFT_SZ] = {0};
+    for (uint16_t i = 0; i < TEST_BFT_SZ; i++)
     {
-        uint8_t value = (uint8_t) i;
-        buffer_str[i] = value;
-        // pshfrc_exbu8(&datastorage, value);
+       buffer_pck_src[i] = TEST_BFT_SZ - i; 
     }
-    uint16_t size = 45;
-    for (uint8_t i = 0; i < 3; i++)
+    setini_exbextu8(&bigdatastorage);
+    
+    printf("Extended buffers test:\n");
+    
+    for (uint16_t i = 0; i < TEST_BFT_TRY_CNT; i++)
     {
-        setDataToBuffer(&datastorage, buffer_str, size);
+        for(uint16_t j = 0; j < TEST_BFT_SZ; j++)
+        {
+            pshfrc_exbextu8(&bigdatastorage, buffer_pck_src[j]);
+        }
     }
-    for (uint8_t i = 0; i < 3; i++)
+
+    for (uint16_t i = 0; i < TEST_BFT_TRY_CNT; i++)
     {
-        getDataFromBuffer(&datastorage, buffer_dst, size);
+        for(uint16_t j = 0; j < TEST_BFT_SZ; j++)
+        {
+            uint8_t value;
+            grbfst_exbextu8(&bigdatastorage, &value);
+            buffer_pck_dst[j] = value;
+        }
         printf("Check data [%d]:", i);
-        if (checkBuffers(buffer_str, buffer_dst, size))
+        if (checkBuffers(buffer_pck_dst, buffer_pck_src, TEST_BFT_SZ))
         {
             printf("Done\n");
         }
@@ -78,7 +78,36 @@ int main(int argc, char *argv[]) {
             printf("Failed\n");
         }
     }
+
+    printf("Standart buffers test:\n");
+    setini_exbu8(&datastorage);
     
-    printf("Datalen: %d\n", getlen_exbu8(&datastorage));
+    for (uint16_t i = 0; i < TEST_BFT_TRY_CNT; i++)
+    {
+        for(uint16_t j = 0; j < TEST_BFT_SZ; j++)
+        {
+            pshfrc_exbu8(&datastorage, buffer_pck_src[j]);
+        }
+    }
+
+    for (uint16_t i = 0; i < TEST_BFT_TRY_CNT; i++)
+    {
+        for(uint16_t j = 0; j < TEST_BFT_SZ; j++)
+        {
+            uint8_t value;
+            grbfst_exbu8(&datastorage, &value);
+            buffer_pck_dst[j] = value;
+        }
+        printf("Check data [%d]:", i);
+        if (checkBuffers(buffer_pck_dst, buffer_pck_src, TEST_BFT_SZ))
+        {
+            printf("Done\n");
+        }
+        else
+        {
+            printf("Failed\n");
+        }
+    }
+
     return 0;
 }

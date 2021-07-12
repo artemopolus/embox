@@ -43,15 +43,28 @@
 
 
 typedef struct{
-    // uint8_t data[EXACTO_BUFFER_UINT8_SZ];
     uint16_t str;
     uint16_t lst;
     uint16_t mask;
     uint16_t datalen;
     uint8_t isEmpty;
     uint8_t isExist;
-    uint8_t *data;
+    uint8_t data[EXACTO_BUFFER_UINT8_SZ];
+    // uint8_t *data;
 } ExactoBufferUint8Type;
+
+#define EXACTO_EXTENDED_BUFFER_UINT8_SZ 16384
+
+typedef struct{
+    uint16_t str;
+    uint16_t lst;
+    uint16_t mask;
+    uint16_t datalen;
+    uint8_t isEmpty;
+    uint8_t isExist;
+    uint8_t data[EXACTO_EXTENDED_BUFFER_UINT8_SZ];
+    // uint8_t *data;
+} ExactoBufferExtended;
 
 
 #define __static_inline static inline
@@ -133,5 +146,10 @@ extern uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, co
 
 extern uint8_t grbfstPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t datalen);
 extern uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen);
+
+
+extern int      setini_exbextu8(ExactoBufferExtended * buffer);
+extern void     pshfrc_exbextu8(ExactoBufferExtended * buffer,const uint8_t value);
+extern uint8_t  grbfst_exbextu8(ExactoBufferExtended * buffer, uint8_t * fstval);
 
 #endif /* EXACTO_BUFFER_H_ */
