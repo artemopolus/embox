@@ -4,7 +4,7 @@
 int setini_exbu8(ExactoBufferUint8Type * buffer)
 {
     uint16_t cnt = EXACTO_BUFFER_UINT8_SZ;
-    uint8_t * p = (uint8_t*)calloc(cnt,sizeof(uint8_t));
+    uint8_t * p = (uint8_t*)malloc(cnt*sizeof(uint8_t));
     if (p == NULL)
         return 1;
     buffer->data = p;
