@@ -26,6 +26,8 @@
 #include "gpio/gpio.h"
 #include "ex_utils.h"
 
+#define PRINTK_ID_FOR_THREAD_ON
+
 static uint32_t     TESMAF_Ticker_Start = 0, 
                     TESMAF_Ticker_Stop = 0, 
                     TESMAF_Ticker_Result = 0;
@@ -112,7 +114,9 @@ static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
     uint32_t cnt_buf2 = 0;
 start:
     exactolink_result = ex_checkData_ExDtStr();
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("^");
+#endif
     if   (!((   exactolink_result == EXACTOLINK_LSM303AH_TYPE0) ||
           (     exactolink_result == EXACTOLINK_SNS_XLXLGR)))
     {
@@ -154,9 +158,13 @@ mutex_chk:
     ex_pshBuf_ExDtStr(&TESMAF_ReceivedData, TESMAF_MESSAGE_SIZE, THR_SPI_RX);
 
     TESMAF_test_uploaddatamarker = 0;
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("-");
+#endif
 	mutex_unlock_lthread(self, &TESMAF_CheckExactoStorage_Mutex);
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("+");
+#endif
     TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
     TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
     TESMAF_DataCheck_Success++;
@@ -165,13 +173,17 @@ mutex_chk:
     
     TESMAF_Sensors_GoodCnt++; //<======================================
     lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("&");
+#endif
     return 0;
 }
 static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
 {
     // printk("&");
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("$");
+#endif
     
     TESMAF_DataCheck_Counter++; 
 
@@ -236,7 +248,9 @@ static int runTESP_PrintToSD_Remainder_Lthread(struct lthread * self)
 	if (mutex_trylock_lthread(self, &TESP_PrintToSD_Mutex) == -EAGAIN) {
         return lthread_yield(&&mutex_retry, &&mutex_retry);
 	}
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("#");
+#endif
     cond_signal(&TESP_PrintToSD_Signal);
 	mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
     return 0;
@@ -250,7 +264,9 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     uint16_t fast_write_cnt = 0;
     while(1)
     {
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("[");
+#endif
         mutex_lock(&TESP_PrintToSD_Mutex);
         mutex_lock(&TESMAF_CheckExactoStorage_Mutex);
         uint32_t current_cnt = TESMAF_CounterBuffer_Middl;
@@ -271,13 +287,19 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         }
         data_to_sd_cnt = current_cnt;
         TESMAF_test_pushtosdmarker = 1;
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~a");
+#endif
         ex_saveExBufToFile(&TESMAF_ReceivedData);
         TESMAF_ReceivedData_Counter = 0;
         TESMAF_test_pushtosdmarker = 0;
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~b");
+#endif
         mutex_unlock(&TESMAF_CheckExactoStorage_Mutex);
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~c");
+#endif
         TESMAF_Ticker_Start = ex_dwt_cyccnt_start();
         if(ex_pshExBufToSD())
         {
@@ -288,11 +310,15 @@ static void * runTESP_PrintToSD_Thread(void * arg)
             TESMAF_test_PushToSdMarkerGood++;
         }
         TESMAF_Ticker_Stop = ex_dwt_cyccnt_stop();
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~d");
+#endif
         
         // mutex_lock(&TESP_PrintToSD_Mutex);
         TESMAF_Ticker_Result = TESMAF_Ticker_Stop - TESMAF_Ticker_Start;
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~%d]", TESMAF_Ticker_Result);
+#endif
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
     }    
@@ -306,7 +332,9 @@ static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
         return lthread_yield(&&start, &&mutex_retry);
         // return 0;
 	}
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("@");
+#endif
     TESP_TimReceiver_Buffer = TESP_TimReceiver_Counter;
     cond_signal(&TESP_WindowPrinter_Signal);
 	mutex_unlock_lthread(self, &TESP_WindowPrinter_Mutex);
@@ -319,11 +347,14 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
     while(1)
     {
         value++;
+#ifndef PRINTK_ID_FOR_THREAD_ON
         // printf("\033[A\33[2K\r");
         // printf("\033[A\33[2K\r");
         // printf("\033[A\33[2K\r");
+#endif
         mutex_lock(&TESP_WindowPrinter_Mutex);
         printf("Data received:\n");
+#ifndef PRINTK_ID_FOR_THREAD_ON
         // for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
         // {
         //     printf("%d\t",TESMAF_ReceivedData_Data[i]);
@@ -332,6 +363,7 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         //              TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
         // printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
         //                 TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
+#endif
         TESMAF_WindowPrinter_Marker = 0;
         // mutex_lock(&TESP_WindowPrinter_Mutex);
         cond_wait(&TESP_WindowPrinter_Signal, &TESP_WindowPrinter_Mutex);
@@ -341,7 +373,9 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
 }
 static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 {
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("!");
+#endif
 
     TESP_TimReceiver_Counter++;
     if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
@@ -448,7 +482,9 @@ int main(int argc, char *argv[]) {
     }
     printf("Subscribing is done\n");
 
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("+ -- tim run\ni -- win run\n& -- exdtst run\n");
+#endif
 
     thread_launch(TESP_PrintToSD_Thread);
 
