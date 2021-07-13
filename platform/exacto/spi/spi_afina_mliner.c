@@ -363,7 +363,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     SAM_Ticker_Result = SAM_Ticker_Stop - SAM_Ticker_Start;
     SAM_Ticker_Start = ex_dwt_cyccnt_start();
 #ifdef PRINTK_ID_FOR_THREAD_ON
-        printk("~%d]", SAM_Ticker_Result);
+        printk(">%d<", SAM_Ticker_Result);
 #endif
 
 #endif
