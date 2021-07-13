@@ -12,6 +12,17 @@
 #include <module/exacto/commander/data_storage.h>
 #define MODOPS_EXACTOLINK_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__data_storage, NUMBER, exactolinkbuffersz)
 
+#define MODOPS_USE_EXTENDED_FUN OPTION_MODULE_GET(exacto__commander__data_storage, BOOLEAN, use_extended_fun)
+#if MODOPS_USE_EXTENDED_FUN
+#define EXDTSTR_EXTENDED
+#endif
+
+#define MODOPS_USE_PRINTK OPTION_MODULE_GET(exacto__commander__data_storage, BOOLEAN, use_printk)
+#if MODOPS_USE_PRINTK
+#define PRINTK_ID_FOR_THREAD_ON
+#endif
+
+
 #if MODOPS_EXACTOLINK_BUFFER_SZ == 16
 #define EXACTOLINK_MESSAGE_SIZE  16
 #elif MODOPS_EXACTOLINK_BUFFER_SZ == 32
@@ -31,7 +42,6 @@
 #endif
 
 
-// #define PRINTK_ID_FOR_THREAD_ON
 
 #define EXDTSTR_SINGLE_DATA_STR_LENGTH 6
 
