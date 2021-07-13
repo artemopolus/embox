@@ -190,10 +190,10 @@ static int SPI1_FULL_DMA_init(void)
     lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_handler);
 
     //init lthread for middle level driver named exacto_data_storage
-    lthread_init(&ExOutputStorage[EX_THR_SPi_TX].thread, &SPI1_FULL_DMA_transmit);
-    ExOutputStorage[EX_THR_SPi_TX].isready = 1;
-    lthread_init(&ExOutputStorage[EX_THR_SPi_RX].thread, &SPI1_FULL_DMA_receive);
-    ExOutputStorage[EX_THR_SPi_RX].isready = 0;
+    lthread_init(&ExDtStr_Output_Storage[EX_THR_SPi_TX].thread, &SPI1_FULL_DMA_transmit);
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 1;
+    lthread_init(&ExDtStr_Output_Storage[EX_THR_SPi_RX].thread, &SPI1_FULL_DMA_receive);
+    ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 0;
 
     lthread_init(&ExSpi.thread, &SPI1_FULL_DMA_enabled);
     ExSpi.isready = 1;
@@ -276,7 +276,7 @@ static int SPI1_FULL_DMA_tx_handler(struct lthread *self)
     SPI1_FULL_DMA_buffer * _trg_buffer;
     _trg_buffer = (SPI1_FULL_DMA_buffer*) self;
     _trg_buffer->is_full = 0;
-    ExOutputStorage[EX_THR_SPi_TX].isready = 1;
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 1;
     ex_disableGpio(EX_GPIO_SPI_MLINE); //теперь можно обновлять tx на аполлоне
     return 0;
 }
@@ -302,7 +302,7 @@ mutex_retry:
     if (SPI1_FULL_DMA_rx_buffer.dt_buffer[SAM_PACKAGE_START_POINTER] == EXACTOLINK_PCK_ID)
     {
         ex_updateCounter_ExDtStr(EX_THR_SPi_RX);
-        ExOutputStorage[EX_THR_SPi_RX].isready = 1;
+        ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
         SAM_PackageStart_Buffer = SAM_PACKAGE_START_POINTER;
         return 0;
     }
@@ -314,7 +314,7 @@ mutex_retry:
             {
                 SAM_PackageStart_Buffer = i;
                 ex_updateCounter_ExDtStr(EX_THR_SPi_RX);
-                ExOutputStorage[EX_THR_SPi_RX].isready = 1;
+                ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
                 return 0;
             }
         }
@@ -325,15 +325,15 @@ mutex_retry:
 }
 void SPI1_updateTx()
 {
-    if (!ExOutputStorage[EX_THR_SPi_TX].isready)
+    if (!ExDtStr_Output_Storage[EX_THR_SPi_TX].isready)
         return;
     uint8_t value;
-    for (uint16_t i = 0; i < ExOutputStorage[EX_THR_SPi_TX].datalen; i++)
+    for (uint16_t i = 0; i < ExDtStr_Output_Storage[EX_THR_SPi_TX].datalen; i++)
     {
-        grbfst_exbu8(&ExOutputStorage[EX_THR_SPi_TX].datastorage, &value);
+        grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value);
         SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     }
-    ExOutputStorage[EX_THR_SPi_TX].isready = 0;
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 0;
 }
 
 /**
@@ -351,14 +351,14 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     {
         ex_toggleGpio(EX_GPIO_SPI_SYNC);    
     }
-    if ((ExOutputStorage[EX_THR_SPi_RX].isready)&&(ExOutputStorage[EX_THR_SPi_RX].result == EX_THR_CTRL_OK))
+    if ((ExDtStr_Output_Storage[EX_THR_SPi_RX].isready)&&(ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_OK))
     {
         //Данные пришли на вход и проверены
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("q");
 #endif
         disableMasterSpiDma();
-        setemp_exbu8(&ExOutputStorage[EX_THR_SPi_RX].datastorage);
+        setemp_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage);
         for (uint16_t i = SAM_PackageStart_Buffer; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE; i++)
         {
             uint8_t value;                        
@@ -366,33 +366,33 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
             // if ((i == SAM_PackageStart_Pointer)&&(value != 17))
                 // printk("+");
             
-            pshfrc_exbu8(&ExOutputStorage[EX_THR_SPi_RX].datastorage, value);
-            // pshfrc_exbu8(&ExOutputStorage[EX_THR_SPi_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
+            pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage, value);
+            // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
         }
-        ExOutputStorage[EX_THR_SPi_RX].isready = 0;
-        ExOutputStorage[EX_THR_SPi_RX].result = EX_THR_CTRL_WAIT;
+        ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 0;
+        ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_WAIT;
         SPI1_updateTx();
         ex_enableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
         enableMasterSpiDma();
     }
-    else if ((ExOutputStorage[EX_THR_SPi_RX].isready)&&(ExOutputStorage[EX_THR_SPi_RX].result == EX_THR_CTRL_WAIT))
+    else if ((ExDtStr_Output_Storage[EX_THR_SPi_RX].isready)&&(ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_WAIT))
     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("w");
 #endif
         // Данные приходили, но не проверены: ничего не делать
     }
-    else if ((!ExOutputStorage[EX_THR_SPi_RX].isready)&&(ExOutputStorage[EX_THR_SPi_RX].result == EX_THR_CTRL_NO_RESULT))
+    else if ((!ExDtStr_Output_Storage[EX_THR_SPi_RX].isready)&&(ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_NO_RESULT))
     {
         // Начальное состояние
-        ExOutputStorage[EX_THR_SPi_RX].isready = 1;
-        ExOutputStorage[EX_THR_SPi_RX].result = EX_THR_CTRL_OK;
+        ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
+        ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_OK;
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("e");
 #endif
 
     }
-    else if (!ExOutputStorage[EX_THR_SPi_RX].isready)
+    else if (!ExDtStr_Output_Storage[EX_THR_SPi_RX].isready)
     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("r");
@@ -412,7 +412,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     printk("t");
 #endif
         // Данные пришли, но состояние не известно : отправить на проверку
-        ExOutputStorage[EX_THR_SPi_RX].result = EX_THR_CTRL_WAIT;
+        ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_WAIT;
     }
     return 0;
 }

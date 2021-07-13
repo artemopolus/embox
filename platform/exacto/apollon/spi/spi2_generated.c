@@ -146,10 +146,10 @@ static int SPI2_FULL_DMA_init(void)
     lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
     //init lthread for middle level driver named exacto_data_storage
-    lthread_init(&ExOutputStorage[EX_THR_SPi_TX].thread, &SPI2_FULL_DMA_transmit);
-    ExOutputStorage[EX_THR_SPi_TX].isready = 1;
-    lthread_init(&ExOutputStorage[EX_THR_SPi_RX].thread, &SPI2_FULL_DMA_receive);
-    ExOutputStorage[EX_THR_SPi_RX].isready = 0;
+    lthread_init(&ExDtStr_Output_Storage[EX_THR_SPi_TX].thread, &SPI2_FULL_DMA_transmit);
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 1;
+    lthread_init(&ExDtStr_Output_Storage[EX_THR_SPi_RX].thread, &SPI2_FULL_DMA_receive);
+    ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 0;
     /* embox specific section  */
     //enable hardware for SPI and DMA
     // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
@@ -208,8 +208,8 @@ mutex_retry:
     }
     ExDtStorage.isEmpty = 0;
     SPI2_FULL_DMA_rx_buffer.is_full = 1;
-    ExOutputStorage[EX_THR_SPi_RX].isready = 1;
-    ExOutputStorage[EX_THR_SPi_RX].result = EX_THR_CTRL_OK;
+    ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
+    ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_OK;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
@@ -217,18 +217,18 @@ mutex_retry:
 static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 {
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
-    ExOutputStorage[EX_THR_SPi_TX].isready = 1;
-    ExOutputStorage[EX_THR_SPi_TX].result = EX_THR_CTRL_OK;
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 1;
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].result = EX_THR_CTRL_OK;
     return 0;
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
-    if (ExOutputStorage[EX_THR_SPi_TX].result != EX_THR_CTRL_OK)
+    if (ExDtStr_Output_Storage[EX_THR_SPi_TX].result != EX_THR_CTRL_OK)
         return 0;
     ex_thread_control_t * _trg_thread;
     _trg_thread = (ex_thread_control_t *)self;
     //const uint32_t _datacount = _trg_thread->datalen;
-    const uint32_t _datacount = getlen_exbu8(&ExOutputStorage[EX_THR_SPi_TX].datastorage);
+    const uint32_t _datacount = getlen_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage);
     if (_datacount > SPI2_FULL_DMA_RXTX_BUFFER_SIZE)
         return 1;
     if (SPI2_FULL_DMA_tx_buffer.is_full)
@@ -238,11 +238,11 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     // for (uint8_t i = 0; i < _datacount; i++)
     // {
         /* копирование данных */
-        //grbfst_exbu8(&ExOutputStorage[EX_THR_SPi_TX].datastorage, &value);
+        //grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value);
         // grbfst_exbu8(&_trg_thread->datastorage, &value);
         // SPI2_FULL_DMA_tx_buffer.dt_buffer[i] = value;
     // }
-    grball_exbu8(&ExOutputStorage[EX_THR_SPi_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
+    grball_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, SPI2_FULL_DMA_tx_buffer.dt_buffer);
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);

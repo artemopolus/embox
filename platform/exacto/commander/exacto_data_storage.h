@@ -129,7 +129,7 @@ typedef struct{
 extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
 
-extern ex_thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
+extern ex_thread_control_t ExDtStr_Output_Storage[THREAD_OUTPUT_TYPES_SZ]; 
 
 extern ExactoBufferExtended ExDtStr_SD_buffer;
 
