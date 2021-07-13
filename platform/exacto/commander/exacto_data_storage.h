@@ -31,7 +31,7 @@
 #endif
 
 
-#define PRINTK_ID_FOR_THREAD_ON
+// #define PRINTK_ID_FOR_THREAD_ON
 
 #define EXDTSTR_SINGLE_DATA_STR_LENGTH 6
 
@@ -153,7 +153,10 @@ extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacou
 extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
+#ifdef EXDTSTR_EXTENDED
 extern uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type);
+extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
+#endif
 extern void ex_updateCounter_ExDtStr(ex_thread_type_t type);
 
 extern uint8_t resetExactoDataStorage();
@@ -163,7 +166,6 @@ extern void startTickReactionThread( );
 
 extern uint8_t subscribeOnEvent(int (*run)(struct lthread *));
 
-extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
 extern uint8_t  ex_getInfo_ExDtStr(exactolink_package_info_t * info);
 extern uint32_t ex_getCounter_ExDtStr(ex_thread_type_t type);
 extern uint8_t  ex_getExactolinkType( exactolink_package_result_t * type);

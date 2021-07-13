@@ -33,8 +33,6 @@ module buffer{
 	source "exacto_buffer.c"
 	@IncludeExport(path="commander")
 	source "exacto_buffer.h"
-	depends embox.compat.libc.all
-	depends embox.mem.phymem
 }
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module sensors {

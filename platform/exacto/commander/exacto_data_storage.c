@@ -758,6 +758,7 @@ uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
     }
     return 0;
 }
+#ifdef EXDTSTR_EXTENDED
 uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
 {
     uint8_t is_overflowed = 0;
@@ -795,6 +796,7 @@ uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t d
     }
     return 0;
 }
+#endif
 uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info)
 {
     info->counter = ExDtStr_TrasmitSPI_Info.counter;
