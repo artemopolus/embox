@@ -716,7 +716,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
                     if (!pshsft_exbextu8(&ExDtStr_SD_buffer, value))
                     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
-                        printk("qqqqqqqqqqqqqqqqqq");
+                        printk("\nqqqqqqqqqqqqqqqqqq\n");
 #endif
                         break;
                     }

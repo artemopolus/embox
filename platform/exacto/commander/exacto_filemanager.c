@@ -27,7 +27,7 @@ int  ExFm_Session_Num  = 0;
 FILE * ExFm_Log_Pointer;
 int ExFm_File_Pointer;
 
-uint8_t     ExFm_Data_Buffer[EXACTO_BUFFER_UINT8_SZ] = {0};
+uint8_t     ExFm_Data_Buffer[EFM_BUFF_SIZE] = {0};
 uint16_t    ExFm_Data_length = 0;
 uint16_t    ExFm_Data_lengthmax = 8192;
 uint32_t    ExFm_Data_pulledcnt = 0;
@@ -130,7 +130,7 @@ uint8_t ex_pshExBufToSD(  )
     printk("~%d~", ExFm_Data_length);
 #endif
 	// ipl_t sp;
-    sched_lock();
+    // sched_lock();
     // sp = ipl_save();
     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
@@ -142,7 +142,7 @@ uint8_t ex_pshExBufToSD(  )
 #endif
     }
     // ipl_restore(sp);
-    sched_unlock();
+    // sched_unlock();
 	if (res<=0) 
     {
         return 1;
