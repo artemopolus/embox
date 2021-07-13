@@ -225,7 +225,7 @@ mutex_retry:
     ExDtStorage.isEmpty = 0;
     SPI2_FULL_DMA_rx_buffer.is_full = 1;
     ExOutputStorage[THR_SPI_RX].isready = 1;
-    ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
+    ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_OK;
     ex_updateCounter_ExDtStr(THR_SPI_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
@@ -235,7 +235,7 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 {
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
-    ExOutputStorage[THR_SPI_TX].result = THR_CTRL_NO_RESULT;
+    ExOutputStorage[THR_SPI_TX].result = EX_THR_CTRL_NO_RESULT;
     // ex_updateCounter_ExDtStr(THR_SPI_TX);
 #ifdef SAM_REPORTER
     SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
@@ -270,7 +270,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 #ifdef SAM_REPORTER
     SAM_Ticker_Start = ex_dwt_cyccnt_start();
 #endif
-    if ((ExOutputStorage[THR_SPI_TX].result == THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
+    if ((ExOutputStorage[THR_SPI_TX].result == EX_THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
     {
         //данные готовы к отправке и шлюз свободен
         if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
@@ -278,13 +278,13 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
             SPI2_disableChannels();
             getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
             ExOutputStorage[THR_SPI_TX].isready = 0;
-            ExOutputStorage[THR_SPI_TX].result = THR_CTRL_INIT;
+            ExOutputStorage[THR_SPI_TX].result = EX_THR_CTRL_INIT;
             ex_updateCounter_ExDtStr(THR_SPI_TX);
             SPI2_updateRx();
             SPI2_enableChannels();
         }
     }
-    else if ((ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
+    else if ((ExOutputStorage[THR_SPI_TX].result != EX_THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
     {
         // данные не готовы, но шлюз свободен : ничего не делать, только принимать что-либо
         LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive

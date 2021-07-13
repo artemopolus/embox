@@ -62,12 +62,12 @@
 
 
 typedef enum t_c_r_t{
-    THR_CTRL_OK = 0,
-    THR_CTRL_INIT,
-    THR_CTRL_WAIT,
-    THR_CTRL_READY,
-    THR_CTRL_UNKNOWN_ERROR,
-    THR_CTRL_NO_RESULT = 0xFF
+    EX_THR_CTRL_OK = 0,
+    EX_THR_CTRL_INIT,
+    EX_THR_CTRL_WAIT,
+    EX_THR_CTRL_READY,
+    EX_THR_CTRL_UNKNOWN_ERROR,
+    EX_THR_CTRL_NO_RESULT = 0xFF
 }ex_thread_control_result_t;
 // THREADS
 

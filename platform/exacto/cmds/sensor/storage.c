@@ -107,7 +107,7 @@ static int downloadDataRun(struct lthread * self)
 }
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, BUFFER_LENGTH, THR_CTRL_OK); 
+    setDataToExactoDataStorage(DataToBuffer, BUFFER_LENGTH, EX_THR_CTRL_OK); 
     return 0;
 }
 
@@ -119,7 +119,7 @@ static int sendDataThreadRun(struct lthread * self)
 
 static int checkMarkerThreadRun(struct lthread * self)
 {
-    if (MainThread.result == THR_CTRL_OK)
+    if (MainThread.result == EX_THR_CTRL_OK)
     {
         MarkerThread = 1;
     }

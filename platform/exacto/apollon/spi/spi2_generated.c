@@ -209,7 +209,7 @@ mutex_retry:
     ExDtStorage.isEmpty = 0;
     SPI2_FULL_DMA_rx_buffer.is_full = 1;
     ExOutputStorage[THR_SPI_RX].isready = 1;
-    ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
+    ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_OK;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
@@ -218,12 +218,12 @@ static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 {
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
     ExOutputStorage[THR_SPI_TX].isready = 1;
-    ExOutputStorage[THR_SPI_TX].result = THR_CTRL_OK;
+    ExOutputStorage[THR_SPI_TX].result = EX_THR_CTRL_OK;
     return 0;
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
-    if (ExOutputStorage[THR_SPI_TX].result != THR_CTRL_OK)
+    if (ExOutputStorage[THR_SPI_TX].result != EX_THR_CTRL_OK)
         return 0;
     thread_control_t * _trg_thread;
     _trg_thread = (thread_control_t *)self;

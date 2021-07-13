@@ -56,7 +56,7 @@ thread_control_t SetupParamsThread;
 thread_control_t TickReactionThread = {
     .datalen = 0,
     .datamaxcount = 10,
-    .result = THR_CTRL_WAIT,
+    .result = EX_THR_CTRL_WAIT,
 };
 
 uint8_t ex_setExactolinkType( exactolink_package_result_t new_type)
@@ -74,15 +74,15 @@ static int runTickReactionThread(struct lthread * self)
     TickReactionThread.datalen++;
     if (TickReactionThread.datalen > TickReactionThread.datamaxcount)
     {
-        if (TickReactionThread.result == THR_CTRL_WAIT)
+        if (TickReactionThread.result == EX_THR_CTRL_WAIT)
         {
             // setSysLedOn();
-            TickReactionThread.result = THR_CTRL_OK;
+            TickReactionThread.result = EX_THR_CTRL_OK;
         }
         else
         {
             // setSysLedOff();
-            TickReactionThread.result = THR_CTRL_WAIT;
+            TickReactionThread.result = EX_THR_CTRL_WAIT;
         }
         TickReactionThread.datalen = 0;
     }
@@ -113,7 +113,7 @@ static int resetThreadRun(struct lthread * self)
     ExDtStorage.isEmpty = 1;
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
-        ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
+        ExOutputStorage[i].result = EX_THR_CTRL_NO_RESULT;
         ExOutputStorage[i].isready = 0;
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
         setini_exbu8(&ExOutputStorage[i].datastorage);
@@ -147,11 +147,11 @@ mutex_retry:
     {
         return lthread_yield(&&start, &&mutex_retry);
     }
-    _trg_lthread->result = THR_CTRL_NO_RESULT;
+    _trg_lthread->result = EX_THR_CTRL_NO_RESULT;
 
     if (!ExDtStorage.isEmpty) 
     {
-        _trg_lthread->result = THR_CTRL_OK;
+        _trg_lthread->result = EX_THR_CTRL_OK;
     }
 
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
@@ -183,7 +183,7 @@ static int initExactoDataStorage(void)
     setini_exbextu8(&ExDtStr_SD_buffer);
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
-        ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
+        ExOutputStorage[i].result = EX_THR_CTRL_NO_RESULT;
         ExOutputStorage[i].isready = 0;
         ExOutputStorage[i].datamaxcount = THREAD_CONTROL_BUFFER_SZ;
         setini_exbu8(&ExOutputStorage[i].datastorage);
@@ -216,7 +216,7 @@ uint8_t initThreadExactoDataStorage( thread_control_t * base )
 {
     mutex_init_schedee(&base->mx);
     lthread_init(&base->thread, functionForExDtStorageHandler);
-    base->result = THR_CTRL_WAIT;
+    base->result = EX_THR_CTRL_WAIT;
     return 0;
 }
 uint8_t transmitExactoDataStorage()
@@ -295,16 +295,16 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_
 {
     switch (result)
     {
-    case THR_CTRL_INIT:
+    case EX_THR_CTRL_INIT:
         /* code */
         // clearExactoDataStorage();
         //начало итерации записи данных
         break;
-    case THR_CTRL_OK:
+    case EX_THR_CTRL_OK:
         //конец итерации записи
         break;
-    case THR_CTRL_UNKNOWN_ERROR:
-    case THR_CTRL_NO_RESULT:
+    case EX_THR_CTRL_UNKNOWN_ERROR:
+    case EX_THR_CTRL_NO_RESULT:
         return 1;
     default:
         break;
@@ -319,7 +319,7 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_
     switch (EDS_CurrentExactolinkType)
     {
     case EXACTOLINK_LSM303AH_TYPE0:
-        if (result == THR_CTRL_WAIT)
+        if (result == EX_THR_CTRL_WAIT)
         {
             // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
             // pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, 0x00);
@@ -486,13 +486,13 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     ExactoBufferUint8Type * tmp_buffer = NULL;
     *tmp_buffer = ExOutputStorage[THR_SPI_RX].datastorage;
     ex_getInfo_ExDtStr(&ExDtStr_TrasmitSPI_Info_tmp); //<===== сохраняем информацию о предыдущей итерации
-    if (ExOutputStorage[THR_SPI_RX].result != THR_CTRL_WAIT)
+    if (ExOutputStorage[THR_SPI_RX].result != EX_THR_CTRL_WAIT)
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_NO_DATA;
         setemp_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage);
         return EXACTOLINK_NO_DATA;
     }
-    ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
+    ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_OK;
  
     grbfst_exbu8(tmp_buffer, &value); //[0] id
     if (value != EXACTOLINK_PCK_ID)

@@ -332,7 +332,7 @@ static int runSendAndUploadThread(struct lthread * self)
     uint8_t tmp_buffer_index = 1;
     if (SNSSRV_UploadData_Counter == 0)
     {
-        setDataToExactoDataStorage(Ender, 0, THR_CTRL_INIT); 
+        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_INIT); 
     }
     if (SNSSRV_SensorCheck_Counter < SNSSRV_SensorCheck_Max)
     {
@@ -358,7 +358,7 @@ static int runSendAndUploadThread(struct lthread * self)
                 if(isXlGrDataReady(sns, PackageToGett.data[0]))
                 {
                     uploadRecevedData(pt, shift, datalen);
-                    // setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), THR_CTRL_WAIT);
+                    // setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), EX_THR_CTRL_WAIT);
                     tmp_buffer_data[0] |= (uint8_t)sns;
                     for (uint8_t i = 0; i < tmp_length; i++)
                     {
@@ -383,7 +383,7 @@ static int runSendAndUploadThread(struct lthread * self)
             SNSSRV_PackRecv_Counter += enabled;
         }
         SNSSRV_SensorCheck_Counter = 0;
-        setDataToExactoDataStorage(tmp_buffer_data, tmp_buffer_index, THR_CTRL_WAIT);
+        setDataToExactoDataStorage(tmp_buffer_data, tmp_buffer_index, EX_THR_CTRL_WAIT);
     }
 
     if (SNSSRV_UploadData_Counter < SNSSRV_UploadData_Max)
@@ -392,7 +392,7 @@ static int runSendAndUploadThread(struct lthread * self)
     }
     else
     {
-        setDataToExactoDataStorage(Ender, 0, THR_CTRL_OK);
+        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
         SNSSRV_UploadData_Counter = 0;
     }
 

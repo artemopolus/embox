@@ -351,7 +351,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     {
         ex_toggleGpio(EX_GPIO_SPI_SYNC);    
     }
-    if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_OK))
+    if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == EX_THR_CTRL_OK))
     {
         //Данные пришли на вход и проверены
 #ifdef PRINTK_ID_FOR_THREAD_ON
@@ -370,23 +370,23 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
             // pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI1_FULL_DMA_rx_buffer.dt_buffer[i]);
         }
         ExOutputStorage[THR_SPI_RX].isready = 0;
-        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
+        ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_WAIT;
         SPI1_updateTx();
         ex_enableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
         enableMasterSpiDma();
     }
-    else if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_WAIT))
+    else if ((ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == EX_THR_CTRL_WAIT))
     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("w");
 #endif
         // Данные приходили, но не проверены: ничего не делать
     }
-    else if ((!ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == THR_CTRL_NO_RESULT))
+    else if ((!ExOutputStorage[THR_SPI_RX].isready)&&(ExOutputStorage[THR_SPI_RX].result == EX_THR_CTRL_NO_RESULT))
     {
         // Начальное состояние
         ExOutputStorage[THR_SPI_RX].isready = 1;
-        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_OK;
+        ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_OK;
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("e");
 #endif
@@ -412,7 +412,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
     printk("t");
 #endif
         // Данные пришли, но состояние не известно : отправить на проверку
-        ExOutputStorage[THR_SPI_RX].result = THR_CTRL_WAIT;
+        ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_WAIT;
     }
     return 0;
 }
