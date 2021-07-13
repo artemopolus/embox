@@ -249,7 +249,7 @@ static int runTESP_PrintToSD_Remainder_Lthread(struct lthread * self)
         return lthread_yield(&&mutex_retry, &&mutex_retry);
 	}
 #ifdef PRINTK_ID_FOR_THREAD_ON
-    printk("#");
+    printk("#\n");
 #endif
     cond_signal(&TESP_PrintToSD_Signal);
 	mutex_unlock_lthread(self, &TESP_PrintToSD_Mutex);
@@ -327,6 +327,9 @@ static void * runTESP_PrintToSD_Thread(void * arg)
 static int runTESP_WindowPrinter_Remainder_Lthread(struct lthread * self)
 {
     start:
+#ifdef PRINTK_ID_FOR_THREAD_ON
+    printk("?");
+#endif
     mutex_retry:
 	if (mutex_trylock_lthread(self, &TESP_WindowPrinter_Mutex) == -EAGAIN) {
         return lthread_yield(&&start, &&mutex_retry);
@@ -355,14 +358,14 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         mutex_lock(&TESP_WindowPrinter_Mutex);
         printf("Data received:\n");
 #ifndef PRINTK_ID_FOR_THREAD_ON
-        // for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
-        // {
-        //     printf("%d\t",TESMAF_ReceivedData_Data[i]);
-        // }
-        // printf("\n|%d|RefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d ", value, TESMAF_ReceivedData_Info.counter,
-        //              TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
-        // printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
-        //                 TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
+        for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
+        {
+            printf("%d\t",TESMAF_ReceivedData_Data[i]);
+        }
+        printf("\n|%d|RefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d ", value, TESMAF_ReceivedData_Info.counter,
+                     TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
+        printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,
+                        TESMAF_print_CallFunTooManyFailed, TESMAF_print_InputLst, TESMAF_print_UpdteLst);
 #endif
         TESMAF_WindowPrinter_Marker = 0;
         // mutex_lock(&TESP_WindowPrinter_Mutex);
@@ -420,9 +423,12 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
     {
         TESP_WindowPrinter_Counter = 0;
         // printk("i\n");
-        lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
         if (TESMAF_WindowPrinter_Marker == 0)
             TESMAF_WindowPrinter_Marker = 1;
+        else if (TESMAF_WindowPrinter_Marker == 2)
+        {
+            lthread_launch(&TESP_WindowPrinter_Remainder_Lthread);
+        }
     }
     return 0;
 }

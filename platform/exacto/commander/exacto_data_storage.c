@@ -177,6 +177,7 @@ static int initExactoDataStorage(void)
     ExOutputStorage[1].type = THR_SPI_TX;
     ExOutputStorage[2].type = THR_STR_CALC_IN;
     ExOutputStorage[3].type = THR_STR_CALC_OUT;
+    setini_exbextu8(&ExDtStr_SD_buffer);
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
         ExOutputStorage[i].result = THR_CTRL_NO_RESULT;
