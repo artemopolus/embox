@@ -71,7 +71,7 @@ module ex_spi_mline_apollon {
 	depends exacto.spi.mliner_apollon
 	depends exacto.apollon.gpio.gpio_spi
 	depends exacto.apollon.tim.tim3
-	depends exacto.commander.tools
+	//depends exacto.commander.tools
 }
 @AutoCmd
 @Cmd(name="test_ex_spi_mline", help=" Performance test for SD printer", man='''
@@ -88,7 +88,7 @@ module ex_spi_mline_afina{
 	depends exacto.spi.mliner_afina
 	depends exacto.afina.gpio.gpio_spi
 	depends exacto.commander.filemanager
-	depends exacto.sensors.datatools
+//	depends exacto.sensors.datatools
 
 
 	depends embox.kernel.thread.core

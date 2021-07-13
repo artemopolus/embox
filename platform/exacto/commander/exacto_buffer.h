@@ -169,9 +169,10 @@ extern uint8_t grbfstPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, c
 extern uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen);
 
 
-extern int      setini_exbextu8(ExactoBufferExtended * buffer);
-extern void     pshfrc_exbextu8(ExactoBufferExtended * buffer,const uint8_t value);
-extern uint8_t  grbfst_exbextu8(ExactoBufferExtended * buffer, uint8_t * fstval);
-extern uint16_t getlen_exbextu8(ExactoBufferExtended * buffer);
+extern int      setini_exbextu8(        ExactoBufferExtended * buffer);
+extern uint16_t getlen_exbextu8(        ExactoBufferExtended * buffer);
+extern uint8_t  grbfst_exbextu8(        ExactoBufferExtended * buffer, uint8_t * fstval);
+extern void     pshfrc_exbextu8(        ExactoBufferExtended * buffer, const uint8_t value);
+extern uint8_t  pshsft_exbextu8(        ExactoBufferExtended * buffer, const uint8_t value);
 
 #endif /* EXACTO_BUFFER_H_ */

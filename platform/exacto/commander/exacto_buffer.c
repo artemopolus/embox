@@ -239,3 +239,8 @@ uint16_t getlen_exbextu8(ExactoBufferExtended * buffer)
     ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
     return getlen_exbu8(tmp);
 }
+uint8_t  pshsft_exbextu8(        ExactoBufferExtended * buffer, const uint8_t value)
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
+    return pshsft_exbu8(tmp, value);
+}

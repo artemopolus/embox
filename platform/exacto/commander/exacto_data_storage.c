@@ -39,8 +39,11 @@ static uint32_t EDS_DataStorage_UdtCnt = 0;
 exactodatastorage ExDtStorage = {
     .isEmpty = 1,
 };
-thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
+thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
+
+
 ExactoBufferExtended ExDtStr_SD_buffer;
+int16_t ExDtStr_Tmp_Str[EXDTSTR_SINGLE_DATA_STR_LENGTH] = {0};
 
  ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
  ex_service_info_t ExDataStorageServicesInfo = {
@@ -276,7 +279,7 @@ void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, cons
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrH);              //[5]
     pshfrc_exbu8(&ExOutputStorage[THR_SPI_TX].datastorage, addrL);              //[6]
 }
-thread_control_result_t getStateExactoDataStorage()
+ex_thread_control_result_t getStateExactoDataStorage()
 {
     return ExOutputStorage[THR_SPI_TX].result;
 }
@@ -288,7 +291,7 @@ void updateData2EDS(uint8_t value)
         ExDtStr_OutputSPI_OverFlw++;
     }
 }
-uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thread_control_result_t result)
+uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
 {
     switch (result)
     {
@@ -700,6 +703,8 @@ exactolink_package_result_t ex_checkData_ExDtStr()
             grbfst_exbu8(tmp_buffer, &value); //[19] 
             //[20]
             frame_index = EXACTOLINK_SD_PT_DATA_START;
+            uint8_t pair[2] = {0};
+            uint16_t j = 0;
             for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length); i++)
             {
                 if (!grbfst_exbu8(tmp_buffer, &value))
@@ -708,9 +713,27 @@ exactolink_package_result_t ex_checkData_ExDtStr()
                 }
                 else
                 {
-                    // pshfrc_exbu8(&ExOutputStorage[THR_STR_SD].datastorage,value);
-                    pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
+                    if (!pshsft_exbextu8(&ExDtStr_SD_buffer, value))
+                    {
+#ifdef PRINTK_ID_FOR_THREAD_ON
+                        printk("qqqqqqqqqqqqqqqqqq");
+#endif
+                        break;
+                    }
                     frame_index++;
+                }
+                if ((i >= 0)&&(i < EXDTSTR_SINGLE_DATA_STR_LENGTH*2))
+                {
+                    if (i%2)
+                    {
+                        pair[1] = value;
+                        ex_convertUint8ToInt16(&pair[0], &ExDtStr_Tmp_Str[j]);
+                        j++;
+                    }
+                    else
+                    {
+                        pair[0] = value;
+                    }
                 }
             }
             for (uint16_t i = frame_index; i < EXACTOLINK_SD_FRAME_SIZE; i++)
@@ -726,6 +749,14 @@ exactolink_package_result_t ex_checkData_ExDtStr()
             break;
     }
     return EXACTOLINK_NO_DATA;
+}
+uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
+{
+    for (uint16_t i = 0; i < EXDTSTR_SINGLE_DATA_STR_LENGTH; i++)
+    {
+        dst[i] = ExDtStr_Tmp_Str[i];   
+    }
+    return 0;
 }
 uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
 {

@@ -81,6 +81,31 @@ uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer )
     }
     return 0;
 }
+uint8_t ex_saveExExtBufToFile( ExactoBufferExtended * buffer )
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
+    return ex_saveExBufToFile(tmp);
+}
+uint8_t ex_saveDataToExBufSD(  )
+{
+#ifdef PRINTK_ID_FOR_THREAD_ON
+        printk(">");
+#endif
+    uint8_t value;
+    EFM_PushToBuffer_BasicCnt++;
+    EFM_PushToBuffer_TmpCnt++;
+    ExFm_Data_length = 0;
+    if (getlen_exbextu8(&ExDtStr_SD_buffer) < EFM_MESS_THRE)
+        return 1;
+    while(grbfst_exbextu8(&ExDtStr_SD_buffer, &value))
+    {
+        ExFm_Data_Buffer[ExFm_Data_length++] = value;
+        if (ExFm_Data_length >= EFM_BUFF_SIZE)
+            break;
+    }
+    return 0;
+
+}
 uint8_t ex_pshExBufToSD(  )
 {
     if (ExFm_Data_length < EFM_MESS_THRE)
@@ -101,14 +126,20 @@ uint8_t ex_pshExBufToSD(  )
     // for (uint8_t index = 0; index < ExFm_Data_length; index += 512)
     // {
     // res = write (ExFm_File_Pointer, ExFm_Data_Buffer, EFM_BUFF_SIZE);
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("~%d~", ExFm_Data_length);
+#endif
 	// ipl_t sp;
     sched_lock();
     // sp = ipl_save();
     {
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~o");
+#endif
         res = write (ExFm_File_Pointer, ExFm_Data_Buffer, ExFm_Data_length);
+#ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~e");
+#endif
     }
     // ipl_restore(sp);
     sched_unlock();

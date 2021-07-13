@@ -6,6 +6,7 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "commander/exacto_buffer.h"
 #include "commander/exacto_services.h"
+#include "commander/exacto_tools.h"
 
 #include <framework/mod/options.h>
 #include <module/exacto/commander/data_storage.h>
@@ -28,6 +29,11 @@
 #else
 #error Unsupported exactolink buffer sz
 #endif
+
+
+#define PRINTK_ID_FOR_THREAD_ON
+
+#define EXDTSTR_SINGLE_DATA_STR_LENGTH 6
 
 #define EXACTOLINK_SD_FRAME_SIZE 512
 #define EXACTOLINK_SD_PT_ID 0
@@ -62,7 +68,7 @@ typedef enum t_c_r_t{
     THR_CTRL_READY,
     THR_CTRL_UNKNOWN_ERROR,
     THR_CTRL_NO_RESULT = 0xFF
-}thread_control_result_t;
+}ex_thread_control_result_t;
 // THREADS
 
 
@@ -74,7 +80,7 @@ typedef struct {
     ExactoBufferUint8Type datastorage;
     uint8_t datamaxcount;
     uint8_t datalen;
-    thread_control_result_t result;
+    ex_thread_control_result_t result;
     thread_type_t type;
     uint8_t isready;
     // function_list_t fun_type;
@@ -135,9 +141,7 @@ extern uint32_t ExDtStr_TrasmitSPI_OverFlw;
 extern uint16_t ExDtStr_OutputSPI_OverFlw;
 
 // функции
-extern uint16_t ex_getLength_ExDtStr(thread_type_t type);
 extern uint8_t ex_setExactolinkType( exactolink_package_result_t new_type);
-extern uint8_t ex_getExactolinkType( exactolink_package_result_t * type);
 //
 extern uint8_t checkExactoDataStorage( thread_control_t * base );
 extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
@@ -145,23 +149,28 @@ extern uint8_t transmitExactoDataStorage();
 extern uint8_t receiveExactoDataStorage();
 extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);
 extern uint8_t clearExactoDataStorage();
-extern thread_control_result_t getStateExactoDataStorage();
-extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, thread_control_result_t result);
+extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result);
 extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
-extern uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
-extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
 extern uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type);
-extern uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info);
 extern void ex_updateCounter_ExDtStr(thread_type_t type);
-extern uint32_t ex_getCounter_ExDtStr(thread_type_t type);
 
-extern uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t resetExactoDataStorage();
 extern uint8_t checkTxSender();
 extern uint8_t checkRxGetter();
 extern void startTickReactionThread( );
 
 extern uint8_t subscribeOnEvent(int (*run)(struct lthread *));
+
+extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
+extern uint8_t  ex_getInfo_ExDtStr(exactolink_package_info_t * info);
+extern uint32_t ex_getCounter_ExDtStr(thread_type_t type);
+extern uint8_t  ex_getExactolinkType( exactolink_package_result_t * type);
+extern uint16_t ex_getLength_ExDtStr(thread_type_t type);
+extern uint8_t  ex_getRawDataStr_ExDtStr( int16_t * dst, const uint16_t dstlen);
+
+extern uint8_t                  getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
+extern uint8_t                  getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length);
+extern ex_thread_control_result_t  getStateExactoDataStorage();
 #endif //EXACTO_DATA_STORAGE_H

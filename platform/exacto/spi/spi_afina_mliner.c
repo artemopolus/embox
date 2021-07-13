@@ -344,7 +344,9 @@ void SPI1_updateTx()
  */
 static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
+#ifdef PRINTK_ID_FOR_THREAD_ON
     printk("*");
+#endif
     if (SPI1_Sync_Marker)
     {
         ex_toggleGpio(EX_GPIO_SPI_SYNC);    
