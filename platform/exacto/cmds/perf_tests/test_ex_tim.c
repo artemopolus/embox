@@ -112,7 +112,7 @@ static int runTET_Subcribe_Lthread( struct lthread * self)
 {
     if (TET_subscribe_Marker)
         return 0;
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTET_TimReceiver_Lthread);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runTET_TimReceiver_Lthread);
     if (result == 0)
         TET_subscribe_Marker = 1;
     return 0;

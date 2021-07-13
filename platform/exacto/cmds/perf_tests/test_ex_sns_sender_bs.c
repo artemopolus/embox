@@ -91,7 +91,7 @@ static int runTESSB_TimReceiver_Lthread(struct  lthread * self)
 }
 static int runTESSB_Subcribe_Lthread( struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESSB_TimReceiver_Lthread);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runTESSB_TimReceiver_Lthread);
     if (result == 0)
         TESSB_subscribe_Marker = 1;
     return 0;

@@ -7,16 +7,16 @@
 #define EX_SERVICE_TRANSPORT_MSG_SZ 8
 #define EX_SERVICE_TRANSPORT_PCK_SZ 64
 typedef enum t_t_t{
-    THR_SPI_RX = 0,
-    THR_SPI_TX,
-    THR_STR_CALC_IN,
-    THR_STR_CALC_OUT,
-    // THR_STR_SD,
-    THR_I2C_RX,
-    THR_I2C_TX,
-    THR_TIM,
-    THR_NONE
-}thread_type_t;
+    EX_THR_SPi_RX = 0,
+    EX_THR_SPi_TX,
+    EX_THR_STR_CALC_IN,
+    EX_THR_STR_CALC_OUT,
+    // EX_THR_STR_SD,
+    EX_THR_I2C_RX,
+    EX_THR_I2C_TX,
+    EX_THR_TIM,
+    EX_THR_NONE
+}ex_thread_type_t;
 
 typedef struct {
     uint8_t data[EX_SERVICE_TRANSPORT_MSG_SZ];
@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
     struct lthread thread;
-    thread_type_t type;
+    ex_thread_type_t type;
     uint8_t isenabled;
 }ex_subs_service_t;
 
@@ -36,9 +36,9 @@ typedef struct {
     uint8_t max_count;
 }ex_service_info_t;
 extern uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * service,
- thread_type_t type ,int (*run)(struct lthread *));
+ ex_thread_type_t type ,int (*run)(struct lthread *));
 extern void ex_updateEventForSubs(ex_service_info_t info, ex_subs_service_t * service, 
-    thread_type_t type);
+    ex_thread_type_t type);
 extern void ex_initSubscribeEvents(ex_service_info_t  info, ex_subs_service_t * service);
 
 extern uint8_t ex_initServiceMsg( ex_service_transport_msg_t * msg);

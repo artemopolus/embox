@@ -1,7 +1,7 @@
 #include "exacto_services.h"
 
 uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * service,
- thread_type_t type ,int (*run)(struct lthread *))
+ ex_thread_type_t type ,int (*run)(struct lthread *))
 {
     uint8_t i = info->current_count;
     if (i == (info->max_count))
@@ -13,7 +13,7 @@ uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * servic
     return 0;
 }
 void ex_updateEventForSubs(ex_service_info_t info, ex_subs_service_t * service, 
-    thread_type_t type)
+    ex_thread_type_t type)
 {
    for (uint8_t i = 0; i < info.current_count; i++)
    {
@@ -29,7 +29,7 @@ void ex_initSubscribeEvents(ex_service_info_t info, ex_subs_service_t * service)
    for (uint8_t i = 0; i < info.max_count; i++)
    {
        service[i].isenabled = 0;
-       service[i].type = THR_NONE;
+       service[i].type = EX_THR_NONE;
    }
 
 }

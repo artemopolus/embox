@@ -81,7 +81,7 @@ typedef struct {
     uint8_t datamaxcount;
     uint8_t datalen;
     ex_thread_control_result_t result;
-    thread_type_t type;
+    ex_thread_type_t type;
     uint8_t isready;
     // function_list_t fun_type;
 }thread_control_t;
@@ -154,7 +154,7 @@ extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
 extern uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type);
-extern void ex_updateCounter_ExDtStr(thread_type_t type);
+extern void ex_updateCounter_ExDtStr(ex_thread_type_t type);
 
 extern uint8_t resetExactoDataStorage();
 extern uint8_t checkTxSender();
@@ -165,9 +165,9 @@ extern uint8_t subscribeOnEvent(int (*run)(struct lthread *));
 
 extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
 extern uint8_t  ex_getInfo_ExDtStr(exactolink_package_info_t * info);
-extern uint32_t ex_getCounter_ExDtStr(thread_type_t type);
+extern uint32_t ex_getCounter_ExDtStr(ex_thread_type_t type);
 extern uint8_t  ex_getExactolinkType( exactolink_package_result_t * type);
-extern uint16_t ex_getLength_ExDtStr(thread_type_t type);
+extern uint16_t ex_getLength_ExDtStr(ex_thread_type_t type);
 extern uint8_t  ex_getRawDataStr_ExDtStr( int16_t * dst, const uint16_t dstlen);
 
 extern uint8_t                  getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);

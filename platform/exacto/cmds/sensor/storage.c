@@ -67,7 +67,7 @@ static int runPrinter(struct  lthread * self)
 }
 static int runSubcribeThread( struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runPrinter);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runPrinter);
     if (result == 0)
         MarkerSubscribe = 1;
     return 0;

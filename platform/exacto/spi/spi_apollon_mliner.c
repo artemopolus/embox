@@ -157,10 +157,10 @@ static int SPI2_FULL_DMA_init(void)
     lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
 
     //init lthread for middle level driver named exacto_data_storage
-    lthread_init(&ExOutputStorage[THR_SPI_TX].thread, &SPI2_FULL_DMA_transmit);
-    ExOutputStorage[THR_SPI_TX].isready = 1;
-    lthread_init(&ExOutputStorage[THR_SPI_RX].thread, &SPI2_FULL_DMA_receive);
-    ExOutputStorage[THR_SPI_RX].isready = 0;
+    lthread_init(&ExOutputStorage[EX_THR_SPi_TX].thread, &SPI2_FULL_DMA_transmit);
+    ExOutputStorage[EX_THR_SPi_TX].isready = 1;
+    lthread_init(&ExOutputStorage[EX_THR_SPi_RX].thread, &SPI2_FULL_DMA_receive);
+    ExOutputStorage[EX_THR_SPi_RX].isready = 0;
     /* embox specific section  */
     //enable hardware for SPI and DMA
     // LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
@@ -224,9 +224,9 @@ mutex_retry:
     }
     ExDtStorage.isEmpty = 0;
     SPI2_FULL_DMA_rx_buffer.is_full = 1;
-    ExOutputStorage[THR_SPI_RX].isready = 1;
-    ExOutputStorage[THR_SPI_RX].result = EX_THR_CTRL_OK;
-    ex_updateCounter_ExDtStr(THR_SPI_RX);
+    ExOutputStorage[EX_THR_SPi_RX].isready = 1;
+    ExOutputStorage[EX_THR_SPi_RX].result = EX_THR_CTRL_OK;
+    ex_updateCounter_ExDtStr(EX_THR_SPi_RX);
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
 
     return 0;
@@ -234,9 +234,9 @@ mutex_retry:
 static int SPI2_FULL_DMA_tx_handler(struct lthread *self)
 {
     SPI2_FULL_DMA_tx_buffer.is_full = 0;
-    ExOutputStorage[THR_SPI_TX].isready = 1;
-    ExOutputStorage[THR_SPI_TX].result = EX_THR_CTRL_NO_RESULT;
-    // ex_updateCounter_ExDtStr(THR_SPI_TX);
+    ExOutputStorage[EX_THR_SPi_TX].isready = 1;
+    ExOutputStorage[EX_THR_SPi_TX].result = EX_THR_CTRL_NO_RESULT;
+    // ex_updateCounter_ExDtStr(EX_THR_SPi_TX);
 #ifdef SAM_REPORTER
     SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
     SAM_Ticker_Result = SAM_Ticker_Stop - SAM_Ticker_Start;
@@ -258,11 +258,11 @@ void SPI2_enableChannels()
 }
 void SPI2_updateRx()
 {
-    if (ExOutputStorage[THR_SPI_RX].isready)
+    if (ExOutputStorage[EX_THR_SPi_RX].isready)
     {
         for (uint16_t i = 0; i < SPI2_FULL_DMA_RXTX_BUFFER_SIZE; i++)
-            pshfrc_exbu8(&ExOutputStorage[THR_SPI_RX].datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
-        ExOutputStorage[THR_SPI_RX].isready = 0;
+            pshfrc_exbu8(&ExOutputStorage[EX_THR_SPi_RX].datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
+        ExOutputStorage[EX_THR_SPi_RX].isready = 0;
     }
 }
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
@@ -270,21 +270,21 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 #ifdef SAM_REPORTER
     SAM_Ticker_Start = ex_dwt_cyccnt_start();
 #endif
-    if ((ExOutputStorage[THR_SPI_TX].result == EX_THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
+    if ((ExOutputStorage[EX_THR_SPi_TX].result == EX_THR_CTRL_OK)&&(ExOutputStorage[EX_THR_SPi_TX].isready))
     {
         //данные готовы к отправке и шлюз свободен
         if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
         {
             SPI2_disableChannels();
             getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
-            ExOutputStorage[THR_SPI_TX].isready = 0;
-            ExOutputStorage[THR_SPI_TX].result = EX_THR_CTRL_INIT;
-            ex_updateCounter_ExDtStr(THR_SPI_TX);
+            ExOutputStorage[EX_THR_SPi_TX].isready = 0;
+            ExOutputStorage[EX_THR_SPi_TX].result = EX_THR_CTRL_INIT;
+            ex_updateCounter_ExDtStr(EX_THR_SPi_TX);
             SPI2_updateRx();
             SPI2_enableChannels();
         }
     }
-    else if ((ExOutputStorage[THR_SPI_TX].result != EX_THR_CTRL_OK)&&(ExOutputStorage[THR_SPI_TX].isready))
+    else if ((ExOutputStorage[EX_THR_SPi_TX].result != EX_THR_CTRL_OK)&&(ExOutputStorage[EX_THR_SPi_TX].isready))
     {
         // данные не готовы, но шлюз свободен : ничего не делать, только принимать что-либо
         LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
@@ -292,7 +292,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
         LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
         LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     }
-    else // ! ExOutputStorage[THR_SPI_TX].isready
+    else // ! ExOutputStorage[EX_THR_SPi_TX].isready
     {
         //шлюз занят, готовность данных не имеет значения : повторить отправку
         if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять

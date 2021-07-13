@@ -162,8 +162,8 @@ mutex_chk:
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("+");
 #endif
-    TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
-    TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
+    TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_RX);
+    TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_TX);
     TESMAF_DataCheck_Success++;
     TESMAF_DataCheck_CntBuff = TESMAF_DataCheck_Counter;
     TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;
@@ -412,7 +412,7 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 }
 static int runTESP_Subscribe_Lthread( struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESP_TimReceiver_Lthread);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runTESP_TimReceiver_Lthread);
     if (result == 0)
         TESP_Subscribe_Marker = 1;
     return 0;

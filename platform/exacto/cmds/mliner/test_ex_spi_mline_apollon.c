@@ -127,7 +127,7 @@ void printBufferData()
     //     printf("%d\t", value);
     // }
     int16_t x, y, z;
-    uint16_t buffer_length = ex_getLength_ExDtStr(THR_SPI_TX);
+    uint16_t buffer_length = ex_getLength_ExDtStr(EX_THR_SPi_TX);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point], &x);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 2], &y);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 4], &z);
@@ -165,8 +165,8 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
         }
         watchPackFromExactoDataStorage(TESMA_ReceivedData, 8, 0);
         TESMA_DownloadData_Marker = 1;
-        TESMA_Rx_Buffer = ex_getCounter_ExDtStr(THR_SPI_RX);
-        TESMA_Tx_Buffer = ex_getCounter_ExDtStr(THR_SPI_TX);
+        TESMA_Rx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_RX);
+        TESMA_Tx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_TX);
         TESMA_Tim_Buffer = TESMA_Tim_Counter;
     }
     return 0;
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
 
 
 //=================================================================================================
-    if (ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTESMA_TimReceiver_Lthread))
+    if (ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runTESMA_TimReceiver_Lthread))
         return 1;
     if (ex_subscribeOnGpioEvent(EX_GPIO_SPI_MLINE, runTESMA_GpioReceiver_Lthread))
         return 1;

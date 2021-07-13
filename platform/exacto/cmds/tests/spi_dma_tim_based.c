@@ -212,7 +212,7 @@ static int runPrintReceivedData(struct  lthread * self)
 }
 static int runSpiDmaTimSubcribeThread( struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runPrintReceivedData);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runPrintReceivedData);
     if (result == 0)
         SpiDmaTimMarkerSubscribe = 1;
     return 0;

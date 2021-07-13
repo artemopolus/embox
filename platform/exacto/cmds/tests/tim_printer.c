@@ -92,7 +92,7 @@ static int runTmPrPrinter(struct  lthread * self)
 }
 static int runTmPrSubcribeThread( struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runTmPrPrinter);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runTmPrPrinter);
     if (result == 0)
         TmPrMarkerSubscribe = 1;
     return 0;

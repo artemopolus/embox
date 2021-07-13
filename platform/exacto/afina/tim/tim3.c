@@ -30,7 +30,7 @@ static irq_return_t runAfinaTim3IrqHandler(unsigned int irq_nr, void *data)
 {
     HAL_TIM_IRQHandler(&TimHandle);
 // startTickReactionThread( );
-   ex_updateEventForSubs(ExTimServicesInfo, ExTimServices, THR_TIM); 
+   ex_updateEventForSubs(ExTimServicesInfo, ExTimServices, EX_THR_TIM); 
     
     return IRQ_HANDLED;
 }

@@ -66,7 +66,7 @@ static int runMlineSensorTickerThread(struct lthread * self)
 }
 static int runMlineSubscribeThread(struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runMlineSensorTickerThread);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runMlineSensorTickerThread);
     if (result == 0)
         MlineMarkerSubscribe = 1;
     return 0;

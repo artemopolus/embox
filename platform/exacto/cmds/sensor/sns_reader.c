@@ -122,7 +122,7 @@ static int runSensorTickerThread(struct lthread * self)
 }
 static int runSubscribeThread(struct lthread * self)
 {
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, THR_TIM, runSensorTickerThread);
+    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSensorTickerThread);
     if (result == 0)
         MarkerSubscribe = 1;
     return 0;
