@@ -25,13 +25,13 @@
 
 #include "spi/spi_mliner.h"
 #include "gpio/gpio.h"
+#ifdef TESMAF_TICK_VIZ
 #include "ex_utils.h"
-
 
 static uint32_t     TESMAF_Ticker_Start = 0, 
                     TESMAF_Ticker_Stop = 0, 
                     TESMAF_Ticker_Result = 0;
-
+#endif
 
 static struct lthread TESP_Subscribe_Lthread;
 uint8_t               TESP_Subscribe_Marker = 0;
@@ -278,7 +278,9 @@ static void * runTESP_PrintToSD_Thread(void * arg)
 #ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~c");
 #endif
+#ifdef TESMAF_TICK_VIZ
         TESMAF_Ticker_Start = ex_dwt_cyccnt_start();
+#endif
         if(ex_pshExBufToSD())
         {
             TESMAF_test_PushToSdMarkerBad++;
@@ -287,15 +289,19 @@ static void * runTESP_PrintToSD_Thread(void * arg)
         {
             TESMAF_test_PushToSdMarkerGood++;
         }
+#ifdef TESMAF_TICK_VIZ
         TESMAF_Ticker_Stop = ex_dwt_cyccnt_stop();
+#endif
 #ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~d");
 #endif
         
         // mutex_lock(&TESP_PrintToSD_Mutex);
+#ifdef TESMAF_TICK_VIZ
         TESMAF_Ticker_Result = TESMAF_Ticker_Stop - TESMAF_Ticker_Start;
 #ifdef PRINTK_ID_FOR_THREAD_ON
         printk("~%d]", TESMAF_Ticker_Result);
+#endif
 #endif
         cond_wait(&TESP_PrintToSD_Signal, &TESP_PrintToSD_Mutex);
         mutex_unlock(&TESP_PrintToSD_Mutex);
@@ -418,7 +424,9 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
     return 0;
 }
 int main(int argc, char *argv[]) {
+#ifdef TESMAF_TICK_VIZ
     ex_dwt_cyccnt_reset();
+#endif
     ex_setFreqHz(100);
     
     ex_enableGpio(EX_GPIO_SPI_MLINE);

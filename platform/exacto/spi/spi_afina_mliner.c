@@ -22,6 +22,14 @@
 #include <kernel/printk.h>
 #include "commander/exacto_data_storage.h"
 
+#define SAM_TICK_VIZ
+
+#ifdef SAM_TICK_VIZ
+#include "ex_utils.h"
+static uint32_t     SAM_Ticker_Start = 0, 
+                    SAM_Ticker_Stop = 0, 
+                    SAM_Ticker_Result = 0;
+#endif
 
 #include "gpio/gpio.h"
 
@@ -206,6 +214,9 @@ static int SPI1_FULL_DMA_init(void)
     // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_5); //enable transmit 
     LL_SPI_Enable(SPI1);
     //SPI1_FULL_DMA_setdatalength(SPI1_FULL_DMA_RXTX_BUFFER_SIZE);
+#ifdef SAM_TICK_VIZ
+    ex_dwt_cyccnt_reset();
+#endif
     return 0;
 }
 void enableMasterSpiDma()
@@ -346,6 +357,15 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
 {
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("*");
+#endif
+#ifdef SAM_TICK_VIZ
+    SAM_Ticker_Stop = ex_dwt_cyccnt_stop();
+    SAM_Ticker_Result = SAM_Ticker_Stop - SAM_Ticker_Start;
+    SAM_Ticker_Start = ex_dwt_cyccnt_start();
+#ifdef PRINTK_ID_FOR_THREAD_ON
+        printk("~%d]", SAM_Ticker_Result);
+#endif
+
 #endif
     if (SPI1_Sync_Marker)
     {
