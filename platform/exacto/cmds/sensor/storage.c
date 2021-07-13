@@ -11,7 +11,7 @@
 
 
 
-thread_control_t MainThread;
+ex_thread_control_t MainThread;
 
 uint8_t MarkerThread = 0;
 

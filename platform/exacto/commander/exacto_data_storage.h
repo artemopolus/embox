@@ -84,7 +84,7 @@ typedef struct {
     ex_thread_type_t type;
     uint8_t isready;
     // function_list_t fun_type;
-}thread_control_t;
+}ex_thread_control_t;
 
 typedef struct{
     struct lthread thread;
@@ -129,7 +129,7 @@ typedef struct{
 extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
 
-extern thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
+extern ex_thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ]; 
 
 extern ExactoBufferExtended ExDtStr_SD_buffer;
 
@@ -143,8 +143,8 @@ extern uint16_t ExDtStr_OutputSPI_OverFlw;
 // функции
 extern uint8_t ex_setExactolinkType( exactolink_package_result_t new_type);
 //
-extern uint8_t checkExactoDataStorage( thread_control_t * base );
-extern uint8_t initThreadExactoDataStorage( thread_control_t * base );
+extern uint8_t checkExactoDataStorage( ex_thread_control_t * base );
+extern uint8_t initThreadExactoDataStorage( ex_thread_control_t * base );
 extern uint8_t transmitExactoDataStorage();
 extern uint8_t receiveExactoDataStorage();
 extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);

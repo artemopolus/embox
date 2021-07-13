@@ -39,7 +39,7 @@ static uint32_t EDS_DataStorage_UdtCnt = 0;
 exactodatastorage ExDtStorage = {
     .isEmpty = 1,
 };
-thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
+ex_thread_control_t ExOutputStorage[THREAD_OUTPUT_TYPES_SZ];
 
 
 ExactoBufferExtended ExDtStr_SD_buffer;
@@ -51,9 +51,9 @@ int16_t ExDtStr_Tmp_Str[EXDTSTR_SINGLE_DATA_STR_LENGTH] = {0};
      .max_count = SERVICES_COUNT,
  };
 
-thread_control_t SetupParamsThread;
+ex_thread_control_t SetupParamsThread;
 
-thread_control_t TickReactionThread = {
+ex_thread_control_t TickReactionThread = {
     .datalen = 0,
     .datamaxcount = 10,
     .result = EX_THR_CTRL_WAIT,
@@ -96,7 +96,7 @@ void startTickReactionThread( )
 
 static int setupParamsThreadRun(struct lthread * self)
 {
-    thread_control_t * _trg_thread = (thread_control_t *) self;
+    ex_thread_control_t * _trg_thread = (ex_thread_control_t *) self;
     ExOutputStorage[EX_THR_SPi_RX].datalen = _trg_thread->datalen;
     return 0;
 }
@@ -130,8 +130,8 @@ return 0;
  */
 static int functionForExDtStorageHandler(struct lthread *self)
 {
-    thread_control_t *_trg_lthread;
-    _trg_lthread = (thread_control_t*)self;
+    ex_thread_control_t *_trg_lthread;
+    _trg_lthread = (ex_thread_control_t*)self;
     goto *lthread_resume(self, &&start);
 start:
      /* инициализация */
@@ -201,7 +201,7 @@ static int initExactoDataStorage(void)
  * @param base легкий поток
  * @return uint8_t 
  */
-uint8_t checkExactoDataStorage( thread_control_t * base)
+uint8_t checkExactoDataStorage( ex_thread_control_t * base)
 {
     lthread_launch(&base->thread);
     return 0;
@@ -212,7 +212,7 @@ uint8_t checkExactoDataStorage( thread_control_t * base)
  * @param base легкий поток
  * @return uint8_t 
  */
-uint8_t initThreadExactoDataStorage( thread_control_t * base )
+uint8_t initThreadExactoDataStorage( ex_thread_control_t * base )
 {
     mutex_init_schedee(&base->mx);
     lthread_init(&base->thread, functionForExDtStorageHandler);

@@ -306,8 +306,8 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)
 {
-    thread_control_t * _trg_thread;
-    _trg_thread = (thread_control_t *)self;
+    ex_thread_control_t * _trg_thread;
+    _trg_thread = (ex_thread_control_t *)self;
     const uint32_t _datacount = SPI2_FULL_DMA_rx_buffer.dt_count ;
     if (SPI2_FULL_DMA_rx_buffer.is_full == 0)
         return 1;

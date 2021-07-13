@@ -424,8 +424,8 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
  */
 static int SPI1_FULL_DMA_receive(struct lthread * self)
 {
-    thread_control_t * _trg_thread;
-    _trg_thread = (thread_control_t *)self;
+    ex_thread_control_t * _trg_thread;
+    _trg_thread = (ex_thread_control_t *)self;
     if (!_trg_thread->isready)
         return 0;
     

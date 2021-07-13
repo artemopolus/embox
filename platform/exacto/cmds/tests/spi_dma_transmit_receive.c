@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "commander/exacto_data_storage.h"
 
-thread_control_t MainThread;
+ex_thread_control_t MainThread;
 
 uint8_t MarkerThread = 0;
 uint8_t DataToBuffer[] = {0, 7, 2, 10, 1};

@@ -31,7 +31,7 @@ uint32_t TESMA_Tim_Buffer;
 
 uint8_t TESMA_MlineSpiEnableMarker = 0;
 
-thread_control_t TESMA_MainThread;
+ex_thread_control_t TESMA_MainThread;
 
 
 // #define TESMA_DATA_MESSAGE_SIZE SPI_MLINER_BUFFER_SIZE
