@@ -306,12 +306,20 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_
     default:
         break;
     }
-    for (uint16_t i = 0; i < datacount; i++)
+    if (datacount != 0)
     {
-        // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, data[i]);
-        updateData2EDS(data[i]);
-        EDS_DataStorage_UdtCnt++;
+        if(!pshsftPack_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, data, datacount))
+        {
+            ExDtStr_OutputSPI_OverFlw += datacount;       
+        }
+        EDS_DataStorage_UdtCnt+=datacount;
     }
+    // for (uint16_t i = 0; i < datacount; i++)
+    // {
+        // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, data[i]);
+        // updateData2EDS(data[i]);
+        // EDS_DataStorage_UdtCnt++;
+    // }
     ExDtStr_Output_Storage[EX_THR_SPi_TX].result = result;
     switch (EDS_CurrentExactolinkType)
     {
