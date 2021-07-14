@@ -740,10 +740,10 @@ exactolink_package_result_t ex_checkData_ExDtStr()
                     }
                 }
             }
-            for (uint16_t i = frame_index; i < EXACTOLINK_SD_FRAME_SIZE; i++)
-            {
-                pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
-            }
+            // for (uint16_t i = frame_index; i < EXACTOLINK_SD_FRAME_SIZE; i++)
+            // {
+            //     pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
+            // }
             EDS_SPI_pullcount += getlen_exbextu8(&ExDtStr_SD_buffer);
             ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_SNS_XLXLGR;
             return EXACTOLINK_SNS_XLXLGR;
