@@ -434,10 +434,12 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         receiver[7] = addrL;
         receiver[8] = addrH; //datasrc
         //счетчик
-        receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;   
-        receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
-        receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
-        receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
+        for (uint16_t i = 0; i < 4; i++)
+            receiver[9+i] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> i*8);
+        // receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;   
+        // receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
+        // receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
+        // receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
         
         receiver[13] = (uint8_t)(ExDtStr_OutputSPI_OverFlw );
         receiver[14] = (uint8_t)(ExDtStr_OutputSPI_OverFlw >> 8);
@@ -458,10 +460,13 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         }
         // CRC
         ex_getCRC(&receiver[0], (length - 4), &crc);
-        receiver[length - 4] = (uint8_t)(crc);
-        receiver[length - 3] = (uint8_t)(crc >> 8);
-        receiver[length - 2] = (uint8_t)(crc >> 16);
-        receiver[length - 1] = (uint8_t)(crc >> 24);        
+        for (uint16_t i = 0; i < 4; i++)
+            receiver[length - 4 + i] = (uint8_t)(crc >> 8*i);
+
+        // receiver[length - 4] = (uint8_t)(crc);
+        // receiver[length - 3] = (uint8_t)(crc >> 8);
+        // receiver[length - 2] = (uint8_t)(crc >> 16);
+        // receiver[length - 1] = (uint8_t)(crc >> 24);        
         break;  
     default:
         break;
@@ -697,14 +702,14 @@ exactolink_package_result_t ex_checkData_ExDtStr()
             ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
 
             ExDtStr_TransmitSPI_RxCounter++;
-            for(uint8_t i = 0; i < 7; i++)
-                grbfst_exbu8(tmp_buffer, &value); //[13] 
-            // grbfst_exbu8(tmp_buffer, &value); //[14] 
-            // grbfst_exbu8(tmp_buffer, &value); //[15] 
-            // grbfst_exbu8(tmp_buffer, &value); //[16] 
-            // grbfst_exbu8(tmp_buffer, &value); //[17] 
-            // grbfst_exbu8(tmp_buffer, &value); //[18] 
-            // grbfst_exbu8(tmp_buffer, &value); //[19] 
+            // for(uint8_t i = 0; i < 7; i++)
+            grbfst_exbu8(tmp_buffer, &value); //[13] 
+            grbfst_exbu8(tmp_buffer, &value); //[14] 
+            grbfst_exbu8(tmp_buffer, &value); //[15] 
+            grbfst_exbu8(tmp_buffer, &value); //[16] 
+            grbfst_exbu8(tmp_buffer, &value); //[17] 
+            grbfst_exbu8(tmp_buffer, &value); //[18] 
+            grbfst_exbu8(tmp_buffer, &value); //[19] 
             //[20]
             frame_index = EXACTOLINK_SD_PT_DATA_START;
             uint8_t pair[2] = {0};
