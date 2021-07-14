@@ -76,7 +76,7 @@ uint8_t MarkerSubscribe = 0;
 static exacto_sensors_list_t CurrentTargetSensor = LSM303AH;
 static uint8_t CurrentTargetSensor_isenabled  = 0;
 
-static struct lthread SubscribeThread;
+// static struct lthread SubscribeThread;
 static struct lthread SendThread;
 static ex_sns_lth_container_t SendAndUploadThread;
 static struct lthread DownloadCmdToSendThread;
@@ -221,13 +221,13 @@ static int runSensorTickerThread(struct lthread * self)
     return 0;
 }
 
-static int runSubscribeThread(struct lthread * self)
-{
-    uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSensorTickerThread);
-    if (result == 0)
-        MarkerSubscribe = 1;
-    return 0;
-}
+// static int runSubscribeThread(struct lthread * self)
+// {
+//     uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSensorTickerThread);
+//     if (result == 0)
+//         MarkerSubscribe = 1;
+//     return 0;
+// }
 
 
 uint8_t setPackageToGettToNull()
@@ -462,11 +462,10 @@ static int initSnsService(void)
 // int initSnsService(void)
 {
     ex_initServiceMsg(&BufferToData);
-    lthread_init(&SubscribeThread, runSubscribeThread);
+    // lthread_init(&SubscribeThread, runSubscribeThread);
     lthread_init(&SendThread, runSendThread);
     lthread_init(&SendAndUploadThread.thread, runSendAndUploadThread);
     lthread_init(&DownloadCmdToSendThread, runDownloadCmdToSendThread);
-    lthread_launch(&SubscribeThread);
     sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
     sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c); // 0 1 0 0 1 1 0 0
     resetExactoDataStorage();
@@ -509,7 +508,7 @@ static int initSnsService(void)
 #ifdef SNS_SERVICE_TESTING
     StartTickerIsEnabled = 1;
 #endif
-    for (uint8_t i = 0; i < 6; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
         printReceivedData();
@@ -528,6 +527,9 @@ static int initSnsService(void)
     }
 
     MarkerStage = 0;
+    // lthread_launch(&SubscribeThread);
+    if ( ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSensorTickerThread) != 0)
+        return 1;
 
     return 0;
 }

@@ -53,7 +53,7 @@
 #define EXACTOLINK_SD_PT_DATA_START 8
 
 #define THREAD_CONTROL_BUFFER_SZ 16
-#define THREAD_OUTPUT_TYPES_SZ 4
+#define THREAD_OUTPUT_TYPES_SZ 2
 #define SERVICES_COUNT 5
 
 #define EXACTOLINK_START_DATA_POINT_ADR 4
@@ -167,6 +167,7 @@ extern exactolink_package_result_t ex_checkData_ExDtStr();
 #ifdef EXDTSTR_EXTENDED
 extern uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type);
 extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);
+extern ex_thread_control_result_t  getStateExactoDataStorage();
 #endif
 extern void ex_updateCounter_ExDtStr(ex_thread_type_t type);
 
@@ -185,5 +186,4 @@ extern uint8_t  ex_getRawDataStr_ExDtStr( int16_t * dst, const uint16_t dstlen);
 
 extern uint8_t                  getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_length);
 extern uint8_t                  getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length);
-extern ex_thread_control_result_t  getStateExactoDataStorage();
 #endif //EXACTO_DATA_STORAGE_H

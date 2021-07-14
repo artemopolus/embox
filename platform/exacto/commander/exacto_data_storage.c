@@ -178,8 +178,8 @@ static int initExactoDataStorage(void)
     lthread_init(&TickReactionThread.thread, runTickReactionThread);
     ExDtStr_Output_Storage[0].type = EX_THR_SPi_RX;
     ExDtStr_Output_Storage[1].type = EX_THR_SPi_TX;
-    ExDtStr_Output_Storage[2].type = EX_THR_STR_CALC_IN;
-    ExDtStr_Output_Storage[3].type = EX_THR_STR_CALC_OUT;
+    // ExDtStr_Output_Storage[2].type = EX_THR_STR_CALC_IN;
+    // ExDtStr_Output_Storage[3].type = EX_THR_STR_CALC_OUT;
     setini_exbextu8(&ExDtStr_SD_buffer);
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
@@ -279,10 +279,7 @@ uint8_t clearExactoDataStorage()
 //     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, addrH);              //[5]
 //     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, addrL);              //[6]
 // }
-ex_thread_control_result_t getStateExactoDataStorage()
-{
-    return ExDtStr_Output_Storage[EX_THR_SPi_TX].result;
-}
+
 void updateData2EDS(uint8_t value)
 {
     // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, value);
@@ -525,12 +522,14 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     uint16_t cnt_data = pck_length - pt_start_data - 4;
     uint32_t crc_calc;
     ex_getCRC(&ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[0],(pck_length - 4), &crc_calc);
-    uint32_t crc_refr;
+    uint32_t crc_refr = 0;
     uint16_t crc_refr_pt = pck_length - 4;
-    crc_refr =  (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++]); 
-    crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << 8); 
-    crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << 16); 
-    crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << 24); 
+    for (uint8_t i = 0; i < 4; i++)
+        crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << i*8); 
+    // crc_refr =  (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++]); 
+    // crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << 8); 
+    // crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << 16); 
+    // crc_refr += (uint32_t)(ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage.data[crc_refr_pt++] << 24); 
     if (crc_calc != crc_refr)
     {
         ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_CRC_ERROR;
@@ -662,22 +661,25 @@ exactolink_package_result_t ex_checkData_ExDtStr()
             pshfrc_exbextu8(&ExDtStr_SD_buffer, (uint8_t)(cnt_data >> 8));
             //===================================================================
             exdtstr_xtspi_refcnt = 0;
-            grbfst_exbu8(tmp_buffer, &value); //[9] 
-            exdtstr_xtspi_refcnt = (uint32_t)value;
-            ExDtStr_TrasmitSPI_Info.counter_raw[0] = value;
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
-            grbfst_exbu8(tmp_buffer, &value); //[10] 
-            exdtstr_xtspi_refcnt += (uint32_t)(value << 8);
-            ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
-            grbfst_exbu8(tmp_buffer, &value); //[11] 
-            exdtstr_xtspi_refcnt += (uint32_t)(value << 16);
-            ExDtStr_TrasmitSPI_Info.counter_raw[2] = value;
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
-            grbfst_exbu8(tmp_buffer, &value); //[12] 
-            exdtstr_xtspi_refcnt += (uint32_t)(value << 24);
-            ExDtStr_TrasmitSPI_Info.counter_raw[3] = value;
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
+            for (uint8_t i = 0; i < 4; i++)
+            {
+                grbfst_exbu8(tmp_buffer, &value); //[9] 
+                exdtstr_xtspi_refcnt += (uint32_t)(value << i*8);
+                ExDtStr_TrasmitSPI_Info.counter_raw[i] = value;
+                pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
+            }
+            // grbfst_exbu8(tmp_buffer, &value); //[10] 
+            // exdtstr_xtspi_refcnt += (uint32_t)(value << 8);
+            // ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
+            // pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
+            // grbfst_exbu8(tmp_buffer, &value); //[11] 
+            // exdtstr_xtspi_refcnt += (uint32_t)(value << 16);
+            // ExDtStr_TrasmitSPI_Info.counter_raw[2] = value;
+            // pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
+            // grbfst_exbu8(tmp_buffer, &value); //[12] 
+            // exdtstr_xtspi_refcnt += (uint32_t)(value << 24);
+            // ExDtStr_TrasmitSPI_Info.counter_raw[3] = value;
+            // pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
             //===================================================================
             ExDtStr_TrasmitSPI_RefCounter = exdtstr_xtspi_refcnt;
             if ((ExDtStr_TrasmitSPI_RefCounter - ExDtStr_TrasmitSPI_RefCounterPrev) > 1)
@@ -695,13 +697,14 @@ exactolink_package_result_t ex_checkData_ExDtStr()
             ExDtStr_TrasmitSPI_Info.counter = ExDtStr_TrasmitSPI_RefCounter;
 
             ExDtStr_TransmitSPI_RxCounter++;
-            grbfst_exbu8(tmp_buffer, &value); //[13] 
-            grbfst_exbu8(tmp_buffer, &value); //[14] 
-            grbfst_exbu8(tmp_buffer, &value); //[15] 
-            grbfst_exbu8(tmp_buffer, &value); //[16] 
-            grbfst_exbu8(tmp_buffer, &value); //[17] 
-            grbfst_exbu8(tmp_buffer, &value); //[18] 
-            grbfst_exbu8(tmp_buffer, &value); //[19] 
+            for(uint8_t i = 0; i < 7; i++)
+                grbfst_exbu8(tmp_buffer, &value); //[13] 
+            // grbfst_exbu8(tmp_buffer, &value); //[14] 
+            // grbfst_exbu8(tmp_buffer, &value); //[15] 
+            // grbfst_exbu8(tmp_buffer, &value); //[16] 
+            // grbfst_exbu8(tmp_buffer, &value); //[17] 
+            // grbfst_exbu8(tmp_buffer, &value); //[18] 
+            // grbfst_exbu8(tmp_buffer, &value); //[19] 
             //[20]
             frame_index = EXACTOLINK_SD_PT_DATA_START;
             uint8_t pair[2] = {0};
@@ -758,6 +761,10 @@ uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
     return 0;
 }
 #ifdef EXDTSTR_EXTENDED
+ex_thread_control_result_t getStateExactoDataStorage()
+{
+    return ExDtStr_Output_Storage[EX_THR_SPi_TX].result;
+}
 uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type)
 {
     uint8_t is_overflowed = 0;

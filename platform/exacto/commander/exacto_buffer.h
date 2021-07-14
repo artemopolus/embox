@@ -161,8 +161,8 @@ extern uint8_t clrsvr_exbu8(ExactoBufferUint8Type * buffer, const uint8_t cnt);
  * @return     успешна ли операция
  */
 extern uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer);
-extern uint8_t mvbckone_exbu8( ExactoBufferUint8Type * buffer );
-extern uint8_t mvbcksvr_exbu8( ExactoBufferUint8Type * buffer, const uint16_t length_back );
+// extern uint8_t mvbckone_exbu8( ExactoBufferUint8Type * buffer );
+// extern uint8_t mvbcksvr_exbu8( ExactoBufferUint8Type * buffer, const uint16_t length_back );
 extern uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length_back );
 
 extern uint8_t grbfstPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t datalen);
