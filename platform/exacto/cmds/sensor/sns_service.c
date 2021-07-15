@@ -165,6 +165,7 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
         }
         break;
     case EXACTOLINK_SNS_XLXLGR:
+        sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah);
         sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl);
         sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr);
         for (uint8_t i = 0; i < SendAndUploadThread.sns_count; i++)
