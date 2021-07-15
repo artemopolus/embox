@@ -79,7 +79,7 @@ static uint8_t CurrentTargetSensor_isenabled  = 0;
 // static struct lthread SubscribeThread;
 static struct lthread SendThread;
 static ex_sns_lth_container_t SendAndUploadThread;
-static struct lthread DownloadCmdToSendThread;
+// static struct lthread DownloadCmdToSendThread;
 #ifdef PRINT_ON
 uint16_t PrintTickerCounter = 0;
 #endif
@@ -115,7 +115,6 @@ void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t
 uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value, const uint16_t try_count)
 {
     uint16_t try_index = 0;
-    uint8_t result = 0;
     PackageToSend.data[0] = address;
     PackageToSend.data[1] = value;
     PackageToSend.datalen = 2;
@@ -129,6 +128,11 @@ uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const u
             break;
         }
     }
+    disableExactoSensor(sns);
+    PackageToGett.cmd = address ;
+    PackageToGett.datalen = 2;
+    enableExactoSensor(sns);
+    ex_gettSpiSns(&PackageToGett);
     disableExactoSensor(sns);
     return 0;
 }
@@ -185,9 +189,9 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
         }
         break;
     case EXACTOLINK_SNS_XLXLGR:
-        sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah);
-        sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl);
-        sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr);
+        sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah, 5);
+        sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
+        sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr, 5);
         for (uint8_t i = 0; i < SendAndUploadThread.sns_count; i++)
         {
             if ((SendAndUploadThread.sns[i].sns == LSM303AH)||(SendAndUploadThread.sns[i].sns == ISM330DLC))
@@ -251,15 +255,15 @@ static int runSensorTickerThread(struct lthread * self)
 // }
 
 
-uint8_t setPackageToGettToNull()
-{
-    for (uint8_t i = 0; i < PackageToGett.datalen; i++)
-    {
-        PackageToGett.data[i] = 0;
-    }
-    PackageToGett.result = EXACTO_WAITING;    
-    return 0;
-}
+// uint8_t setPackageToGettToNull()
+// {
+//     for (uint8_t i = 0; i < PackageToGett.datalen; i++)
+//     {
+//         PackageToGett.data[i] = 0;
+//     }
+//     PackageToGett.result = EXACTO_WAITING;    
+//     return 0;
+// }
 
 void printDataValues(uint8_t * data, const uint16_t datalen)
 {
@@ -465,24 +469,24 @@ static int runSendThread(struct lthread * self)
     return 0;
 }
 
-static int runDownloadCmdToSendThread(struct lthread * self)
-{
-    uint8_t buffer[4] = {0};
-    if (ex_downloadDataFromServiceMsg(&BufferToData, buffer, 3))
-        return 0;
-    switch ((ex_spi_data_type_t)buffer[3])
-    {
-    case EX_SPI_DT_TRANSMIT_RECEIVE:
-        sendAndReceive((exacto_sensors_list_t)buffer[0], buffer[1], buffer[2]);
-        break;
-    case EX_SPI_DT_TRANSMIT:
-        sendOptions((exacto_sensors_list_t)buffer[0], buffer[1], buffer[2]);    
-        break;
-    default:
-        break;
-    }
-    return 0;
-}
+// static int runDownloadCmdToSendThread(struct lthread * self)
+// {
+//     uint8_t buffer[4] = {0};
+//     if (ex_downloadDataFromServiceMsg(&BufferToData, buffer, 3))
+//         return 0;
+//     switch ((ex_spi_data_type_t)buffer[3])
+//     {
+//     case EX_SPI_DT_TRANSMIT_RECEIVE:
+//         sendAndReceive((exacto_sensors_list_t)buffer[0], buffer[1], buffer[2]);
+//         break;
+//     case EX_SPI_DT_TRANSMIT:
+//         sendOptions((exacto_sensors_list_t)buffer[0], buffer[1], buffer[2]);    
+//         break;
+//     default:
+//         break;
+//     }
+//     return 0;
+// }
 
 
 
@@ -494,7 +498,7 @@ static int initSnsService(void)
     // lthread_init(&SubscribeThread, runSubscribeThread);
     lthread_init(&SendThread, runSendThread);
     lthread_init(&SendAndUploadThread.thread, runSendAndUploadThread);
-    lthread_init(&DownloadCmdToSendThread, runDownloadCmdToSendThread);
+    // lthread_init(&DownloadCmdToSendThread, runDownloadCmdToSendThread);
     sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
     sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c); // 0 1 0 0 1 1 0 0
     resetExactoDataStorage();
