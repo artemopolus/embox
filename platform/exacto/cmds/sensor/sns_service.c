@@ -340,6 +340,7 @@ static int runSendAndUploadThread(struct lthread * self)
     }
     else
     {
+        tmp_buffer_data[0] = 0;
         for (uint16_t i = 0; i < count; i++)
         {
             if(trg->sns[i].isenabled){
@@ -352,7 +353,13 @@ static int runSendAndUploadThread(struct lthread * self)
                 PackageToGett.cmd = cmd;
                 PackageToGett.datalen = datalen;
                 enableExactoSensor(sns);
-                ex_gettSpiSns(&PackageToGett);
+                uint16_t try_cnt = 0;
+                while (ex_gettSpiSns(&PackageToGett))
+                {
+                    if (try_cnt > 3)
+                        break;
+                    try_cnt++;
+                }
                 disableExactoSensor(sns);
                 uint8_t tmp_length = (datalen - shift);
                 if(isXlGrDataReady(sns, PackageToGett.data[0]))
