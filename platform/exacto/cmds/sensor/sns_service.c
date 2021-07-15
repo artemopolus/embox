@@ -112,7 +112,26 @@ static uint32_t SNSSRV_PackRecv_Counter = 0;
 void executeStage();
 void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value);
 //========================================================================
-
+uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value, const uint16_t try_count)
+{
+    uint16_t try_index = 0;
+    uint8_t result = 0;
+    PackageToSend.data[0] = address;
+    PackageToSend.data[1] = value;
+    PackageToSend.datalen = 2;
+    PackageToSend.type = EX_SPI_DT_TRANSMIT;
+    enableExactoSensor(sns);
+    while(ex_sendSpiSns(&PackageToSend))
+    {
+        try_index++;
+        if (try_index > try_count)
+        {
+            break;
+        }
+    }
+    disableExactoSensor(sns);
+    return 0;
+}
 uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
 {
     exacto_tim_states_t state = ex_getFreqHz_TIM();
@@ -151,7 +170,8 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
         return 1;
         break;
     case EXACTOLINK_LSM303AH_TYPE0:
-        sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah);
+        // sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah);
+        sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
         for (uint8_t i = 0; i < SendAndUploadThread.sns_count; i++)
         {
             if (SendAndUploadThread.sns[i].sns == LSM303AH)
@@ -411,6 +431,7 @@ static int runSendAndUploadThread(struct lthread * self)
     // printk("!");
     return 0;
 }
+
 static int runSendThread(struct lthread * self)
 {
     CurrentTargetSensor_isenabled = 1;
