@@ -77,7 +77,6 @@ static exacto_sensors_list_t CurrentTargetSensor = LSM303AH;
 static uint8_t CurrentTargetSensor_isenabled  = 0;
 
 // static struct lthread SubscribeThread;
-static struct lthread SendThread;
 static ex_sns_lth_container_t SendAndUploadThread;
 // static struct lthread DownloadCmdToSendThread;
 #ifdef PRINT_ON
@@ -110,7 +109,6 @@ static uint8_t SNSSRV_UploadData_Counter = 0;
 static uint32_t SNSSRV_PackRecv_Counter = 0;
 //========================================================================
 void executeStage();
-void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value);
 //========================================================================
 uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value, const uint16_t try_count)
 {
@@ -119,6 +117,7 @@ uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const u
     PackageToSend.data[1] = value;
     PackageToSend.datalen = 2;
     PackageToSend.type = EX_SPI_DT_TRANSMIT;
+    sched_lock();
     enableExactoSensor(sns);
     while(ex_sendSpiSns(&PackageToSend))
     {
@@ -129,11 +128,15 @@ uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const u
         }
     }
     disableExactoSensor(sns);
-    PackageToGett.cmd = address ;
-    PackageToGett.datalen = 2;
-    enableExactoSensor(sns);
-    ex_gettSpiSns(&PackageToGett);
-    disableExactoSensor(sns);
+    if (try_count)
+    {
+        PackageToGett.cmd = address ;
+        PackageToGett.datalen = 2;
+        enableExactoSensor(sns);
+        ex_gettSpiSns(&PackageToGett);
+        disableExactoSensor(sns);
+    }
+    sched_unlock();
     return 0;
 }
 uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
@@ -211,15 +214,7 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
 }
 
 //========================================================================
-void sendOptions(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value)
-{
-    PackageToSend.data[0] = address;
-    PackageToSend.data[1] = value;
-    PackageToSend.datalen = 2;
-    PackageToSend.type = EX_SPI_DT_TRANSMIT;
-    CurrentTargetSensor = sns;
-    lthread_launch(&SendThread);
-}
+
 void sendAndReceive(exacto_sensors_list_t sns, const uint8_t address, const uint8_t datalen)
 {
     PackageToSend.result = EXACTO_WAITING;
@@ -227,7 +222,33 @@ void sendAndReceive(exacto_sensors_list_t sns, const uint8_t address, const uint
     PackageToGett.cmd = address ;
     PackageToGett.datalen = datalen;
     CurrentTargetSensor = sns;
-    lthread_launch(&SendThread);
+    CurrentTargetSensor_isenabled = 1;
+    enableExactoSensor(CurrentTargetSensor);
+#ifdef SNS_SERVICE_TESTING
+    if (StartTickerIsEnabled){
+	    dwt_cyccnt_reset();
+	    StartTicker = dwt_cyccnt_start();
+    }
+#endif
+    // if (PackageToSend.type == EX_SPI_DT_TRANSMIT)
+    // {
+    //     ex_sendSpiSns(&PackageToSend);
+    // }
+    // else if (PackageToSend.type == EX_SPI_DT_TRANSMIT_RECEIVE)
+    // {
+        ex_gettSpiSns(&PackageToGett);
+    // }
+    disableExactoSensor(CurrentTargetSensor);
+#ifdef SNS_SERVICE_TESTING
+    if (StartTickerIsEnabled)
+    {
+       	StopTicker = dwt_cyccnt_stop();
+	    ResultTicker = StopTicker - StartTicker;
+        StartTickerIsEnabled = 0;
+        
+ 
+    }
+#endif
 }
 void uploadRecevedData( const uint8_t pt, const uint16_t start, const uint16_t datalen)
 {
@@ -246,28 +267,11 @@ static int runSensorTickerThread(struct lthread * self)
     return 0;
 }
 
-// static int runSubscribeThread(struct lthread * self)
-// {
-//     uint8_t result = ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSensorTickerThread);
-//     if (result == 0)
-//         MarkerSubscribe = 1;
-//     return 0;
-// }
 
-
-// uint8_t setPackageToGettToNull()
-// {
-//     for (uint8_t i = 0; i < PackageToGett.datalen; i++)
-//     {
-//         PackageToGett.data[i] = 0;
-//     }
-//     PackageToGett.result = EXACTO_WAITING;    
-//     return 0;
-// }
+#ifdef PRINT_ON
 
 void printDataValues(uint8_t * data, const uint16_t datalen)
 {
-    #ifdef PRINT_ON
 
     for (uint8_t i = 0; i < datalen; i++)
     {
@@ -275,11 +279,9 @@ void printDataValues(uint8_t * data, const uint16_t datalen)
         convertUint8ToUint16(&data[i*2], &dst);
         printf("%d\t", dst);
     }
-    #endif
 }
 void printReceivedData()
 {
-    #ifdef PRINT_ON
     // printf("\033[A\33[2K\r");
     printf("Get some data: ");
     for (uint8_t i = 0; i < PackageToGett.datalen; i++)
@@ -288,9 +290,7 @@ void printReceivedData()
         printf("%#04x| ", ctrl_value);
     }
     printf("Counter: %d\n", SensorTickerCounter);
-    #endif
 }
-#ifdef PRINT_ON
 void printWindow()
 {
     printf("\033[A\33[2K\r"); //clear line
@@ -311,11 +311,6 @@ void printWindow()
 }
 #endif
 
-// void repeatPrevPackage()
-// {
-//     PackageToSend.result = EXACTO_WAITING;
-//     lthread_launch(&SendThread);
-// }
 void executeStage()
 {
     // uint8_t value = 0;
@@ -437,56 +432,9 @@ static int runSendAndUploadThread(struct lthread * self)
     return 0;
 }
 
-static int runSendThread(struct lthread * self)
-{
-    CurrentTargetSensor_isenabled = 1;
-    enableExactoSensor(CurrentTargetSensor);
-#ifdef SNS_SERVICE_TESTING
-    if (StartTickerIsEnabled){
-	    dwt_cyccnt_reset();
-	    StartTicker = dwt_cyccnt_start();
-    }
-#endif
-    if (PackageToSend.type == EX_SPI_DT_TRANSMIT)
-    {
-        ex_sendSpiSns(&PackageToSend);
-    }
-    else if (PackageToSend.type == EX_SPI_DT_TRANSMIT_RECEIVE)
-    {
-        ex_gettSpiSns(&PackageToGett);
-    }
-    disableExactoSensor(CurrentTargetSensor);
-#ifdef SNS_SERVICE_TESTING
-    if (StartTickerIsEnabled)
-    {
-       	StopTicker = dwt_cyccnt_stop();
-	    ResultTicker = StopTicker - StartTicker;
-        StartTickerIsEnabled = 0;
-        
- 
-    }
-#endif
-    return 0;
-}
 
-// static int runDownloadCmdToSendThread(struct lthread * self)
-// {
-//     uint8_t buffer[4] = {0};
-//     if (ex_downloadDataFromServiceMsg(&BufferToData, buffer, 3))
-//         return 0;
-//     switch ((ex_spi_data_type_t)buffer[3])
-//     {
-//     case EX_SPI_DT_TRANSMIT_RECEIVE:
-//         sendAndReceive((exacto_sensors_list_t)buffer[0], buffer[1], buffer[2]);
-//         break;
-//     case EX_SPI_DT_TRANSMIT:
-//         sendOptions((exacto_sensors_list_t)buffer[0], buffer[1], buffer[2]);    
-//         break;
-//     default:
-//         break;
-//     }
-//     return 0;
-// }
+
+
 
 
 
@@ -495,12 +443,9 @@ static int initSnsService(void)
 // int initSnsService(void)
 {
     ex_initServiceMsg(&BufferToData);
-    // lthread_init(&SubscribeThread, runSubscribeThread);
-    lthread_init(&SendThread, runSendThread);
     lthread_init(&SendAndUploadThread.thread, runSendAndUploadThread);
-    // lthread_init(&DownloadCmdToSendThread, runDownloadCmdToSendThread);
-    sendOptions(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL);
-    sendOptions(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c); // 0 1 0 0 1 1 0 0
+    sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
+    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
     resetExactoDataStorage();
     SendAndUploadThread.sns_count = 2;
     SendAndUploadThread.sns[0].isenabled = 1;
@@ -515,78 +460,25 @@ static int initSnsService(void)
     SendAndUploadThread.sns[1].datalen = 16;
     SendAndUploadThread.sns[1].pt2buffer = 6;
     SendAndUploadThread.sns[1].shift = 4;
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
-        // printReceivedData();
-    }
-
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
-        printReceivedData();
-    }
 
 
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
-        printReceivedData();
-    }
+    sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2);
+    sendAndReceive(ISM330DLC, ISM330DLC_WHOAMI_ADR, 2);
+    sendAndReceive(LSM303AH, LSM303AH_WHOAMI_MG_ADR, 2);
+    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL, 0x44, 3); //0100 01 0 0
+    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 0x48, 3); //0100 01 0 0
 
-    sendOptions(ISM330DLC, ISM330DLC_CTRL1_XL, 0x44); //0100 01 0 0
-    sendOptions(ISM330DLC, ISM330DLC_CTRL2_G, 0x48); //0100 01 0 0
+    sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
+    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A, 0xC5, 3);
+    sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
 
-
+    MarkerStage = 0;
 #ifdef SNS_SERVICE_TESTING
     StartTickerIsEnabled = 1;
 #endif
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        sendAndReceive(ISM330DLC, ISM330DLC_STATUS_REG, 16);
-        printReceivedData();
-        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[1].shift], 6);
-    }
-
-    
-
-    sendOptions(LSM303AH, LSM303AH_CTRL1_A, 0xC5);
-
-    for (uint8_t i = 0; i < 6; i++)
-    {
-        sendAndReceive(LSM303AH, LSM303AH_STATUS_A, 7);
-        printReceivedData();
-        printDataValues(&PackageToGett.data[SendAndUploadThread.sns[0].shift], 3);
-    }
-
-    MarkerStage = 0;
-    // lthread_launch(&SubscribeThread);
     if ( ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSensorTickerThread) != 0)
         return 1;
 
     return 0;
 }
-// int main(int argc, char *argv[]) {
-// 	// uint32_t start, stop, res;
-//     initSnsService();
 
-
-//     MarkerStage = 0;
-//     // while (MarkerStage < 5)
-//     // {
-//     // }
-    
-//     // printf("Ticker:%d\n", ResultTicker);
-//     // printf("\n\n\n\n");
-//     while(1)
-//     {
-//     //     printf("\033[A\33[2K\r");
-//     //     printf("\033[A\33[2K\r");
-//     //     printf("MarkerStage: %d\n", MarkerStage);
-//     //     printf("Counter: %d\n",SensorTickerCounter);
-//     //     usleep(1000000);
-
-//     }
-
-//     return 0;
-// }
