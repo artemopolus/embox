@@ -15,6 +15,7 @@ typedef struct{
     uint16_t datalen;
     uint16_t pt2buffer;
     uint8_t shift;
+    uint32_t counter;
 }ex_sns_cmds_t;
 typedef struct{
     struct lthread thread;

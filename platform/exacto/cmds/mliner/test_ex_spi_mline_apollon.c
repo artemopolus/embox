@@ -25,6 +25,8 @@ uint32_t TESMA_Tx_Buffer;
 uint32_t TESMA_Rx_Counter = 0;
 uint32_t TESMA_Rx_Buffer;
 
+uint32_t TESMA_SnsCounters_Buffer[2];
+
 uint32_t TESMA_Tim_Counter = 0;
 uint32_t TESMA_Tim_Buffer;
 
@@ -97,11 +99,12 @@ static int runTESMA_TimReceiver_Lthread(struct lthread * self)
 void printBufferData()
 {
 #ifdef SPI_TXRX_PRINT_ON
+    for (uint8_t i = 0; i < 5; i++)
     printf("\033[A\33[2K\r");
-    printf("\033[A\33[2K\r");
-    printf("\033[A\33[2K\r");
-    printf("\033[A\33[2K\r");
-    printf("\033[A\33[2K\r");
+    // printf("\033[A\33[2K\r");
+    // printf("\033[A\33[2K\r");
+    // printf("\033[A\33[2K\r");
+    // printf("\033[A\33[2K\r");
     uint16_t length = TESMA_DATA_MESSAGE_SIZE;
     uint8_t start_point = 4;
     // for (uint8_t i = 0; i < TESMA_DATA_MESSAGE_SIZE; i++)
@@ -137,12 +140,15 @@ void printBufferData()
                                 TESMA_ReceivedData[start_point+2], TESMA_ReceivedData[start_point + 3],
                                 TESMA_ReceivedData[start_point+4], TESMA_ReceivedData[start_point + 5]
                                  );
-    printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d | Buf: %d",
+    printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d | Buf: %d | sns1: %d | sns2: %d",
                         TESMA_MlineSpiEnableMarker, 
                         TESMA_Tx_Buffer, 
                         TESMA_Rx_Buffer, 
                         TESMA_Tim_Buffer,
-                        buffer_length);
+                        buffer_length,
+                        TESMA_SnsCounters_Buffer[0],
+                        TESMA_SnsCounters_Buffer[1]
+                        );
     if (TESMA_print_OutOverFlw_Marker)
     {
         TESMA_print_OutOverFlw_Marker = 0;
@@ -167,6 +173,8 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
         TESMA_DownloadData_Marker = 1;
         TESMA_Rx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_RX);
         TESMA_Tx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_TX);
+        TESMA_SnsCounters_Buffer[0] = SNSSRV_SendAndUpload_Container.sns[0].counter;
+        TESMA_SnsCounters_Buffer[1] = SNSSRV_SendAndUpload_Container.sns[1].counter;
         TESMA_Tim_Buffer = TESMA_Tim_Counter;
     }
     return 0;

@@ -71,13 +71,12 @@ static uint64_t SensorTickerCounter = 0;
 static uint16_t ExecuteSendCounter = 0;
 static uint16_t UploadSnsDataCounter = 0;
 
-uint8_t MarkerSubscribe = 0;
 
 static exacto_sensors_list_t CurrentTargetSensor = LSM303AH;
 static uint8_t CurrentTargetSensor_isenabled  = 0;
 
 // static struct lthread SubscribeThread;
-static ex_sns_lth_container_t SendAndUploadThread;
+ex_sns_lth_container_t SNSSRV_SendAndUpload_Container;
 // static struct lthread DownloadCmdToSendThread;
 #ifdef PRINT_ON
 uint16_t PrintTickerCounter = 0;
@@ -185,15 +184,15 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
     case EXACTOLINK_LSM303AH_TYPE0:
         // sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah);
         sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
-        for (uint8_t i = 0; i < SendAndUploadThread.sns_count; i++)
+        for (uint8_t i = 0; i < SNSSRV_SendAndUpload_Container.sns_count; i++)
         {
-            if (SendAndUploadThread.sns[i].sns == LSM303AH)
+            if (SNSSRV_SendAndUpload_Container.sns[i].sns == LSM303AH)
             {
-                SendAndUploadThread.sns[i].isenabled = 1;
+                SNSSRV_SendAndUpload_Container.sns[i].isenabled = 1;
             }
             else
             {
-                SendAndUploadThread.sns[i].isenabled = 0;
+                SNSSRV_SendAndUpload_Container.sns[i].isenabled = 0;
             }
         }
         break;
@@ -201,15 +200,15 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
         sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah, 5);
         sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
         sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr, 5);
-        for (uint8_t i = 0; i < SendAndUploadThread.sns_count; i++)
+        for (uint8_t i = 0; i < SNSSRV_SendAndUpload_Container.sns_count; i++)
         {
-            if ((SendAndUploadThread.sns[i].sns == LSM303AH)||(SendAndUploadThread.sns[i].sns == ISM330DLC))
+            if ((SNSSRV_SendAndUpload_Container.sns[i].sns == LSM303AH)||(SNSSRV_SendAndUpload_Container.sns[i].sns == ISM330DLC))
             {
-                SendAndUploadThread.sns[i].isenabled = 1;
+                SNSSRV_SendAndUpload_Container.sns[i].isenabled = 1;
             }
             else
             {
-                SendAndUploadThread.sns[i].isenabled = 0;
+                SNSSRV_SendAndUpload_Container.sns[i].isenabled = 0;
             }
         }
         break;
@@ -315,10 +314,10 @@ void printWindow()
     printf("Upload: %d\n", UploadSnsDataCounter);
 
     printf("lsm303: ");
-    printDataValues(&DataToBuffer[SendAndUploadThread.sns[0].pt2buffer], 3);
+    printDataValues(&DataToBuffer[SNSSRV_SendAndUpload_Container.sns[0].pt2buffer], 3);
     printf("\n");
     printf("ism330: ");
-    printDataValues(&DataToBuffer[SendAndUploadThread.sns[1].pt2buffer], 6);
+    printDataValues(&DataToBuffer[SNSSRV_SendAndUpload_Container.sns[1].pt2buffer], 6);
     printf("\n");
 }
 #endif
@@ -338,7 +337,7 @@ void executeStage()
     if (MarkerStage == 1)
     {
         ExecuteSendCounter ++;
-        lthread_launch(&SendAndUploadThread.thread);
+        lthread_launch(&SNSSRV_SendAndUpload_Container.thread);
 #ifdef PRINT_ON
         if (PrintTickerCounter < PRINT_TICKER_MAX)
         {
@@ -358,7 +357,7 @@ void executeStage()
         MarkerStage++; 
 }
     uint8_t tmp_buffer_data[40] = {0};
-static int runSendAndUploadThread(struct lthread * self)
+static int runSNSSRV_SendAndUpload_Container(struct lthread * self)
 {
     // printk("@");
     ex_sns_lth_container_t * trg = (ex_sns_lth_container_t*)self;
@@ -407,6 +406,7 @@ static int runSendAndUploadThread(struct lthread * self)
                         tmp_buffer_data[tmp_buffer_index + i] = PackageToGett.data[i + shift];
                     }   
                     enabled++;
+                    trg->sns[i].counter++;
                 }
                 else
                 {
@@ -458,23 +458,25 @@ static int initSnsService(void)
 // int initSnsService(void)
 {
     ex_initServiceMsg(&BufferToData);
-    lthread_init(&SendAndUploadThread.thread, runSendAndUploadThread);
+    lthread_init(&SNSSRV_SendAndUpload_Container.thread, runSNSSRV_SendAndUpload_Container);
     sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
     sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
     resetExactoDataStorage();
-    SendAndUploadThread.sns_count = 2;
-    SendAndUploadThread.sns[0].isenabled = 1;
-    SendAndUploadThread.sns[0].sns = LSM303AH;
-    SendAndUploadThread.sns[0].address = LSM303AH_STATUS_A; 
-    SendAndUploadThread.sns[0].datalen = 7;
-    SendAndUploadThread.sns[0].pt2buffer = 0;
-    SendAndUploadThread.sns[0].shift = 1;
-    SendAndUploadThread.sns[1].isenabled = 1;
-    SendAndUploadThread.sns[1].sns = ISM330DLC;
-    SendAndUploadThread.sns[1].address = ISM330DLC_STATUS_REG; 
-    SendAndUploadThread.sns[1].datalen = 16;
-    SendAndUploadThread.sns[1].pt2buffer = 6;
-    SendAndUploadThread.sns[1].shift = 4;
+    SNSSRV_SendAndUpload_Container.sns_count = 2;
+    SNSSRV_SendAndUpload_Container.sns[0].isenabled = 1;
+    SNSSRV_SendAndUpload_Container.sns[0].sns = LSM303AH;
+    SNSSRV_SendAndUpload_Container.sns[0].address = LSM303AH_STATUS_A; 
+    SNSSRV_SendAndUpload_Container.sns[0].datalen = 7;
+    SNSSRV_SendAndUpload_Container.sns[0].pt2buffer = 0;
+    SNSSRV_SendAndUpload_Container.sns[0].shift = 1;
+    SNSSRV_SendAndUpload_Container.sns[0].counter = 0;
+    SNSSRV_SendAndUpload_Container.sns[1].isenabled = 1;
+    SNSSRV_SendAndUpload_Container.sns[1].sns = ISM330DLC;
+    SNSSRV_SendAndUpload_Container.sns[1].address = ISM330DLC_STATUS_REG; 
+    SNSSRV_SendAndUpload_Container.sns[1].datalen = 16;
+    SNSSRV_SendAndUpload_Container.sns[1].pt2buffer = 6;
+    SNSSRV_SendAndUpload_Container.sns[1].shift = 4;
+    SNSSRV_SendAndUpload_Container.sns[1].counter = 0;
 
 
     sendAndReceive(LSM303AH, LSM303AH_WHOAMI_XL_ADR, 2, 1, LSM303AH_WHOAMI_XL_VAL);
