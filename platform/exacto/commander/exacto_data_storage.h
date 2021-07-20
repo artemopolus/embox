@@ -11,6 +11,7 @@
 #include <framework/mod/options.h>
 #include <module/exacto/commander/data_storage.h>
 #define MODOPS_EXACTOLINK_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__data_storage, NUMBER, exactolinkbuffersz)
+#define MODOPS_EXACTOLINK_DEVICE_ID OPTION_MODULE_GET(exacto__commander__data_storage, NUMBER, exactolink_id)
 
 #define MODOPS_USE_EXTENDED_FUN OPTION_MODULE_GET(exacto__commander__data_storage, BOOLEAN, use_extended_fun)
 #if MODOPS_USE_EXTENDED_FUN
@@ -41,7 +42,11 @@
 #error Unsupported exactolink buffer sz
 #endif
 
-
+#if MODOPS_EXACTOLINK_DEVICE_ID < 65535
+#define EXACTOLINK_DEVICE_ID MODOPS_EXACTOLINK_DEVICE_ID
+#else
+#error Unsupported exactolink device id 
+#endif
 
 #define EXDTSTR_SINGLE_DATA_STR_LENGTH 6
 
@@ -60,6 +65,8 @@
 #define EXACTOLINK_START_DATA_POINT_VAL 13
 #define EXACTOLINK_XLXLGR_START_DATA_POINT_VAL 20
 #define EXACTOLINK_PCK_ID 17
+
+// #define EXACTOLINK_DEVICE_ID 20721
 
 #define EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH 19
 #define EXACTOLINK_APOLLON_SPI_PACK_SIZE EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH*25

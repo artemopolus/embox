@@ -290,22 +290,24 @@ void updateData2EDS(uint8_t value)
 }
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
 {
-    switch (result)
-    {
-    case EX_THR_CTRL_INIT:
-        /* code */
-        // clearExactoDataStorage();
-        //начало итерации записи данных
-        break;
-    case EX_THR_CTRL_OK:
-        //конец итерации записи
-        break;
-    case EX_THR_CTRL_UNKNOWN_ERROR:
-    case EX_THR_CTRL_NO_RESULT:
+    if ((result == EX_THR_CTRL_UNKNOWN_ERROR)||(result == EX_THR_CTRL_NO_RESULT))
         return 1;
-    default:
-        break;
-    }
+    // switch (result)
+    // {
+    // case EX_THR_CTRL_INIT:
+    //     /* code */
+    //     // clearExactoDataStorage();
+    //     //начало итерации записи данных
+    //     break;
+    // case EX_THR_CTRL_OK:
+    //     //конец итерации записи
+    //     break;
+    // case EX_THR_CTRL_UNKNOWN_ERROR:
+    // case EX_THR_CTRL_NO_RESULT:
+    //     return 1;
+    // default:
+    //     break;
+    // }
     if (datacount != 0)
     {
         if(!pshsftPack_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, data, datacount))
@@ -355,9 +357,9 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         return 1;
     uint8_t type = EDS_CurrentExactolinkType;
     const uint8_t pck_id = EXACTOLINK_PCK_ID;
-    uint16_t address = 1;
-    const uint8_t addrH = (uint8_t) (address >> 8);
-    const uint8_t addrL = (uint8_t) (address);
+    // const uint16_t address = EXACTOLINK_DEVICE_ID;
+    const uint8_t addrL = (uint8_t) (EXACTOLINK_DEVICE_ID);
+    const uint8_t addrH = (uint8_t) (EXACTOLINK_DEVICE_ID >> 8);
     uint8_t lenH, lenL, data_start_point;
     uint32_t crc;
     uint16_t data_body_length, length;
@@ -826,10 +828,11 @@ uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info)
     info->packagetype = ExDtStr_TrasmitSPI_Info.packagetype;
     info->priority = ExDtStr_TrasmitSPI_Info.priority;
 
-    info->counter_raw[0] = ExDtStr_TrasmitSPI_Info.counter_raw[0];
-    info->counter_raw[1] = ExDtStr_TrasmitSPI_Info.counter_raw[1];
-    info->counter_raw[2] = ExDtStr_TrasmitSPI_Info.counter_raw[2];
-    info->counter_raw[3] = ExDtStr_TrasmitSPI_Info.counter_raw[3];
+    for (uint8_t i = 0; i < 4; i++)
+        info->counter_raw[i] = ExDtStr_TrasmitSPI_Info.counter_raw[i];
+    // info->counter_raw[1] = ExDtStr_TrasmitSPI_Info.counter_raw[1];
+    // info->counter_raw[2] = ExDtStr_TrasmitSPI_Info.counter_raw[2];
+    // info->counter_raw[3] = ExDtStr_TrasmitSPI_Info.counter_raw[3];
 
     info->length_raw[0] = ExDtStr_TrasmitSPI_Info.length_raw[0];
     info->length_raw[1] = ExDtStr_TrasmitSPI_Info.length_raw[1];

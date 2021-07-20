@@ -13,6 +13,7 @@ module services{
 }
 module data_storage {
 	option number exactolinkbuffersz=128
+	option number exactolink_id = 255
 	option boolean use_extended_fun=true
 	option boolean use_printk=false
 	source "exacto_data_storage.c"
