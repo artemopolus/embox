@@ -99,8 +99,9 @@ static int runTESMA_TimReceiver_Lthread(struct lthread * self)
 void printBufferData()
 {
 #ifdef SPI_TXRX_PRINT_ON
-    for (uint8_t i = 0; i < 5; i++)
-    printf("\033[A\33[2K\r");
+    // for (uint8_t i = 0; i < 5; i++)
+    // printf("\033[A\33[2K\r");
+
     // printf("\033[A\33[2K\r");
     // printf("\033[A\33[2K\r");
     // printf("\033[A\33[2K\r");
@@ -130,31 +131,31 @@ void printBufferData()
     //     printf("%d\t", value);
     // }
     int16_t x, y, z;
-    uint16_t buffer_length = ex_getLength_ExDtStr(EX_THR_SPi_TX);
+    // uint16_t buffer_length = ex_getLength_ExDtStr(EX_THR_SPi_TX);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point], &x);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 2], &y);
     ex_convertUint8ToInt16(&TESMA_ReceivedData[start_point + 4], &z);
 
-    printf("%d\t%d\t%d|%d %d|%d %d|%d %d|\n", x, y, z,
-                                TESMA_ReceivedData[start_point], TESMA_ReceivedData[start_point + 1],
-                                TESMA_ReceivedData[start_point+2], TESMA_ReceivedData[start_point + 3],
-                                TESMA_ReceivedData[start_point+4], TESMA_ReceivedData[start_point + 5]
-                                 );
-    printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d | Buf: %d | sns1: %d | sns2: %d",
-                        TESMA_MlineSpiEnableMarker, 
-                        TESMA_Tx_Buffer, 
-                        TESMA_Rx_Buffer, 
-                        TESMA_Tim_Buffer,
-                        buffer_length,
-                        TESMA_SnsCounters_Buffer[0],
-                        TESMA_SnsCounters_Buffer[1]
-                        );
-    if (TESMA_print_OutOverFlw_Marker)
-    {
-        TESMA_print_OutOverFlw_Marker = 0;
-        printf("| ovr: %d", TESMA_print_OutOverFlw_Value);
-    }
-    printf("\n");
+    // printf("%d\t%d\t%d|%d %d|%d %d|%d %d|\n", x, y, z,
+    //                             TESMA_ReceivedData[start_point], TESMA_ReceivedData[start_point + 1],
+    //                             TESMA_ReceivedData[start_point+2], TESMA_ReceivedData[start_point + 3],
+    //                             TESMA_ReceivedData[start_point+4], TESMA_ReceivedData[start_point + 5]
+    //                              );
+    // printf("Spi info: On: %d| Tx: %d| Rx: %d| Tim: %d | Buf: %d | sns1: %d | sns2: %d",
+    //                     TESMA_MlineSpiEnableMarker, 
+    //                     TESMA_Tx_Buffer, 
+    //                     TESMA_Rx_Buffer, 
+    //                     TESMA_Tim_Buffer,
+    //                     buffer_length,
+    //                     TESMA_SnsCounters_Buffer[0],
+    //                     TESMA_SnsCounters_Buffer[1]
+    //                     );
+    // if (TESMA_print_OutOverFlw_Marker)
+    // {
+    //     TESMA_print_OutOverFlw_Marker = 0;
+    //     printf("| ovr: %d", TESMA_print_OutOverFlw_Value);
+    // }
+    // printf("\n");
 #endif
     return; 
 }

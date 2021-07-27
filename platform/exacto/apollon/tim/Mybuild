@@ -6,4 +6,5 @@ module tim3 extends exacto.cmds.tests.timbase{
 	source "tim.h"
 	depends embox.kernel.lthread.lthread
 	depends exacto.commander.services
+	depends exacto.commander.data_storage
 }

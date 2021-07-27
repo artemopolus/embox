@@ -6,6 +6,8 @@
 
 #define EXACTO_DATA_STORAGE_TEST
 
+uint8_t EDS_spidmairq_Marker = 0;
+
 uint32_t ExDtStr_TransmitSPI_Counter = 0;
 uint32_t ExDtStr_TransmitSPI_TxCounter = 0;
 uint32_t ExDtStr_TransmitSPI_RxCounter = 0;

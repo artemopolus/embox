@@ -92,6 +92,7 @@ static irq_return_t tim_irq_handler(unsigned int irq_nr, void *data)
     /* Clear the update interrupt flag*/
     LL_TIM_ClearFlag_UPDATE(TIM3);
     ex_updateEventForSubs(ExTimServicesInfo, ExTimServices, EX_THR_TIM); 
+    EDS_spidmairq_Marker = 1;
   }
   /* lthread gogogogo */
   // lthread_launch(&tim_irq_lt);

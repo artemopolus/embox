@@ -197,6 +197,7 @@ static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data
     if (LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
     {
         LL_DMA_ClearFlag_GI5(DMA1);
+        EDS_spidmairq_Marker = 1;
         lthread_launch(&SPI2_FULL_DMA_tx_buffer.dt_lth);
     }
     return IRQ_HANDLED;
@@ -207,6 +208,7 @@ static irq_return_t SPI2_FULL_DMA_rx_irq_handler(unsigned int irq_nr, void *data
     if (LL_DMA_IsActiveFlag_TC4(DMA1) != RESET)
     {
         LL_DMA_ClearFlag_GI4(DMA1);
+        EDS_spidmairq_Marker = 1;
         lthread_launch(&SPI2_FULL_DMA_rx_buffer.dt_lth);
     }
     return IRQ_HANDLED;

@@ -69,8 +69,9 @@ uint8_t MarkerStage = 0xFF;
 static uint64_t SensorTickerCounter = 0;
 
 static uint16_t ExecuteSendCounter = 0;
+#ifdef PRINT_ON
 static uint16_t UploadSnsDataCounter = 0;
-
+#endif
 
 static exacto_sensors_list_t CurrentTargetSensor = LSM303AH;
 static uint8_t CurrentTargetSensor_isenabled  = 0;
@@ -93,9 +94,10 @@ uint16_t PrintTickerCounter = 0;
 //bar - 6
 //sum - 35
 //result - 64
+#ifdef PRINT_ON
 
 uint8_t DataToBuffer[TRANSMIT_MESSAGE_SIZE] = {0};
-
+#endif
 ex_service_transport_msg_t BufferToData;
 // uint8_t BufferToData[TRANSMIT_MESSAGE_SIZE] = {0};
 
@@ -261,6 +263,7 @@ uint8_t sendAndReceive(exacto_sensors_list_t sns, const uint8_t address, const u
     }
     return 0;
 }
+#ifdef PRINT_ON
 void uploadRecevedData( const uint8_t pt, const uint16_t start, const uint16_t datalen)
 {
     for (uint8_t i = 0; i < datalen; i++)
@@ -271,6 +274,7 @@ void uploadRecevedData( const uint8_t pt, const uint16_t start, const uint16_t d
     }
 
 }
+#endif
 static int runSensorTickerThread(struct lthread * self)
 {
     
@@ -378,27 +382,32 @@ static int runSNSSRV_SendAndUpload_Container(struct lthread * self)
         for (uint16_t i = 0; i < count; i++)
         {
             if(trg->sns[i].isenabled){
-                uint8_t cmd = trg->sns[i].address;
+                // uint8_t cmd = trg->sns[i].address;
                 exacto_sensors_list_t sns = trg->sns[i].sns;
                 uint16_t datalen = trg->sns[i].datalen;
+#ifdef PRINT_ON
                 uint16_t pt = trg->sns[i].pt2buffer;
+#endif
                 uint8_t shift = trg->sns[i].shift;
                 PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
-                PackageToGett.cmd = cmd;
+                PackageToGett.cmd = trg->sns[i].address;//cmd;
                 PackageToGett.datalen = datalen;
                 enableExactoSensor(sns);
-                uint16_t try_cnt = 0;
-                while (ex_gettSpiSns(&PackageToGett))
+                uint8_t try_cnt = 1;
+                if (ex_gettSpiSns(&PackageToGett))
                 {
-                    if (try_cnt > 3)
-                        break;
-                    try_cnt++;
+                    try_cnt = 0;
+                    // if (try_cnt > 3)
+                        // break;
+                    // try_cnt++;
                 }
                 disableExactoSensor(sns);
                 uint8_t tmp_length = (datalen - shift);
-                if(isXlGrDataReady(sns, PackageToGett.data[0]))
+                if(isXlGrDataReady(sns, PackageToGett.data[0]) && try_cnt)
                 {
+#ifdef PRINT_ON
                     uploadRecevedData(pt, shift, datalen);
+#endif
                     // setDataToExactoDataStorage(&PackageToGett.data[shift], (datalen-shift), EX_THR_CTRL_WAIT);
                     tmp_buffer_data[0] |= (uint8_t)sns;
                     for (uint8_t i = 0; i < tmp_length; i++)
@@ -425,6 +434,12 @@ static int runSNSSRV_SendAndUpload_Container(struct lthread * self)
             SNSSRV_PackRecv_Counter += enabled;
         }
         SNSSRV_SensorCheck_Counter = 0;
+        if ((tmp_buffer_index == 19)
+                                &&(tmp_buffer_data[17] == 0)
+                                &&(tmp_buffer_data[18] == 0)
+                                &&(tmp_buffer_data[0] & ISM330DLC)
+                                )
+                                printk("auch\n");
         setDataToExactoDataStorage(tmp_buffer_data, tmp_buffer_index, EX_THR_CTRL_WAIT);
     }
 
@@ -438,11 +453,13 @@ static int runSNSSRV_SendAndUpload_Container(struct lthread * self)
         SNSSRV_UploadData_Counter = 0;
     }
 
+#ifdef PRINT_ON
     if (enabled == count)
     {
         UploadSnsDataCounter++;
 
     }
+#endif
     // printk("!");
     return 0;
 }

@@ -19,6 +19,7 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
 #include "spi_sns.h"
+#include "kernel/printk.h"
 
 
 ex_subs_service_t ExSnsServices[EX_SPI_SERVICES_COUNT];
@@ -131,8 +132,10 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 }
 uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
 {
+    EDS_spidmairq_Marker = 0;
     const uint8_t address = output->cmd;
     uint8_t value = address | 0x80;
+    uint8_t result = 0;
 	// remember to reset CS --> LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
 	// while(!LL_SPI_IsActiveFlag_TXE(SPI1));
     // LL_SPI_Disable(SPI1);
@@ -146,14 +149,20 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     {
         i++;
         if (i > SPI_APPOLON_INDEX_MAX)
-            return 1;
+        {
+            result = 1;
+            break;
+        }
     }
     i = 0;
 	while(LL_SPI_IsActiveFlag_BSY(SPI1))
     {
         i++;
         if (i > SPI_APPOLON_INDEX_MAX)
-            return 1;
+        {
+            result = 1;
+            break;
+        }
     }
     // LL_SPI_Disable(SPI1);
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
@@ -172,7 +181,10 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     {
         i++;
         if (i > SPI_APPOLON_INDEX_MAX)
-            return 1;
+        {
+            result = 1;
+            break;
+        }
     }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
     // LL_SPI_Disable(SPI1);
@@ -181,11 +193,19 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     {
         i++;
         if (i > SPI_APPOLON_INDEX_MAX)
-            return 1;
+        {
+            result = 1;
+            break;
+        }
     }
     output->data[output->datalen - 1] = LL_SPI_ReceiveData8(SPI1);
 	// while(LL_SPI_IsActiveFlag_BSY(SPI1));
 	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1));
     // LL_SPI_Enable(SPI1);
-    return 0;
+    if (EDS_spidmairq_Marker)
+    {
+        printk("irq\n");
+        result = 1;
+    }
+    return result;
 }

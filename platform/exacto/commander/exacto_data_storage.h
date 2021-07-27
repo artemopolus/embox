@@ -137,6 +137,9 @@ typedef struct{
 }exactolink_package_info_t;
 
 // переменные
+
+extern uint8_t EDS_spidmairq_Marker;
+
 extern ex_subs_service_t ExDataStorageServices[SERVICES_COUNT];
 extern ex_service_info_t ExDataStorageServicesInfo;
 
