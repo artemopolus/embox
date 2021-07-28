@@ -23,6 +23,7 @@ static irq_return_t gpio_spi_irq_handler(unsigned int irq_nr, void *data)
     /* Manage code in main.c.*/
     // UserButton_Callback(); 
     }
+    EDS_spidmairq_Marker = 1;
     return IRQ_HANDLED;
 }
 // STATIC_IRQ_ATTACH(40, gpio_spi_irq_handler, NULL);

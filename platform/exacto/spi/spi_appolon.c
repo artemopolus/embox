@@ -132,6 +132,10 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 }
 uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
 {
+	ipl_t ipl;
+
+	ipl = ipl_save();
+
     EDS_spidmairq_Marker = 0;
     const uint8_t address = output->cmd;
     uint8_t value = address | 0x80;
@@ -204,8 +208,9 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     // LL_SPI_Enable(SPI1);
     if (EDS_spidmairq_Marker)
     {
-        printk("irq\n");
+        // printk("irq\n");
         result = 1;
     }
+	ipl_restore(ipl);
     return result;
 }

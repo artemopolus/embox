@@ -434,12 +434,12 @@ static int runSNSSRV_SendAndUpload_Container(struct lthread * self)
             SNSSRV_PackRecv_Counter += enabled;
         }
         SNSSRV_SensorCheck_Counter = 0;
-        if ((tmp_buffer_index == 19)
-                                &&(tmp_buffer_data[17] == 0)
-                                &&(tmp_buffer_data[18] == 0)
-                                &&(tmp_buffer_data[0] & ISM330DLC)
-                                )
-                                printk("auch\n");
+        // if ((tmp_buffer_index == 19)
+        //                         &&(tmp_buffer_data[17] == 0)
+        //                         &&(tmp_buffer_data[18] == 0)
+        //                         &&(tmp_buffer_data[0] & ISM330DLC)
+        //                         )
+        //                         printk("auch\n");
         setDataToExactoDataStorage(tmp_buffer_data, tmp_buffer_index, EX_THR_CTRL_WAIT);
     }
 
