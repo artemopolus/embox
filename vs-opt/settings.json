@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "exacto_sensors.h": "c",
+        "system_stm32f1xx.h": "c",
+        "unit.h": "c"
+    }
+}
