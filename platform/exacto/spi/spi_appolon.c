@@ -102,6 +102,8 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
         if (i > SPI_APPOLON_INDEX_MAX)
             return 1;
     }
+    // for (SPI_APPOLON_INDEX_SZ_INT i = 0; !LL_SPI_IsActiveFlag_TXE(SPI1);i++)
+        // if (i > SPI_APPOLON_INDEX_MAX) return 1;
 	// while(LL_SPI_IsActiveFlag_BSY(SPI1));
     LL_SPI_TransmitData8(SPI1, mask);
     i = 0;
