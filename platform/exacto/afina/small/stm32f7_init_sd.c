@@ -92,11 +92,11 @@ EndDependencies */
 #undef SD_DETECT_GPIO_CLK_DISABLE         
 #undef SD_DETECT_EXTI_IRQn                  
 
-#define SD_DETECT_PIN                        GPIO_PIN_3
-#define SD_DETECT_GPIO_PORT                  GPIOB
-#define SD_DETECT_GPIO_CLK_ENABLE()          __HAL_RCC_GPIOB_CLK_ENABLE()
-#define SD_DETECT_GPIO_CLK_DISABLE()         __HAL_RCC_GPIOB_CLK_DISABLE()
-#define SD_DETECT_EXTI_IRQn                  EXTI3_IRQn
+#define SD_DETECT_PIN                        GPIO_PIN_15
+#define SD_DETECT_GPIO_PORT                  GPIOA
+#define SD_DETECT_GPIO_CLK_ENABLE()          __HAL_RCC_GPIOA_CLK_ENABLE()
+#define SD_DETECT_GPIO_CLK_DISABLE()         __HAL_RCC_GPIOA_CLK_DISABLE()
+#define SD_DETECT_EXTI_IRQn                  EXTI15_10_IRQn
 
 /** @addtogroup BSP
   * @{
