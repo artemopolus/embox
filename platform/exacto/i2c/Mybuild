@@ -1,0 +1,24 @@
+package exacto.i2c
+
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module mliner_afina {
+	source "i2c_afina_mliner.c"
+	@IncludeExport(path="spi")
+	source "i2c_mliner.h"
+    	depends exacto.commander.data_storage
+	depends exacto.afina.gpio.gpio_spi
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module mliner_apollon {
+	source "i2c_apollon_mliner.c"
+	@IncludeExport(path="spi")
+	source "i2c_mliner.h"
+	depends exacto.commander.data_storage
+	depends exacto.cmds.perf_tests.ex_utils
+	depends exacto.apollon.gpio.gpio_spi
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+}
