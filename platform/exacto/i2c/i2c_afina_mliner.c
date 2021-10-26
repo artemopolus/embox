@@ -18,12 +18,6 @@
 #include "i2c_mliner.h"
 
 
-#include <errno.h>
-#include <embox/unit.h>
-#include <kernel/irq.h>
-#include <kernel/lthread/lthread.h>
-#include <kernel/lthread/sync/mutex.h>
-#include <kernel/printk.h>
 #include "commander/exacto_data_storage.h"
 
 
@@ -40,6 +34,15 @@ static buffer RX_buffer = {
 	.is_enabled = 0,
 	.dt_count = BUFFER_SIZE_I2C_MLINER,
 };
+static buffer TX_buffer = {
+	.is_enabled = 0,
+	.dt_count = BUFFER_SIZE_I2C_MLINER,
+};
+
+
+static uint8_t IsEnabled = 0;
+static irq_return_t RX_DmaHandler(unsigned int irq_nr, void *data);
+static irq_return_t TX_DmaHandler(unsigned int irq_nr, void *data);
 
 EMBOX_UNIT_INIT(init_I2C_MLINER);
 static int init_I2C_MLINER(void)
@@ -103,7 +106,7 @@ static int init_I2C_MLINER(void)
   I2C_InitStruct.Timing = 0x20404768;
   I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_ENABLE;
   I2C_InitStruct.DigitalFilter = 0;
-  I2C_InitStruct.OwnAddress1 = 0;
+  I2C_InitStruct.OwnAddress1 = 154;
   I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;
   I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
   LL_I2C_Init(I2C1, &I2C_InitStruct);
@@ -112,24 +115,40 @@ static int init_I2C_MLINER(void)
     // DMA1_STREAM_0 -> RX
     LL_DMA_ConfigAddresses(DMA1, 
                             LL_DMA_STREAM_0,
-                           LL_I2C_DMA_GetRegAddr(I2C1), (uint32_t)RX_buffer.dt_buffer,
+                           LL_I2C_DMA_GetRegAddr(I2C1, LL_I2C_DMA_REG_DATA_RECEIVE), (uint32_t)RX_buffer.dt_buffer,
                            LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_STREAM_0));
     LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_0, RX_buffer.dt_count);    
     // DMA1_STREAM_6 -> TX
+    LL_DMA_ConfigAddresses(DMA1, LL_DMA_STREAM_6,
+			(uint32_t)TX_buffer.dt_buffer, (uint32_t)LL_I2C_DMA_GetRegAddr(I2C1, LL_I2C_DMA_REG_DATA_TRANSMIT),
+			LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_STREAM_6));
+
 
 
     /* DMA interrupts */
     LL_DMA_EnableIT_TC(DMA1, LL_DMA_STREAM_0);
     LL_DMA_EnableIT_TE(DMA1, LL_DMA_STREAM_0); 
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_STREAM_6);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_STREAM_6); 
 
     /* embox specific section  */
     irq_attach(11, RX_DmaHandler, 0, NULL, "I2C1 rx DMA handler");
-
-    LL_I2C_EnableDMAReq_RX(I2C1);
-    /* enable i2c */
-    LL_I2C_Enable(I2C1);
+    irq_attach(17, TX_DmaHandler, 0, NULL, "I2C1 rx DMA handler");
+    
 
 	return 0;
+}
+void enable_I2C_MLINER(void)
+{
+  if(!IsEnabled)
+  { 
+    /* enable i2c */
+    LL_I2C_EnableDMAReq_RX(I2C1);
+    LL_I2C_EnableDMAReq_TX(I2C1);
+    LL_I2C_Enable(I2C1);
+    IsEnabled = 1;
+  }
+
 }
 
 static irq_return_t RX_DmaHandler(unsigned int irq_nr, void *data)
@@ -137,13 +156,24 @@ static irq_return_t RX_DmaHandler(unsigned int irq_nr, void *data)
     if (LL_DMA_IsActiveFlag_TC0(DMA1) != RESET)
     {
         LL_DMA_ClearFlag_TC0(DMA1);
-	lthread_launch(&RX_buffer.dt_lth);
+	if (RX_buffer.is_enabled)
+		lthread_launch(&RX_buffer.dt_lth);
     }
     return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(11, RX_DmaHandler, NULL); 
 //  DMA1_Stream0_IRQn           = 11,     /*!< DMA1 Stream 0 global Interrupt
-
+static irq_return_t TX_DmaHandler(unsigned int irq_nr, void *data)
+{
+    if (LL_DMA_IsActiveFlag_TC6(DMA1) != RESET)
+    {
+        LL_DMA_ClearFlag_TC6(DMA1);
+	if (TX_buffer.is_enabled)
+		lthread_launch(&TX_buffer.dt_lth);
+    }
+    return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(17, TX_DmaHandler, NULL); 
 //DMA1_Stream6_IRQn           = 17,     /*!< DMA1 Stream 6 global Interrupt   
 void bind_TX_thread_I2C_MLINER(int (*run)(struct lthread *))
 {
@@ -157,9 +187,17 @@ void bind_RX_thread_I2C_MLINER(int (*run)(struct lthread *))
 {
 
 }
-void transmit_I2C_MLINER(uint8_t * data, const uint16_t datalen)
+void transmit_I2C_MLINER(uint8_t * data, const uint16_t datalen, uint32_t address)
 {
+  /* (1) Enable DMA transfer **************************************************/
+  LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_6);
+  /* (2) Initiate a Start condition to the Slave device ***********************/
 
+  /* Master Generate Start condition for a write request:
+   *  - to the Slave with a 7-Bit SLAVE_OWN_ADDRESS
+   *  - with a auto stop condition generation when transmit all bytes
+   */
+  LL_I2C_HandleTransfer(I2C1, address, LL_I2C_ADDRSLAVE_7BIT, BUFFER_SIZE_I2C_MLINER, LL_I2C_MODE_AUTOEND, LL_I2C_GENERATE_START_WRITE);
 }
 void receive_I2C_MLINER(uint8_t * data, const uint16_t datalen)
 {

@@ -1,0 +1,14 @@
+package exacto.cmds.i2c
+
+@AutoCmd
+@Cmd(name="i2c_test_MTx", help=" Test for i2c ", man='''
+AUTHOR Kuznetcov
+''')
+module test_mtx {
+    source "i2c_test_MTx.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	//depends exacto.commander.data_storage
+	depends exacto.i2c.mliner_afina
+}
