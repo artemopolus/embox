@@ -31,7 +31,7 @@ module mliner_apollon {
 	depends embox.kernel.lthread.sync.mutex
 }
 @BuildDepends(third_party.bsp.stmf7cube.cube)
-module mline_afina_main {
+module mline_main {
 	source "spi_mline_afina_main.c"
 	@IncludeExport(path="spi")
 	source "spi_mliner.h"
