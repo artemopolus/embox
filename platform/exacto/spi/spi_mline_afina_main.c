@@ -33,7 +33,7 @@ static uint32_t     SAM_Ticker_Start = 0,
                     SAM_Ticker_Result = 0;
 #endif
 
-#include "gpio/gpio.h"
+#include "gpio/gpio_spi.h"
 
 #define SAM_PACKAGE_START_POINTER 2
 static uint16_t SAM_PackageStart_Buffer = SAM_PACKAGE_START_POINTER;
@@ -100,7 +100,7 @@ static int SPI1_FULL_DMA_init(void)
 
     /* Peripheral clock enable */
     //LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI1);
-    SPI_MLINE_ENABLE_CLOCK
+    SPI_MLINE_ENABLE_CLOCK_SPI
 
     //LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
     //LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);

@@ -19,25 +19,25 @@ module disabler{
 
 	depends exacto.apollon.spi.spi2slave
 }
-@AutoCmd
-@Cmd(name="disable_spi_master", help=" Test  ", man='''
-AUTHOR Kuznetcov
-''')
-module disable_spi_master{
-    source "disable_spi_master.c"
-	depends exacto.afina.spi.spi1master
+// @AutoCmd
+// @Cmd(name="disable_spi_master", help=" Test  ", man='''
+// AUTHOR Kuznetcov
+// ''')
+// module disable_spi_master{
+//     source "disable_spi_master.c"
+// 	depends exacto.afina.spi.spi1master
 
-}
-@AutoCmd
-@Cmd(name="enable_spi_master", help=" Test  ", man='''
-AUTHOR Kuznetcov
-''')
-module enable_spi_master{
-    source "enable_spi_master.c"
-	depends exacto.afina.spi.spi1master
-	depends exacto.afina.gpio.gpio_spi
+// }
+// @AutoCmd
+// @Cmd(name="enable_spi_master", help=" Test  ", man='''
+// AUTHOR Kuznetcov
+// ''')
+// module enable_spi_master{
+//     source "enable_spi_master.c"
+// 	depends exacto.afina.spi.spi1master
+// 	depends exacto.afina.gpio.gpio_spi
 
-}
+// }
 @AutoCmd
 @Cmd(name="spi_txrx", help=" Test for sending test array throw spi dma ", man='''
 AUTHOR Kuznetcov

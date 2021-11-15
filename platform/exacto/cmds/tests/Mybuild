@@ -57,21 +57,21 @@ module print_to_sd{
 	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 }
-@AutoCmd
-@Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''
-AUTHOR Kuznetcov
-''')
-module spi_dma_one_txrx {
-	source "spi_dma_one_txrx.c"
+// @AutoCmd
+// @Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''
+// AUTHOR Kuznetcov
+// ''')
+// module spi_dma_one_txrx {
+// 	source "spi_dma_one_txrx.c"
 
-	depends embox.compat.posix.util.sleep
-	depends embox.kernel.lthread.lthread
-	depends embox.kernel.lthread.sync.mutex
-	depends exacto.cmds.tests.spi_dev
-	depends exacto.commander.data_storage
-	depends exacto.afina.spi.spi1master
-	depends exacto.afina.gpio.gpio_spi
-}
+// 	depends embox.compat.posix.util.sleep
+// 	depends embox.kernel.lthread.lthread
+// 	depends embox.kernel.lthread.sync.mutex
+// 	depends exacto.cmds.tests.spi_dev
+// 	depends exacto.commander.data_storage
+// 	depends exacto.afina.spi.spi1master
+// 	depends exacto.afina.gpio.gpio_spi
+// }
 abstract module spi_dev{
 
 }

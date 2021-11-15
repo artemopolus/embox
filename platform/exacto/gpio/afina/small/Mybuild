@@ -1,6 +1,6 @@
 package exacto.gpio.afina.small
 
-module config extends exacto.afina.gpio.config
+module config extends exacto.gpio.config
 {
 	@IncludeExport(path="")
 	source "gpio_config.h"
