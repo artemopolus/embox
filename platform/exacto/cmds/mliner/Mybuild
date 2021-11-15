@@ -110,6 +110,7 @@ module spi_main{
 	depends exacto.commander.data_storage
 	depends exacto.spi.mline_main
 	depends exacto.gpio.mline_spi_main
+	depends exacto.gpio.led
 	depends exacto.commander.filemanager
 //	depends exacto.sensors.datatools
 

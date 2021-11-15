@@ -24,7 +24,8 @@
 // #include "sensors/exacto_datatools.h"
 
 #include "spi/spi_mliner.h"
-#include "gpio/gpio.h"
+#include "gpio/gpio_spi.h"
+#include "gpio/gpio_led.h"
 #ifdef TESMAF_TICK_VIZ
 #include "ex_utils.h"
 

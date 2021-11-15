@@ -27,4 +27,20 @@
 #define SPI_MLINE_DMA_IRQ_RX 56
 #define SPI_MLINE_DMA_IRQ_TX 59
 
+
+#define LED_RED_PIN
+#define LED_RED_PORT 
+//#define LED_RED_ON 
+
+#define LED_GREEN_PIN LL_GPIO_PIN_1
+#define LED_GREEN_PORT GPIOE
+#define LED_GREEN_ON
+
+#define LED_BLUE_PIN LL_GPIO_PIN_4
+#define LED_BLUE_PORT GPIOE
+#define LED_BLUE_ON 
+
+
+#define LED_ENABLE_CLOCK LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOE);
+
 #endif
