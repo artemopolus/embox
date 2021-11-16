@@ -97,7 +97,7 @@ module ex_spi_mline_afina{
 	depends exacto.cmds.perf_tests.ex_utils
 }
 @AutoCmd
-@Cmd(name="test_ex_spi_mline_main", help=" Performance test for SD printer", man='''
+@Cmd(name="test_ex_spi_mline_main", help=" Test for Mline Apollon -- Afina", man='''
 AUTHOR Kuznetcov
 ''')
 module spi_main{

@@ -1,0 +1,8 @@
+package exacto.gpio.afina.basis
+
+module config extends exacto.gpio.config
+{
+	@IncludeExport(path="")
+	source "gpio_config.h"
+
+}
