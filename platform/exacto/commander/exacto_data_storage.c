@@ -55,11 +55,11 @@ int16_t ExDtStr_Tmp_Str[EXDTSTR_SINGLE_DATA_STR_LENGTH] = {0};
 
 ex_thread_control_t SetupParamsThread;
 
-ex_thread_control_t TickReactionThread = {
-    .datalen = 0,
-    .datamaxcount = 10,
-    .result = EX_THR_CTRL_WAIT,
-};
+// ex_thread_control_t TickReactionThread = {
+//     .datalen = 0,
+//     .datamaxcount = 10,
+//     .result = EX_THR_CTRL_WAIT,
+// };
 
 uint8_t ex_setExactolinkType( exactolink_package_result_t new_type)
 {
@@ -71,29 +71,29 @@ uint8_t ex_getExactolinkType( exactolink_package_result_t * type)
     *type = EDS_CurrentExactolinkType;
     return 0;
 }
-static int runTickReactionThread(struct lthread * self)
-{
-    TickReactionThread.datalen++;
-    if (TickReactionThread.datalen > TickReactionThread.datamaxcount)
-    {
-        if (TickReactionThread.result == EX_THR_CTRL_WAIT)
-        {
-            // setSysLedOn();
-            TickReactionThread.result = EX_THR_CTRL_OK;
-        }
-        else
-        {
-            // setSysLedOff();
-            TickReactionThread.result = EX_THR_CTRL_WAIT;
-        }
-        TickReactionThread.datalen = 0;
-    }
-    return 0;
-}
+// static int runTickReactionThread(struct lthread * self)
+// {
+//     TickReactionThread.datalen++;
+//     if (TickReactionThread.datalen > TickReactionThread.datamaxcount)
+//     {
+//         if (TickReactionThread.result == EX_THR_CTRL_WAIT)
+//         {
+//             // setSysLedOn();
+//             TickReactionThread.result = EX_THR_CTRL_OK;
+//         }
+//         else
+//         {
+//             // setSysLedOff();
+//             TickReactionThread.result = EX_THR_CTRL_WAIT;
+//         }
+//         TickReactionThread.datalen = 0;
+//     }
+//     return 0;
+// }
 
 void startTickReactionThread( )
 {
-    lthread_launch(&TickReactionThread.thread);
+    // lthread_launch(&TickReactionThread.thread);
 }
 
 static int setupParamsThreadRun(struct lthread * self)
@@ -177,7 +177,7 @@ static int initExactoDataStorage(void)
     mutex_init_schedee(&ExDtStorage.dtmutex);
     lthread_init(&ResetThread, resetThreadRun);
     lthread_init(&SetupParamsThread.thread, setupParamsThreadRun);
-    lthread_init(&TickReactionThread.thread, runTickReactionThread);
+    // lthread_init(&TickReactionThread.thread, runTickReactionThread);
     ExDtStr_Output_Storage[0].type = EX_THR_SPi_RX;
     ExDtStr_Output_Storage[1].type = EX_THR_SPi_TX;
     // ExDtStr_Output_Storage[2].type = EX_THR_STR_CALC_IN;

@@ -9,25 +9,25 @@
 #include <kernel/lthread/sync/mutex.h>
 #include "gpio/gpio.h"
 
-static struct lthread   Ex_Gpio_Lthread;
+//static struct lthread   Ex_Gpio_Lthread;
 uint8_t                 Ex_Gpio_IsEnabled = 0;
 
-static irq_return_t gpio_spi_irq_handler(unsigned int irq_nr, void *data)
-{
-    if(LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_7) != RESET)
-    {
-        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_7);
-        if (Ex_Gpio_IsEnabled)
-            lthread_launch(&Ex_Gpio_Lthread);
+// static irq_return_t gpio_spi_irq_handler(unsigned int irq_nr, void *data)
+// {
+//     if(LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_7) != RESET)
+//     {
+//         LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_7);
+//         //if (Ex_Gpio_IsEnabled)
+//         //    lthread_launch(&Ex_Gpio_Lthread);
 
-    /* Manage code in main.c.*/
-    // UserButton_Callback(); 
-    }
-    EDS_spidmairq_Marker = 1;
-    return IRQ_HANDLED;
-}
-// STATIC_IRQ_ATTACH(40, gpio_spi_irq_handler, NULL);
-STATIC_IRQ_ATTACH(23, gpio_spi_irq_handler, NULL);
+//     /* Manage code in main.c.*/
+//     // UserButton_Callback(); 
+//     }
+//     EDS_spidmairq_Marker = 1;
+//     return IRQ_HANDLED;
+// }
+// // STATIC_IRQ_ATTACH(40, gpio_spi_irq_handler, NULL);
+// STATIC_IRQ_ATTACH(23, gpio_spi_irq_handler, NULL);
 
 EMBOX_UNIT_INIT(initSpiGpio);
 static int initSpiGpio(void)
@@ -44,19 +44,19 @@ static int initSpiGpio(void)
     
     //sda pb7
     
-    LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
-    EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_7;
-    EXTI_InitStruct.LineCommand = ENABLE;
-    EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
-    EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING_FALLING;
-    LL_GPIO_AF_SetEXTISource(LL_GPIO_AF_EXTI_PORTB, LL_GPIO_AF_EXTI_LINE7);
-    LL_EXTI_Init(&EXTI_InitStruct);
-    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_FLOATING );
+    // LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
+    // EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_7;
+    // EXTI_InitStruct.LineCommand = ENABLE;
+    // EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
+    // EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING_FALLING;
+    // LL_GPIO_AF_SetEXTISource(LL_GPIO_AF_EXTI_PORTB, LL_GPIO_AF_EXTI_LINE7);
+    // LL_EXTI_Init(&EXTI_InitStruct);
+    // LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_FLOATING );
 
 
     LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_INPUT );
     // irq_attach(40, gpio_spi_irq_handler, 0, NULL, "gpio spi irq handler");
-    irq_attach(23, gpio_spi_irq_handler, 0, NULL, "gpio spi irq handler");
+    // irq_attach(23, gpio_spi_irq_handler, 0, NULL, "gpio spi irq handler");
     return 0;
 }
 
@@ -89,7 +89,7 @@ uint8_t ex_subscribeOnGpioEvent( exacto_gpio_types_t type ,int (*run)(struct lth
 {
     if (Ex_Gpio_IsEnabled)
         return 1;
-    lthread_init(&Ex_Gpio_Lthread, run);
+   // lthread_init(&Ex_Gpio_Lthread, run);
     Ex_Gpio_IsEnabled = 1;
     return 0;
 }
