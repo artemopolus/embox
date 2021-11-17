@@ -1,6 +1,24 @@
 #ifndef GPIO_CONFIG_H
 #define  GPIO_CONFIG_H
 
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx_ll_dma.h"
+#include "stm32f7xx.h"
+#include "stm32f7xx_ll_i2c.h"
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx_ll_spi.h"
+#include "stm32f7xx_ll_usart.h"
+#include "stm32f7xx_ll_rcc.h"
+#include "stm32f7xx_ll_system.h"
+#include "stm32f7xx_ll_gpio.h"
+#include "stm32f7xx_ll_exti.h"
+#include "stm32f7xx_ll_bus.h"
+#include "stm32f7xx_ll_cortex.h"
+#include "stm32f7xx_ll_utils.h"
+#include "stm32f7xx_ll_pwr.h"
+
+#define GPIO_AFINA_BASIS_CONFIG_ENABLED
+
 #define SPI_MLINE_SPI SPI1
 
 #define SPI_MLINE_ENABLE_CLOCK_SPI LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI1);
@@ -22,7 +40,7 @@
 #define SPI_MLINE_DMA DMA2
 #define SPI_MLINE_DMA_STREAM_TX	LL_DMA_STREAM_5
 #define SPI_MLINE_DMA_STREAM_RX	LL_DMA_STREAM_0
-#define SPI_MLINE_DMA_CHANNEL LL_DMA_CHANNEL_5
+#define SPI_MLINE_DMA_CHANNEL LL_DMA_CHANNEL_3
 
 #define SPI_MLINE_DMA_IRQ_RX 56
 #define SPI_MLINE_DMA_IRQ_TX 68

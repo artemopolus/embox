@@ -24,6 +24,10 @@
 
 #include "gpio_config.h"
 
+#ifndef GPIO_AFINA_BASIS_CONFIG_ENABLED
+#error Unsupported platform
+#endif
+
 #define SAM_TICK_VIZ
 
 #ifdef SAM_TICK_VIZ

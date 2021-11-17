@@ -70,7 +70,7 @@ void ex_toggleGpio(exacto_gpio_types_t type)
         LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_12);
         break;
     case EX_GPIO_SPI_SYNC:
-        LL_GPIO_TogglePin(GPIOF, LL_GPIO_PIN_15);
+        // LL_GPIO_TogglePin(GPIOF, LL_GPIO_PIN_15);
         break;
     default:
         break;
@@ -84,7 +84,7 @@ void ex_enableGpio(exacto_gpio_types_t type)
         LL_GPIO_SetOutputPin(GPIOE, LL_GPIO_PIN_12);
         break;
     case EX_GPIO_SPI_SYNC:
-        LL_GPIO_SetOutputPin(GPIOF, LL_GPIO_PIN_15);
+        // LL_GPIO_SetOutputPin(GPIOF, LL_GPIO_PIN_15);
         break;
     default:
         break;
@@ -98,7 +98,7 @@ void ex_disableGpio(exacto_gpio_types_t type)
         LL_GPIO_ResetOutputPin(GPIOE, LL_GPIO_PIN_12);
         break;
     case EX_GPIO_SPI_SYNC:
-        LL_GPIO_ResetOutputPin(GPIOF, LL_GPIO_PIN_15);
+        // LL_GPIO_ResetOutputPin(GPIOF, LL_GPIO_PIN_15);
         break;
     default:
         break;
@@ -119,7 +119,7 @@ static int initSpiGpio(void)
 
     //i2c4 sda using pf15
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOF);
-    LL_GPIO_SetPinMode(GPIOF, LL_GPIO_PIN_15, LL_GPIO_MODE_OUTPUT );
+    // LL_GPIO_SetPinMode(GPIOF, LL_GPIO_PIN_15, LL_GPIO_MODE_OUTPUT );
 
     LL_GPIO_SetPinMode(GPIOE, LL_GPIO_PIN_12, LL_GPIO_MODE_OUTPUT );
     LL_GPIO_SetPinMode(GPIOE, LL_GPIO_PIN_7, LL_GPIO_MODE_OUTPUT );

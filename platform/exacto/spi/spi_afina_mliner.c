@@ -369,7 +369,7 @@ static int SPI1_FULL_DMA_transmit(struct lthread * self)
 #endif
     if (SPI1_Sync_Marker)
     {
-        ex_toggleGpio(EX_GPIO_SPI_SYNC);    
+        //ex_toggleGpio(EX_GPIO_SPI_SYNC);    
     }
     if ((ExDtStr_Output_Storage[EX_THR_SPi_RX].isready)&&(ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_OK))
     {

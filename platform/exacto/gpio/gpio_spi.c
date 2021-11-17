@@ -10,6 +10,10 @@
 
 #include "gpio_config.h"
 
+#ifndef GPIO_AFINA_BASIS_CONFIG_ENABLED
+#error Unsupported platform
+#endif
+
 void ex_toggleGpio(exacto_gpio_types_t type)
 {
     switch (type)
