@@ -11,24 +11,24 @@ module services{
 
 
 }
-module data_storage {
-	option number exactolinkbuffersz=128
-	option boolean use_extended_fun=true
-	option boolean use_printk=false
-	source "exacto_data_storage.c"
-	@IncludeExport(path="commander")
-	source "exacto_data_storage.h"
+//abstract module data_storage {
+	// option number exactolinkbuffersz=128
+	// option boolean use_extended_fun=true
+	// option boolean use_printk=false
+	// source "exacto_data_storage.c"
+	// @IncludeExport(path="commander")
+	// source "exacto_data_storage.h"
 
-	depends embox.compat.posix.util.sleep
-	depends embox.kernel.lthread.lthread
-	depends embox.kernel.lthread.sync.mutex
+	// depends embox.compat.posix.util.sleep
+	// depends embox.kernel.lthread.lthread
+	// depends embox.kernel.lthread.sync.mutex
 
-	depends exacto.commander.buffer	
-	//depends exacto.commander.blink	
-	depends exacto.commander.services
-	depends exacto.hardtools.basic
-	depends exacto.commander.tools
-}
+	// depends exacto.commander.buffer	
+	// //depends exacto.commander.blink	
+	// depends exacto.commander.services
+	// depends exacto.hardtools.basic
+	// depends exacto.commander.tools
+//}
 module buffer{
 	option number buffersz=512
 	option number extbuffersz=1024

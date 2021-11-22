@@ -1,0 +1,29 @@
+package exacto.commander
+
+abstract module data_storage
+{}
+
+module data_storage_refs {
+	option number exactolinkbuffersz=128
+	option boolean use_extended_fun=true
+	option boolean use_printk=false
+	@IncludeExport(path="commander")
+	source "exacto_data_storage_refs.h"
+}
+@BuildDepends(data_storage_refs)
+module data_storage_apollon extends data_storage {
+	source "exacto_data_storage_apollon.c"
+	@IncludeExport(path="commander")
+	source "exacto_data_storage.h"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	depends exacto.commander.buffer	
+	//depends exacto.commander.blink	
+	depends exacto.commander.services
+	depends exacto.hardtools.basic
+	depends exacto.commander.tools
+    @NoRuntime depends data_storage_refs
+}
