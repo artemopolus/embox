@@ -45,7 +45,7 @@ module filemanager
 	source "exacto_filemanager.c"
 	@IncludeExport(path="commander")
 	source "exacto_filemanager.h"
-
+	depends exacto.commander.data_storage
 }
 module tools {
 	source "exacto_tools.c"
