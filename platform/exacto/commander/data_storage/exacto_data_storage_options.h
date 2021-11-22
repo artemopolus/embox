@@ -3,15 +3,15 @@
 #include <errno.h>
 
 #include <framework/mod/options.h>
-#include <module/exacto/commander/data_storage_refs.h>
-#define MODOPS_EXACTOLINK_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__data_storage_refs, NUMBER, exactolinkbuffersz)
+#include <module/exacto/commander/data_storage_options.h>
+#define MODOPS_EXACTOLINK_BUFFER_SZ OPTION_MODULE_GET(exacto__commander__data_storage_options, NUMBER, exactolinkbuffersz)
 
-#define MODOPS_USE_EXTENDED_FUN OPTION_MODULE_GET(exacto__commander__data_storage_refs, BOOLEAN, use_extended_fun)
+#define MODOPS_USE_EXTENDED_FUN OPTION_MODULE_GET(exacto__commander__data_storage_options, BOOLEAN, use_extended_fun)
 #if MODOPS_USE_EXTENDED_FUN
 #define EXDTSTR_EXTENDED
 #endif
 
-#define MODOPS_USE_PRINTK OPTION_MODULE_GET(exacto__commander__data_storage_refs, BOOLEAN, use_printk)
+#define MODOPS_USE_PRINTK OPTION_MODULE_GET(exacto__commander__data_storage_options, BOOLEAN, use_printk)
 #if MODOPS_USE_PRINTK
 #define PRINTK_ID_FOR_THREAD_ON
 #endif

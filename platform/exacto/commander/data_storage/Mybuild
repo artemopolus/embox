@@ -3,14 +3,14 @@ package exacto.commander
 abstract module data_storage
 {}
 
-module data_storage_refs {
+module data_storage_options {
 	option number exactolinkbuffersz=128
 	option boolean use_extended_fun=true
 	option boolean use_printk=false
 	@IncludeExport(path="commander")
-	source "exacto_data_storage_refs.h"
+	source "exacto_data_storage_options.h"
 }
-@BuildDepends(data_storage_refs)
+@BuildDepends(data_storage_options)
 module data_storage_apollon extends data_storage {
 	source "exacto_data_storage_apollon.c"
 	@IncludeExport(path="commander")
@@ -25,5 +25,5 @@ module data_storage_apollon extends data_storage {
 	depends exacto.commander.services
 	depends exacto.hardtools.basic
 	depends exacto.commander.tools
-    @NoRuntime depends data_storage_refs
+    @NoRuntime depends data_storage_options
 }
