@@ -346,6 +346,7 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         {
             printf("%d\t",TESMAF_ReceivedData_Data[i]);
         }
+        printf("\n TiM: %d", TESP_TimReceiver_Buffer);
         printf("\n|%d|RefCnt: %d| Tx: %d| Rx: %d| Chck: %d| Scs: %d ", value, TESMAF_ReceivedData_Info.counter,
                      TESMAF_Rx_Buffer, TESMAF_Tx_Buffer, TESMAF_DataCheck_CntBuff, TESMAF_DataCheck_ScsBuff);
         printf("Dbl: %d| Lst: %d| OvrFlw: %d| Call: %d | Inp: %d | Upd: %d\n",TESMAF_print_DbleCnt, TESMAF_print_LostCnt, TESMAF_print_OverFlw,

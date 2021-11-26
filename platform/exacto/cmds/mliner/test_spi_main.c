@@ -207,6 +207,7 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
         {
             ex_getRawDataStr_ExDtStr(TESMAF_ReceivedData_Data, 6);
         }
+        TESMAF_WindowPrinter_Marker = 2;
     }
     return 0;
 }
@@ -343,6 +344,7 @@ static void * runTESP_WindowPrinter_Thread(void * arg)
         mutex_lock(&TESP_WindowPrinter_Mutex);
         printf("Data received:\n");
 #ifndef PRINTK_ID_FOR_THREAD_ON
+        printf("\033[A\33[2K\r\033[A\33[2K\r\033[A\33[2K\r");
         for (int i = 0; i < TESMAF_RECEIVED_DATA_SZ; i++)
         {
             printf("%d\t",TESMAF_ReceivedData_Data[i]);
@@ -364,6 +366,7 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("!");
 #endif
+    // printk("!");
 
     TESP_TimReceiver_Counter++;
     if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
