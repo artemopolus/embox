@@ -184,7 +184,6 @@ uint8_t ex_switchStage_SnsService(exactolink_package_result_t type)
         return 1;
         break;
     case EXACTOLINK_LSM303AH_TYPE0:
-        // sendOptions(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah);
         sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
         for (uint8_t i = 0; i < SNSSRV_SendAndUpload_Container.sns_count; i++)
         {
