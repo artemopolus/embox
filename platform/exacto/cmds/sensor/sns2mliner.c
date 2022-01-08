@@ -13,15 +13,28 @@
 #include "kernel/printk.h"
 #include "sensors/ism330dlc_reg.h"
 #include "sensors/lsm303ah_reg.h"
-#include "sensor/sns_service.h"
 #define PRINT_TICKER_MAX 9 
 #define TRANSMIT_MESSAGE_SIZE EXACTOLINK_MESSAGE_SIZE
+#define TMP_BUFFER_DATA_SZ 40
 
 // #define SNS_SERVICE_TESTING
+static uint32_t PackRecvCounter = 0;
+static uint32_t TickerCounter = 0;
+static uint8_t SnsCheck_Max = 0;
+static uint8_t SnsCheck_Counter = 0;
+static uint8_t Mline_Max = 0;
+static uint8_t Mline_Counter = 0;
 
-ex_sns_lth_container_t SnsContainer;
+static unsigned int Delay = 100;
 
-#ifdef SNS_SERVICE_TESTING
+static ex_sns_lth_container_t SnsContainer;
+static uint8_t TmpBufferData[TMP_BUFFER_DATA_SZ] = {0};
+
+static uint8_t Ticker_Enable = 0;
+static uint32_t Ticker_Start = 0;
+static uint32_t Ticker_Stop = 0;
+static uint32_t Ticker_Res = 0;
+
 
 #define DEMCR        0xE000EDFC
 #define DEMCR_TRCENA    0x01000000
@@ -49,9 +62,241 @@ static inline uint32_t dwt_cyccnt_stop(void) {
 
 	return REG32_LOAD(DWT_CYCCNT);
 }
-#endif
 
+static ex_spi_pack_t PackageToSend = {
+    .result = EXACTO_OK,
+};
+static ex_spi_pack_t PackageToGett = {
+    .result = EXACTO_WAITING,
+};
+
+static uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, const uint8_t value, const uint16_t try_count)
+{
+    uint16_t try_index = 0;
+    PackageToSend.data[0] = address;
+    PackageToSend.data[1] = value;
+    PackageToSend.datalen = 2;
+    PackageToSend.type = EX_SPI_DT_TRANSMIT;
+    sched_lock();
+    enableExactoSensor(sns);
+    while(ex_sendSpiSns(&PackageToSend))
+    {
+        try_index++;
+        if (try_index > try_count)
+            break;
+    }
+    disableExactoSensor(sns);
+    try_index = 0;
+    if (try_count)
+    {
+        PackageToGett.cmd = address ;
+        PackageToGett.datalen = 2;
+        enableExactoSensor(sns);
+        while(ex_gettSpiSns(&PackageToGett))
+        {
+            try_index++;
+            if (try_index > try_count)
+                break;
+        }
+        disableExactoSensor(sns);
+    }
+    sched_unlock();
+    if (PackageToGett.data[0] != value)
+        return 1;
+    return 0;
+}
+static void getSnsData(void)
+{
+	ex_sns_lth_container_t * trg = &SnsContainer;
+    	uint16_t enabled = 0;
+	uint8_t tmp_buffer_index = 1;
+	TmpBufferData[0] = 0;
+	const uint16_t count = trg->sns_count;
+	for (uint16_t i = 0; i < count; i++)
+	{
+		if(trg->sns[i].isenabled)
+		{
+			exacto_sensors_list_t sns = trg->sns[i].sns;
+			uint16_t datalen = trg->sns[i].datalen;
+			uint8_t shift = trg->sns[i].shift;
+			PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
+			PackageToGett.cmd = trg->sns[i].address;//cmd;
+			PackageToGett.datalen = datalen;
+			enableExactoSensor(sns);
+			uint8_t try_cnt = 1;
+			if (ex_gettSpiSns(&PackageToGett))
+				try_cnt = 0;
+			disableExactoSensor(sns);
+			uint8_t tmp_length = (datalen - shift);
+			if(isXlGrDataReady(sns, PackageToGett.data[0]) && try_cnt)
+			{
+				TmpBufferData[0] |= (uint8_t)sns;
+				for (uint8_t i = 0; i < tmp_length; i++)
+					TmpBufferData[tmp_buffer_index + i] = PackageToGett.data[i + shift];
+				enabled++;
+				trg->sns[i].counter++;
+			}
+			else
+			{
+				for (uint8_t i = 0; i < tmp_length; i++)
+					TmpBufferData[tmp_buffer_index + i] = 0;
+
+			}
+			tmp_buffer_index += tmp_length;
+		}
+	}
+
+
+	TickerCounter++;
+	if (enabled > 0)
+		PackRecvCounter += enabled;
+	setDataToExactoDataStorage(TmpBufferData, tmp_buffer_index, EX_THR_CTRL_WAIT);
+}
+uint8_t switchStage(const exactolink_package_result_t type, const exacto_tim_states_t state)
+{
+    uint8_t value_sns_option_lsm303ah = 0xC5;       //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+    uint8_t value_sns_option_ism330dlc_xl = 0x44;   //0100 01 0 0 : 104 Hz 16g 
+    uint8_t value_sns_option_ism330dlc_gr = 0x4c;   //0100 11 0 0 : 104 Hz 2000 dps 
+    switch (state)
+    {
+    case EXACTO_TIM_10:
+    case EXACTO_TIM_50:
+    case EXACTO_TIM_100:
+	Mline_Max = 0;
+	SnsCheck_Max = 0;
+	Delay = 100;
+        break;
+    case EXACTO_TIM_200:
+ 	Mline_Max = 2;
+	SnsCheck_Max = 0;
+        value_sns_option_lsm303ah = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+        value_sns_option_ism330dlc_xl = 0x50;
+        value_sns_option_ism330dlc_gr = 0x5c; //0101 11 0 0
+	Delay = 50;
+        break;
+	case EXACTO_TIM_400:
+	  	Mline_Max = 4;
+		SnsCheck_Max = 0;
+	        value_sns_option_lsm303ah = 0xE5;//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
+	        value_sns_option_ism330dlc_xl = 0x60;
+	        value_sns_option_ism330dlc_gr = 0x6c; //0110 11 00
+		Delay = 25;
+        	break;
+	case EXACTO_TIM_800:
+		Mline_Max = 8;
+		SnsCheck_Max = 0;
+		Delay = 12;
+		break;
+    default:
+        break;
+    }
+    switch (type)
+    {
+    case EXACTOLINK_CRC_ERROR:
+    case EXACTOLINK_NO_DATA:
+        return 1;
+        break;
+    case EXACTOLINK_LSM303AH_TYPE0:
+        sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
+        for (uint8_t i = 0; i < SnsContainer.sns_count; i++)
+        {
+            if (SnsContainer.sns[i].sns == LSM303AH)
+                SnsContainer.sns[i].isenabled = 1;
+            else
+                SnsContainer.sns[i].isenabled = 0;
+        }
+        break;
+    case EXACTOLINK_SNS_XLXLGR:
+        sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah, 5);
+        sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
+        sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr, 5);
+        for (uint8_t i = 0; i < SnsContainer.sns_count; i++)
+        {
+            if ((SnsContainer.sns[i].sns == LSM303AH)||(SnsContainer.sns[i].sns == ISM330DLC))
+                SnsContainer.sns[i].isenabled = 1;
+            else
+                SnsContainer.sns[i].isenabled = 0;
+        }
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+static int runSnsContainerLthread(struct lthread * self)
+{
+	if (!Ticker_Enable)
+	{
+		Ticker_Enable = 1;
+		Ticker_Start = dwt_cyccnt_start();
+	}
+	else
+	{
+		Ticker_Stop = dwt_cyccnt_stop();
+		Ticker_Res = Ticker_Stop - Ticker_Start;
+		Ticker_Start = dwt_cyccnt_start();
+	}
+	getSnsData();
+
+	
+
+	return 0;
+}
 int main(int argc, char *argv[]) {
+	TickerCounter = 0;
+	PackRecvCounter = 0;
+	//init
+	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
+	resetExactoDataStorage();
+	lthread_init(&SnsContainer.thread, runSnsContainerLthread);
+
+	SnsContainer.sns_count = 2;
+	SnsContainer.sns[0].isenabled = 1;
+	SnsContainer.sns[0].sns = LSM303AH;
+	SnsContainer.sns[0].address = LSM303AH_STATUS_A; 
+	SnsContainer.sns[0].datalen = 7;
+	SnsContainer.sns[0].pt2buffer = 0;
+	SnsContainer.sns[0].shift = 1;
+	SnsContainer.sns[0].counter = 0;
+	SnsContainer.sns[1].isenabled = 1;
+ 	SnsContainer.sns[1].sns = ISM330DLC;
+	SnsContainer.sns[1].address = ISM330DLC_STATUS_REG; 
+	SnsContainer.sns[1].datalen = 16;
+	SnsContainer.sns[1].pt2buffer = 6;
+	SnsContainer.sns[1].shift = 4;
+	SnsContainer.sns[1].counter = 0;
+	SnsContainer.done = 0;
+
+
+	//set new
+
+	switchStage(EXACTOLINK_SNS_XLXLGR, EXACTO_TIM_100);
+	//switchStage(EXACTOLINK_LSM303AH_TYPE0);
+
+	dwt_cyccnt_reset();
+
+	while(1)
+	{
+		if (SnsCheck_Counter < SnsCheck_Max)
+			SnsCheck_Counter++;
+		else
+		{
+			SnsCheck_Counter = 0;
+
+		}
+		if (Mline_Counter < Mline_Max)
+		{
+			Mline_Counter++;
+		}
+		else
+		{
+			Mline_Counter = 0;
+			usleep(Delay);
+		}
+	}
+
 	return 0;
 }
 

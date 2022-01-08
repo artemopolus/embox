@@ -22,6 +22,7 @@ typedef struct{
     uint8_t sns_count;
     ex_sns_cmds_t sns[EX_SNS_CMDS_COUNT];
     uint8_t sns_current;
+    uint8_t done;
 }ex_sns_lth_container_t;
 // const uint8_t lsm303ah_3wire_adr = 0x21;
     // const uint8_t lsm303ah_3wire_val = 0x07;

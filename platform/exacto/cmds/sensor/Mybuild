@@ -68,10 +68,11 @@ module sns_service{
 @Cmd(name="sns2mliner", help="", man='''
 AUTHOR Kuznetcov
 ''')
-module ex_spi_mline_apollon {
+module sns2mliner {
 	source "sns2mliner.c"
 
 	depends embox.kernel.lthread.lthread
+	depends embox.compat.posix.util.sleep
 	
 	depends exacto.spi.sns_apollon
 	depends exacto.commander.data_storage
