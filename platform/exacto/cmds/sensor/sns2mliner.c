@@ -20,8 +20,6 @@
 // #define SNS_SERVICE_TESTING
 static uint32_t PackRecvCounter = 0;
 static uint32_t TickerCounter = 0;
-static uint8_t SnsCheck_Max = 0;
-static uint8_t SnsCheck_Counter = 0;
 static uint8_t Mline_Max = 0;
 static uint8_t Mline_Counter = 0;
 
@@ -105,6 +103,27 @@ static uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, 
         return 1;
     return 0;
 }
+static bool getDataFromSns(ex_sns_cmds_t * sns, uint8_t * buffer)
+{
+		
+	PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
+	PackageToGett.cmd = sns->address;//cmd;
+	PackageToGett.datalen = sns->datalen;
+	uint8_t try_cnt = 1;
+	const uint8_t tmp_length = (sns->datalen - sns->shift);
+	enableExactoSensor(sns->sns);
+	if (ex_gettSpiSns(&PackageToGett))
+		try_cnt = 0;
+	disableExactoSensor(sns->sns);
+	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
+	{
+		buffer[0] |= (uint8_t)sns->sns;
+		for (uint8_t i = 0; i < tmp_length; i++)
+			buffer[i] = PackageToGett.data[i + sns->shift];
+		return true;
+	}
+	return false;
+}
 static void getSnsData(void)
 {
 	ex_sns_lth_container_t * trg = &SnsContainer;
@@ -159,24 +178,21 @@ uint8_t switchStage(const exactolink_package_result_t type, const exacto_tim_sta
     uint8_t value_sns_option_ism330dlc_gr = 0x4c;   //0100 11 0 0 : 104 Hz 2000 dps 
     switch (state)
     {
-    case EXACTO_TIM_10:
-    case EXACTO_TIM_50:
-    case EXACTO_TIM_100:
-	Mline_Max = 0;
-	SnsCheck_Max = 0;
-	Delay = 100;
-        break;
-    case EXACTO_TIM_200:
- 	Mline_Max = 2;
-	SnsCheck_Max = 0;
-        value_sns_option_lsm303ah = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
-        value_sns_option_ism330dlc_xl = 0x50;
-        value_sns_option_ism330dlc_gr = 0x5c; //0101 11 0 0
-	Delay = 50;
-        break;
+	case EXACTO_TIM_10:
+	case EXACTO_TIM_50:
+	case EXACTO_TIM_100:
+		Mline_Max = 0;
+		Delay = 100;
+	        break;
+	case EXACTO_TIM_200:
+	 	Mline_Max = 2;
+	        value_sns_option_lsm303ah = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+	        value_sns_option_ism330dlc_xl = 0x50;
+	        value_sns_option_ism330dlc_gr = 0x5c; //0101 11 0 0
+		Delay = 50;
+	        break;
 	case EXACTO_TIM_400:
 	  	Mline_Max = 4;
-		SnsCheck_Max = 0;
 	        value_sns_option_lsm303ah = 0xE5;//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
 	        value_sns_option_ism330dlc_xl = 0x60;
 	        value_sns_option_ism330dlc_gr = 0x6c; //0110 11 00
@@ -184,8 +200,17 @@ uint8_t switchStage(const exactolink_package_result_t type, const exacto_tim_sta
         	break;
 	case EXACTO_TIM_800:
 		Mline_Max = 8;
-		SnsCheck_Max = 0;
 		Delay = 12;
+	        value_sns_option_lsm303ah = 0xE5;	//1111 01 0 1 	: 800 Hz 16g HF_ODR= 0 BDU=1
+	        value_sns_option_ism330dlc_xl = 0x74;	//0111 01 0 0 	: 800 hz 16g 
+	        value_sns_option_ism330dlc_gr = 0x7c;	//0111 11 00	: 800
+		break;
+	case EXACTO_TIM_1600:
+		Mline_Max = 16;
+		Delay = 6;
+	        value_sns_option_lsm303ah = 0x57;	//0101 01 1 1 	: 1600 Hz 16g HF_ODR= 1 BDU=1
+	        value_sns_option_ism330dlc_xl = 0x74;	//1000 01 0 0 	: 1666 hz 16g 
+	        value_sns_option_ism330dlc_gr = 0x8c;	//1000 11 0 0
 		break;
     default:
         break;
@@ -238,8 +263,9 @@ static int runSnsContainerLthread(struct lthread * self)
 		Ticker_Start = dwt_cyccnt_start();
 	}
 	getSnsData();
+	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0]);
 
-	
+	SnsContainer.done = 1;
 
 	return 0;
 }
@@ -260,6 +286,10 @@ int main(int argc, char *argv[]) {
 	SnsContainer.sns[0].pt2buffer = 0;
 	SnsContainer.sns[0].shift = 1;
 	SnsContainer.sns[0].counter = 0;
+	SnsContainer.sns[0].cnt_cur = 0;
+	SnsContainer.sns[0].cnt_max = 0;
+	
+
 	SnsContainer.sns[1].isenabled = 1;
  	SnsContainer.sns[1].sns = ISM330DLC;
 	SnsContainer.sns[1].address = ISM330DLC_STATUS_REG; 
@@ -267,6 +297,10 @@ int main(int argc, char *argv[]) {
 	SnsContainer.sns[1].pt2buffer = 6;
 	SnsContainer.sns[1].shift = 4;
 	SnsContainer.sns[1].counter = 0;
+	SnsContainer.sns[1].cnt_cur = 0;
+	SnsContainer.sns[1].cnt_max = 0;
+
+
 	SnsContainer.done = 0;
 
 
@@ -279,13 +313,10 @@ int main(int argc, char *argv[]) {
 
 	while(1)
 	{
-		if (SnsCheck_Counter < SnsCheck_Max)
-			SnsCheck_Counter++;
-		else
-		{
-			SnsCheck_Counter = 0;
-
-		}
+		while(!SnsContainer.done);
+		
+		lthread_launch(&SnsContainer.thread);
+		SnsContainer.done = 0;
 		if (Mline_Counter < Mline_Max)
 		{
 			Mline_Counter++;
@@ -293,8 +324,9 @@ int main(int argc, char *argv[]) {
 		else
 		{
 			Mline_Counter = 0;
-			usleep(Delay);
+    			transmitExactoDataStorage();
 		}
+		usleep(Delay);
 	}
 
 	return 0;
