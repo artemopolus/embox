@@ -17,6 +17,7 @@
 #define TRANSMIT_MESSAGE_SIZE EXACTOLINK_MESSAGE_SIZE
 #define TMP_BUFFER_DATA_SZ 40
 
+static uint8_t Ender[] = {5,5,5,5};
 // #define SNS_SERVICE_TESTING
 static uint32_t PackRecvCounter = 0;
 static uint32_t TickerCounter = 0;
@@ -27,12 +28,14 @@ static unsigned int Delay = 100;
 
 static ex_sns_lth_container_t SnsContainer;
 static uint8_t TmpBufferData[TMP_BUFFER_DATA_SZ] = {0};
+static uint16_t TmpBufferPtr = 0;
 
 static uint8_t Ticker_Enable = 0;
 static uint32_t Ticker_Start = 0;
 static uint32_t Ticker_Stop = 0;
 static uint32_t Ticker_Res = 0;
-
+static uint32_t Ticker_Buf = 0;
+static uint8_t Ticker_Readable = 0;
 
 #define DEMCR        0xE000EDFC
 #define DEMCR_TRCENA    0x01000000
@@ -103,9 +106,14 @@ static uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, 
         return 1;
     return 0;
 }
-static bool getDataFromSns(ex_sns_cmds_t * sns, uint8_t * buffer)
+static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * buffer, uint16_t * ptr)
 {
-		
+	if (sns->cnt_cur < sns->cnt_max)
+	{
+		sns->cnt_cur++;
+		return 0;
+	}	
+	sns->cnt_cur = 0;
 	PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
 	PackageToGett.cmd = sns->address;//cmd;
 	PackageToGett.datalen = sns->datalen;
@@ -117,60 +125,62 @@ static bool getDataFromSns(ex_sns_cmds_t * sns, uint8_t * buffer)
 	disableExactoSensor(sns->sns);
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
 	{
-		buffer[0] |= (uint8_t)sns->sns;
+		buffer[0] = 0x17;
+		buffer[1] = (uint8_t)sns->sns;
 		for (uint8_t i = 0; i < tmp_length; i++)
 			buffer[i] = PackageToGett.data[i + sns->shift];
-		return true;
+		sns->dtrd = 1;
+		return (tmp_length + 2);
 	}
-	return false;
+	return 0;
 }
-static void getSnsData(void)
-{
-	ex_sns_lth_container_t * trg = &SnsContainer;
-    	uint16_t enabled = 0;
-	uint8_t tmp_buffer_index = 1;
-	TmpBufferData[0] = 0;
-	const uint16_t count = trg->sns_count;
-	for (uint16_t i = 0; i < count; i++)
-	{
-		if(trg->sns[i].isenabled)
-		{
-			exacto_sensors_list_t sns = trg->sns[i].sns;
-			uint16_t datalen = trg->sns[i].datalen;
-			uint8_t shift = trg->sns[i].shift;
-			PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
-			PackageToGett.cmd = trg->sns[i].address;//cmd;
-			PackageToGett.datalen = datalen;
-			enableExactoSensor(sns);
-			uint8_t try_cnt = 1;
-			if (ex_gettSpiSns(&PackageToGett))
-				try_cnt = 0;
-			disableExactoSensor(sns);
-			uint8_t tmp_length = (datalen - shift);
-			if(isXlGrDataReady(sns, PackageToGett.data[0]) && try_cnt)
-			{
-				TmpBufferData[0] |= (uint8_t)sns;
-				for (uint8_t i = 0; i < tmp_length; i++)
-					TmpBufferData[tmp_buffer_index + i] = PackageToGett.data[i + shift];
-				enabled++;
-				trg->sns[i].counter++;
-			}
-			else
-			{
-				for (uint8_t i = 0; i < tmp_length; i++)
-					TmpBufferData[tmp_buffer_index + i] = 0;
+// static void getSnsData(void)
+// {
+// 	ex_sns_lth_container_t * trg = &SnsContainer;
+//     	uint16_t enabled = 0;
+// 	uint8_t tmp_buffer_index = 1;
+// 	TmpBufferData[0] = 0;
+// 	const uint16_t count = trg->sns_count;
+// 	for (uint16_t i = 0; i < count; i++)
+// 	{
+// 		if(trg->sns[i].isenabled)
+// 		{
+// 			exacto_sensors_list_t sns = trg->sns[i].sns;
+// 			uint16_t datalen = trg->sns[i].datalen;
+// 			uint8_t shift = trg->sns[i].shift;
+// 			PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
+// 			PackageToGett.cmd = trg->sns[i].address;//cmd;
+// 			PackageToGett.datalen = datalen;
+// 			enableExactoSensor(sns);
+// 			uint8_t try_cnt = 1;
+// 			if (ex_gettSpiSns(&PackageToGett))
+// 				try_cnt = 0;
+// 			disableExactoSensor(sns);
+// 			uint8_t tmp_length = (datalen - shift);
+// 			if(isXlGrDataReady(sns, PackageToGett.data[0]) && try_cnt)
+// 			{
+// 				TmpBufferData[0] |= (uint8_t)sns;
+// 				for (uint8_t i = 0; i < tmp_length; i++)
+// 					TmpBufferData[tmp_buffer_index + i] = PackageToGett.data[i + shift];
+// 				enabled++;
+// 				trg->sns[i].counter++;
+// 			}
+// 			else
+// 			{
+// 				for (uint8_t i = 0; i < tmp_length; i++)
+// 					TmpBufferData[tmp_buffer_index + i] = 0;
 
-			}
-			tmp_buffer_index += tmp_length;
-		}
-	}
+// 			}
+// 			tmp_buffer_index += tmp_length;
+// 		}
+// 	}
 
 
-	TickerCounter++;
-	if (enabled > 0)
-		PackRecvCounter += enabled;
-	setDataToExactoDataStorage(TmpBufferData, tmp_buffer_index, EX_THR_CTRL_WAIT);
-}
+// 	TickerCounter++;
+// 	if (enabled > 0)
+// 		PackRecvCounter += enabled;
+// 	setDataToExactoDataStorage(TmpBufferData, tmp_buffer_index, EX_THR_CTRL_WAIT);
+// }
 uint8_t switchStage(const exactolink_package_result_t type, const exacto_tim_states_t state)
 {
     uint8_t value_sns_option_lsm303ah = 0xC5;       //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
@@ -261,17 +271,36 @@ static int runSnsContainerLthread(struct lthread * self)
 		Ticker_Stop = dwt_cyccnt_stop();
 		Ticker_Res = Ticker_Stop - Ticker_Start;
 		Ticker_Start = dwt_cyccnt_start();
+		if (Ticker_Readable == 0)
+		{
+			Ticker_Readable = 1;
+			Ticker_Buf = Ticker_Res;
+		}
 	}
-	getSnsData();
-	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0]);
+	if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
+	{
+        	setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_INIT); 
+	}
+	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
+	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
 
 	SnsContainer.done = 1;
+	TickerCounter++;
 
+	if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
+	{
+		SnsContainer.sns[0].dtrd = 0;
+		SnsContainer.sns[1].dtrd = 0;
+        	setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+
+	}
 	return 0;
 }
 int main(int argc, char *argv[]) {
 	TickerCounter = 0;
 	PackRecvCounter = 0;
+	Ticker_Readable = 0;
+	Ticker_Enable = 0;
 	//init
 	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
 	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
@@ -288,7 +317,7 @@ int main(int argc, char *argv[]) {
 	SnsContainer.sns[0].counter = 0;
 	SnsContainer.sns[0].cnt_cur = 0;
 	SnsContainer.sns[0].cnt_max = 0;
-	
+	SnsContainer.sns[0].dtrd = 0;
 
 	SnsContainer.sns[1].isenabled = 1;
  	SnsContainer.sns[1].sns = ISM330DLC;
@@ -299,6 +328,7 @@ int main(int argc, char *argv[]) {
 	SnsContainer.sns[1].counter = 0;
 	SnsContainer.sns[1].cnt_cur = 0;
 	SnsContainer.sns[1].cnt_max = 0;
+	SnsContainer.sns[1].dtrd = 0;
 
 
 	SnsContainer.done = 0;
@@ -310,6 +340,8 @@ int main(int argc, char *argv[]) {
 	//switchStage(EXACTOLINK_LSM303AH_TYPE0);
 
 	dwt_cyccnt_reset();
+
+
 
 	while(1)
 	{
@@ -325,6 +357,11 @@ int main(int argc, char *argv[]) {
 		{
 			Mline_Counter = 0;
     			transmitExactoDataStorage();
+			if (Ticker_Readable)
+			{
+				printf("Ticker: %d", Ticker_Buf);
+				Ticker_Readable = 0;
+			}
 		}
 		usleep(Delay);
 	}

@@ -18,6 +18,7 @@ typedef struct{
     uint32_t counter;
     uint8_t cnt_cur;
     uint8_t cnt_max;
+    uint8_t dtrd;
 }ex_sns_cmds_t;
 typedef struct{
     struct lthread thread;
