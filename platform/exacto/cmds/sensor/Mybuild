@@ -80,6 +80,7 @@ module sns2mliner {
 	depends exacto.apollon.tim.tim3
 	depends exacto.sensors.ism330dlc
 	depends exacto.sensors.lsm303ah
+	depends exacto.spi.mliner_apollon
 	
 	depends third_party.bsp.stmf1cube.cube
 }

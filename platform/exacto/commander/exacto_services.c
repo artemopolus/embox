@@ -8,6 +8,7 @@ uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * servic
         return 1;
     service[i].isenabled = 1;
     service[i].type = type;
+    service[i].done = 1;
     lthread_init(&service[i].thread, run);
     info->current_count++;
     return 0;
@@ -19,7 +20,11 @@ void ex_updateEventForSubs(ex_service_info_t info, ex_subs_service_t * service,
    {
        if ((service[i].type == type)&&(service[i].isenabled))
        {
-           lthread_launch(&service[i].thread);
+           if (service[i].done)
+           {
+               lthread_launch(&service[i].thread);
+               service[i].done = 0;
+           }
        }
    }
     

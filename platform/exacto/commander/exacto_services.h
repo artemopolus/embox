@@ -29,6 +29,7 @@ typedef struct {
     struct lthread thread;
     ex_thread_type_t type;
     uint8_t isenabled;
+    uint8_t done;
 }ex_subs_service_t;
 
 typedef struct {

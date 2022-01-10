@@ -7,6 +7,7 @@
 #include "commander/exacto_sns_ctrl.h"
 #include "spi/spi_sns.h"
 #include "tim/tim.h"
+#include "spi/spi_mliner.h"
 #include <embox/unit.h>
 #include <hal/reg.h>
 
@@ -20,7 +21,7 @@
 static uint8_t Ender[] = {5,5,5,5};
 // #define SNS_SERVICE_TESTING
 static uint32_t PackRecvCounter = 0;
-static uint32_t TickerCounter = 0;
+static uint32_t Counter = 0;
 static uint8_t Mline_Max = 0;
 static uint8_t Mline_Counter = 0;
 
@@ -35,7 +36,11 @@ static uint32_t Ticker_Start = 0;
 static uint32_t Ticker_Stop = 0;
 static uint32_t Ticker_Res = 0;
 static uint32_t Ticker_Buf = 0;
+static uint32_t Ticker_Cnt = 0;
 static uint8_t Ticker_Readable = 0;
+
+
+static struct lthread Init_Lthread;
 
 #define DEMCR        0xE000EDFC
 #define DEMCR_TRCENA    0x01000000
@@ -106,19 +111,22 @@ static uint8_t sendOptionsRaw(exacto_sensors_list_t sns, const uint8_t address, 
         return 1;
     return 0;
 }
-static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * buffer, uint16_t * ptr)
+static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr)
 {
 	if (sns->cnt_cur < sns->cnt_max)
 	{
 		sns->cnt_cur++;
 		return 0;
-	}	
+	}
+	uint8_t * buffer = &trg[*ptr];	
 	sns->cnt_cur = 0;
 	PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
 	PackageToGett.cmd = sns->address;//cmd;
 	PackageToGett.datalen = sns->datalen;
 	uint8_t try_cnt = 1;
 	const uint8_t tmp_length = (sns->datalen - sns->shift);
+	if ((*ptr + tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
+		return 0;
 	enableExactoSensor(sns->sns);
 	if (ex_gettSpiSns(&PackageToGett))
 		try_cnt = 0;
@@ -128,8 +136,9 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * buffer, uint16_t * 
 		buffer[0] = 0x17;
 		buffer[1] = (uint8_t)sns->sns;
 		for (uint8_t i = 0; i < tmp_length; i++)
-			buffer[i] = PackageToGett.data[i + sns->shift];
+			buffer[i+2] = PackageToGett.data[i + sns->shift];
 		sns->dtrd = 1;
+		*ptr += tmp_length + 2;
 		return (tmp_length + 2);
 	}
 	return 0;
@@ -192,7 +201,7 @@ uint8_t switchStage(const exactolink_package_result_t type, const exacto_tim_sta
 	case EXACTO_TIM_50:
 	case EXACTO_TIM_100:
 		Mline_Max = 0;
-		Delay = 100;
+		Delay = 1000;
 	        break;
 	case EXACTO_TIM_200:
 	 	Mline_Max = 2;
@@ -261,20 +270,26 @@ uint8_t switchStage(const exactolink_package_result_t type, const exacto_tim_sta
 
 static int runSnsContainerLthread(struct lthread * self)
 {
+	ex_subs_service_t * trg = (ex_subs_service_t*)self;
 	if (!Ticker_Enable)
 	{
 		Ticker_Enable = 1;
 		Ticker_Start = dwt_cyccnt_start();
+		Ticker_Cnt =0;
+		Ticker_Res = 0;
 	}
 	else
 	{
 		Ticker_Stop = dwt_cyccnt_stop();
-		Ticker_Res = Ticker_Stop - Ticker_Start;
+		Ticker_Res += Ticker_Stop - Ticker_Start;
+		Ticker_Cnt++;
 		Ticker_Start = dwt_cyccnt_start();
 		if (Ticker_Readable == 0)
 		{
 			Ticker_Readable = 1;
-			Ticker_Buf = Ticker_Res;
+			Ticker_Buf = Ticker_Res/Ticker_Cnt;
+			Ticker_Cnt = 0;
+			Ticker_Res = 0;
 		}
 	}
 	if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
@@ -285,28 +300,34 @@ static int runSnsContainerLthread(struct lthread * self)
 	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
 
 	SnsContainer.done = 1;
-	TickerCounter++;
+	Counter++;
 
 	if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
 	{
+        setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
+
 		SnsContainer.sns[0].dtrd = 0;
 		SnsContainer.sns[1].dtrd = 0;
-        	setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
 
 	}
+	if (Mline_Counter < Mline_Max)
+		Mline_Counter++;
+	else{
+		Mline_Counter = 0;
+		//transmitExactoDataStorage();
+		}
+	trg->done = 1;
 	return 0;
 }
-int main(int argc, char *argv[]) {
-	TickerCounter = 0;
+static int run_Init_Lthread(struct lthread * self)
+{
+	Counter = 0;
 	PackRecvCounter = 0;
 	Ticker_Readable = 0;
 	Ticker_Enable = 0;
-	//init
-	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
-	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
-	resetExactoDataStorage();
-	lthread_init(&SnsContainer.thread, runSnsContainerLthread);
-
+	switchStage(EXACTOLINK_SNS_XLXLGR, EXACTO_TIM_100);
+    ex_setExactolinkType        (EXACTOLINK_SNS_XLXLGR);
 	SnsContainer.sns_count = 2;
 	SnsContainer.sns[0].isenabled = 1;
 	SnsContainer.sns[0].sns = LSM303AH;
@@ -330,40 +351,38 @@ int main(int argc, char *argv[]) {
 	SnsContainer.sns[1].cnt_max = 0;
 	SnsContainer.sns[1].dtrd = 0;
 
-
 	SnsContainer.done = 0;
+    
+    turnOffSPI2_FULL_DMA();
+    setupSPI2_FULL_DMA();
 
+    ex_setFreqHz(100);
+	ex_frcTimReload();
+    return 0;
+}
+int main(int argc, char *argv[]) {
+	//init
+	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
+	resetExactoDataStorage();
+	lthread_init(&Init_Lthread, run_Init_Lthread);
 
-	//set new
-
-	switchStage(EXACTOLINK_SNS_XLXLGR, EXACTO_TIM_100);
-	//switchStage(EXACTOLINK_LSM303AH_TYPE0);
+	lthread_launch(&Init_Lthread);
 
 	dwt_cyccnt_reset();
 
-
+    if ( ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSnsContainerLthread) != 0)
+        return 1;
 
 	while(1)
 	{
-		while(!SnsContainer.done);
 		
-		lthread_launch(&SnsContainer.thread);
-		SnsContainer.done = 0;
-		if (Mline_Counter < Mline_Max)
+		if (Ticker_Readable)
 		{
-			Mline_Counter++;
+			printf("Ticker: %d\n", Ticker_Buf);
+			Ticker_Readable = 0;
 		}
-		else
-		{
-			Mline_Counter = 0;
-    			transmitExactoDataStorage();
-			if (Ticker_Readable)
-			{
-				printf("Ticker: %d", Ticker_Buf);
-				Ticker_Readable = 0;
-			}
-		}
-		usleep(Delay);
+		usleep((unsigned int)1000000);
 	}
 
 	return 0;
