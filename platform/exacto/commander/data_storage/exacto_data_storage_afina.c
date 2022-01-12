@@ -367,55 +367,56 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
     {
     case EXACTOLINK_LSM303AH_TYPE0:
         //начало пакета
-//         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
-//             return 1;
-//         data_body_length = getlen_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage);
-//         if (data_body_length > EXACTOLINK_APOLLON_SPI_PACK_SIZE)
-//             data_body_length = EXACTOLINK_APOLLON_SPI_PACK_SIZE;
-//         length =  EXACTOLINK_START_DATA_POINT_VAL + data_body_length + 4;
-//         lenH = (uint8_t) (length >> 8);
-//         lenL = (uint8_t) (length);
-//         data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
-//         //header
-//         receiver[0] = pck_id;
-//         receiver[1] = lenL;
-//         receiver[2] = lenH;
-//         receiver[3] = type;
-//         receiver[4] = data_start_point; //datatype
-//         receiver[5] = 0;
-//         receiver[6] = 0xff;  //priority
-//         receiver[7] = addrL;
-//         receiver[8] = addrH; //datasrc
-//         //счетчик
-//         receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;    //counter
-//         receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
-//         receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
-//         receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
+        if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
+            return 1;
+        data_body_length = getlen_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage);
+        if (data_body_length > EXACTOLINK_APOLLON_SPI_PACK_SIZE)
+            data_body_length = EXACTOLINK_APOLLON_SPI_PACK_SIZE;
+        length =  EXACTOLINK_START_DATA_POINT_VAL + data_body_length + 4;
+        lenH = (uint8_t) (length >> 8);
+        lenL = (uint8_t) (length);
+        data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
+        //header
+        receiver[0] = pck_id;
+        receiver[1] = lenL;
+        receiver[2] = lenH;
+        receiver[3] = type;
+        receiver[4] = data_start_point; //datatype
+        receiver[5] = 0;
+        receiver[6] = 0xff;  //priority
+        receiver[7] = addrL;
+        receiver[8] = addrH; //datasrc
+        //счетчик
+        receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;    //counter
+        receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
+        receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
+        receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
 
-//         for (uint16_t i = 0; i < ( data_body_length); 
-//                                      i += EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)
-//         {
-//             for (uint16_t y = 0; y < EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH; y++)
-//             {
-//                 uint8_t value;
-//                 if(!grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value))
-//                 {
-//                     goto getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker; //GOTO осторожно!!!
-//                 }
-//                 receiver[EXACTOLINK_START_DATA_POINT_VAL + i + y] = value;
-//             }
+        for (uint16_t i = 0; i < ( data_body_length); 
+                                     i += EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH)
+        {
+            for (uint16_t y = 0; y < EXACTOLINK_LSM303AH_TYPE0_ONE_INFOPACK_LENGTH; y++)
+            {
+                uint8_t value;
+                if(!grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value))
+                {
+                    goto getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker; //GOTO осторожно!!!
+                }
+                receiver[EXACTOLINK_START_DATA_POINT_VAL + i + y] = value;
+            }
             
-//         }
-// getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
-//         // grball_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
-//         //очищение
-//         // clearExactoDataStorage();
-//         ex_getCRC(&receiver[0], (length - 4), &crc);
-//         receiver[length - 4] = (uint8_t)(crc);
-//         receiver[length - 3] = (uint8_t)(crc >> 8);
-//         receiver[length - 2] = (uint8_t)(crc >> 16);
-//         receiver[length - 1] = (uint8_t)(crc >> 24);        
-//         break;
+        }
+getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
+        // grball_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &receiver[EXACTOLINK_START_DATA_POINT_VAL]);
+        //очищение
+        // clearExactoDataStorage();
+        ex_getCRC(&receiver[0], (length - 4), &crc);
+        receiver[length - 4] = (uint8_t)(crc);
+        receiver[length - 3] = (uint8_t)(crc >> 8);
+        receiver[length - 2] = (uint8_t)(crc >> 16);
+        receiver[length - 1] = (uint8_t)(crc >> 24);        
+        break;
+    case EXACTOLINK_CMD_COMMON:
     case EXACTOLINK_SNS_XLXLGR:
         //начало пакета
         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)
@@ -446,10 +447,6 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         //счетчик
         for (uint16_t i = 0; i < 4; i++)
             receiver[9+i] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> i*8);
-        // receiver[9]  = (uint8_t) ExDtStr_TransmitSPI_TxCounter;   
-        // receiver[10] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 8);
-        // receiver[11] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 16);
-        // receiver[12] = (uint8_t)(ExDtStr_TransmitSPI_TxCounter >> 24);
         
         receiver[13] = (uint8_t)(ExDtStr_OutputSPI_OverFlw );
         receiver[14] = (uint8_t)(ExDtStr_OutputSPI_OverFlw >> 8);
@@ -473,10 +470,6 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
         for (uint16_t i = 0; i < 4; i++)
             receiver[length - 4 + i] = (uint8_t)(crc >> 8*i);
 
-        // receiver[length - 4] = (uint8_t)(crc);
-        // receiver[length - 3] = (uint8_t)(crc >> 8);
-        // receiver[length - 2] = (uint8_t)(crc >> 16);
-        // receiver[length - 1] = (uint8_t)(crc >> 24);        
         break;  
     default:
         break;

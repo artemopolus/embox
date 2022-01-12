@@ -8,4 +8,5 @@
 //"dd if=/dev/stm32f7_sd_card format=hex_c count=8200"
 //"print_to_sd"
 //"test_buffer_fifo_test",
-"test_ex_spi_mline_main"
+//"test_ex_spi_mline_main"
+"help"

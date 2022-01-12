@@ -17,6 +17,7 @@
 #define PRINT_TICKER_MAX 9 
 #define TRANSMIT_MESSAGE_SIZE EXACTOLINK_MESSAGE_SIZE
 #define TMP_BUFFER_DATA_SZ 40
+#define RX_DATA_SZ 40
 
 static uint8_t Ender[] = {5,5,5,5};
 // #define SNS_SERVICE_TESTING
@@ -28,8 +29,13 @@ static uint8_t Mline_Counter = 0;
 static unsigned int Delay = 100;
 
 static ex_sns_lth_container_t SnsContainer;
+
 static uint8_t TmpBufferData[TMP_BUFFER_DATA_SZ] = {0};
 static uint16_t TmpBufferPtr = 0;
+
+static uint8_t RxData[RX_DATA_SZ] = {0};
+static uint8_t RxPtr = 0;
+static uint8_t RxReadable = 0;
 
 static uint8_t Ticker_Enable = 0;
 static uint32_t Ticker_Start = 0;
@@ -41,6 +47,7 @@ static uint8_t Ticker_Readable = 0;
 
 
 static struct lthread Init_Lthread;
+static struct lthread CheckMline_Lthread;
 
 #define DEMCR        0xE000EDFC
 #define DEMCR_TRCENA    0x01000000
@@ -320,6 +327,23 @@ static int runSnsContainerLthread(struct lthread * self)
 	trg->done = 1;
 	return 0;
 }
+static int run_CheckMline_Lthread(struct lthread * self)
+{
+    exactolink_package_result_t exactolink_result;
+    exactolink_result = ex_checkData_ExDtStr();
+	if (exactolink_result == EXACTOLINK_NO_DATA)
+	{
+		//error
+		return 0;
+	}
+	if (RxReadable == 0)
+	{
+		RxPtr = ex_getRawDataStr_ExDtStr(RxData, RX_DATA_SZ);
+		RxReadable = 1;
+	}	
+
+	return 0;
+}
 static int run_Init_Lthread(struct lthread * self)
 {
 	Counter = 0;
@@ -366,6 +390,7 @@ int main(int argc, char *argv[]) {
 	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
 	resetExactoDataStorage();
 	lthread_init(&Init_Lthread, run_Init_Lthread);
+	lthread_init(&CheckMline_Lthread, run_CheckMline_Lthread);
 
 	lthread_launch(&Init_Lthread);
 
@@ -382,6 +407,16 @@ int main(int argc, char *argv[]) {
 			printf("Ticker: %d\n", Ticker_Buf);
 			Ticker_Readable = 0;
 		}
+		if (RxReadable)
+		{
+			printf("Get rx data: ");
+			for (uint8_t i = 0; i < RxPtr; i++)
+				printf("%d ,", RxData[i]);
+			RxReadable = 0;
+			RxPtr = 0;
+		}
+		else
+			lthread_launch(&CheckMline_Lthread);
 		usleep((unsigned int)1000000);
 	}
 
