@@ -64,27 +64,36 @@ AUTHOR Kuznetcov
 module test_cmd_afina 
 {
 	source "test_cmd_afina.c"
-//
+
+	depends exacto.commander.data_storage
+
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
-	depends exacto.cmds.tests.timbase
-
 	depends embox.kernel.lthread.sync.mutex
-	depends exacto.commander.data_storage
-	depends exacto.spi.mline_main
-	depends exacto.gpio.mline_spi_main
-	depends exacto.gpio.led
-	depends exacto.commander.filemanager
-
-
 	depends embox.kernel.thread.core
 	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
-	depends exacto.cmds.perf_tests.ex_utils
 
-//
 }
+@AutoCmd
+@Cmd(name="test_read", help=" Test reading data of MLINE ", man='''
+AUTHOR Kuznetcov
+''')
+module test_read_afina 
+{
+	source "test_read_afina.c"
 
+	depends exacto.commander.data_storage
+	depends exacto.mliner.main_mod
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
 @AutoCmd
 @Cmd(name="test_ex_spi_mline", help=" Test for MLINE ", man='''
 AUTHOR Kuznetcov
