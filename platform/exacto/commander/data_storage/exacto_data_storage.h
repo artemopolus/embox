@@ -121,6 +121,7 @@ extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacou
 extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
+extern uint16_t ex_getRawFromSD_ExDtStr(uint8_t * trg, const uint16_t copylen);
 #ifdef EXDTSTR_EXTENDED
 extern uint16_t ex_pshBuf_ExDtStr(ExactoBufferUint8Type * buffer, uint16_t buffer_length, uint16_t data_type);
 extern uint16_t ex_getData_ExDtStr(uint8_t * buffer, uint16_t buffer_length, uint16_t data_type);

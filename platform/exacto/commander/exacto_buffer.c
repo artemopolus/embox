@@ -198,7 +198,7 @@ uint16_t getlen_exbu8(ExactoBufferUint8Type * buffer)
 //     }
 //     return 1;
 // }
-uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length_back )
+uint16_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length_back )
 {
     if(!buffer->isExist || buffer->isEmpty)     return 0;
     uint16_t i = 0, adr = buffer->lst;
@@ -212,7 +212,12 @@ uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uin
         i++;
 	}
 	while(adr != buffer->lst);
-    return 1;
+    return i;
+}
+uint16_t  watchsvr_exbextu8( ExactoBufferExtended * buffer, uint8_t * dst, const uint16_t length_back )
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
+    return watchsvr_exbu8(tmp, dst, length_back);
 }
 int      setini_exbextu8(ExactoBufferExtended * buffer)
 {

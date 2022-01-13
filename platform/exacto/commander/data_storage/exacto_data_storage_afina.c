@@ -760,6 +760,11 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     }
     return EXACTOLINK_NO_DATA;
 }
+uint16_t ex_getRawFromSD_ExDtStr(uint8_t * trg, const uint16_t copylen)
+{
+    
+    return watchsvr_exbextu8(&ExDtStr_SD_buffer, trg, copylen);
+}
 uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
 {
     for (uint16_t i = 0; i < EXDTSTR_SINGLE_DATA_STR_LENGTH; i++)

@@ -338,7 +338,8 @@ static int run_CheckMline_Lthread(struct lthread * self)
 	}
 	if (RxReadable == 0)
 	{
-		RxPtr = ex_getRawDataStr_ExDtStr(RxData, RX_DATA_SZ);
+		//RxPtr = ex_getRawDataStr_ExDtStr(RxData, RX_DATA_SZ);
+		RxPtr = ex_getRawFromSD_ExDtStr(RxData, RX_DATA_SZ);
 		RxReadable = 1;
 	}	
 

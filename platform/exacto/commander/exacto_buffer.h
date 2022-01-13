@@ -163,7 +163,7 @@ extern uint8_t clrsvr_exbu8(ExactoBufferUint8Type * buffer, const uint8_t cnt);
 extern uint8_t setemp_exbu8 (ExactoBufferUint8Type * buffer);
 // extern uint8_t mvbckone_exbu8( ExactoBufferUint8Type * buffer );
 // extern uint8_t mvbcksvr_exbu8( ExactoBufferUint8Type * buffer, const uint16_t length_back );
-extern uint8_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length_back );
+extern uint16_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length_back );
 
 extern uint8_t grbfstPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t datalen);
 extern uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen);
@@ -174,5 +174,6 @@ extern uint16_t getlen_exbextu8(        ExactoBufferExtended * buffer);
 extern uint8_t  grbfst_exbextu8(        ExactoBufferExtended * buffer, uint8_t * fstval);
 extern void     pshfrc_exbextu8(        ExactoBufferExtended * buffer, const uint8_t value);
 extern uint8_t  pshsft_exbextu8(        ExactoBufferExtended * buffer, const uint8_t value);
+extern uint16_t  watchsvr_exbextu8( ExactoBufferExtended * buffer, uint8_t * dst, const uint16_t length_back );
 
 #endif /* EXACTO_BUFFER_H_ */
