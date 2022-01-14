@@ -379,7 +379,15 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     uint8_t value = 0;
     exactolink_package_result_t exactolink_type = EXACTOLINK_NO_DATA;
     ExactoBufferUint8Type * tmp_buffer = NULL;
-    *tmp_buffer = ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage;
+
+    //void * tmp = NULL;
+    for (int i = 0; i < THREAD_OUTPUT_TYPES_SZ; i++)
+    {
+        if (ExDtStr_Output_Storage[i].type == EX_THR_SPi_RX)
+            tmp_buffer = &(ExDtStr_Output_Storage[i].datastorage);
+    }
+    if (tmp_buffer == 0)
+        return 0;
     ex_getInfo_ExDtStr(&ExDtStr_TrasmitSPI_Info_tmp); //<===== сохраняем информацию о предыдущей итерации
     if (ExDtStr_Output_Storage[EX_THR_SPi_RX].result != EX_THR_CTRL_WAIT)
     {

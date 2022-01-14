@@ -32,7 +32,19 @@ int main(int argc, char *argv[]) {
 
     setDataToExactoDataStorage(Command, 0, EX_THR_CTRL_OK); 
 
+    while (!checkTxSender())
+    {
+        sleep(1);
+    }
+    
     transmitExactoDataStorage();
+    
+    while (!checkTxSender())
+    {
+        printf("One try...\n");
+        transmitExactoDataStorage();
+        sleep(1);
+    }
 
     printf("Done\n");
     return 0;

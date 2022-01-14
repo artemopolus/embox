@@ -36,5 +36,8 @@ extern uint32_t TESMAF_test_UpdteLst;
 
 extern uint8_t setMlinerMode(const uint16_t address, exactolink_package_result_t mode);
 
+extern uint8_t startMliner(void);
+extern uint8_t stopMliner(void);
+
 
 #endif

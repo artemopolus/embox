@@ -400,6 +400,8 @@ int main(int argc, char *argv[]) {
     if ( ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSnsContainerLthread) != 0)
         return 1;
 
+	printf("Start sns2mliner module\n");
+
 	while(1)
 	{
 		

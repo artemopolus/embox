@@ -332,9 +332,7 @@ uint8_t setMlinerMode(const uint16_t address, exactolink_package_result_t mode)
 {
 	return 0;
 }
-
-EMBOX_UNIT_INIT(initMlinerMainMod);
-static int initMlinerMainMod(void)
+uint8_t startMliner(void)
 {
 #ifdef TESMAF_TICK_VIZ
     ex_dwt_cyccnt_reset();
@@ -348,18 +346,6 @@ static int initMlinerMainMod(void)
         return 1;
 
     printf("Create file\nWrite in file: Data from afina\nReporting about execution\n\n\n");
-
-    lthread_init(&TESP_Subscribe_Lthread, &runTESP_Subscribe_Lthread);
-
-
-    TESP_PrintToSD_Thread = thread_create(THREAD_FLAG_SUSPENDED, runTESP_PrintToSD_Thread, NULL);
-    mutex_init(&TESP_PrintToSD_Mutex);
-    cond_init(&TESP_PrintToSD_Signal, NULL);
-    lthread_init(&TESP_PrintToSD_Remainder_Lthread, runTESP_PrintToSD_Remainder_Lthread);
-
-    lthread_init(&TESMAF_CheckExactoStorage_Lthread, runTESMAF_CheckExactoStorage_Lthread);
-    lthread_init(&TESMAF_AfterCheckExStr_Lthread, runTESMAF_AfterCheckExStr_Lthread);
-    
     schedee_priority_set(&TESP_PrintToSD_Thread->schedee, 200);
     schedee_priority_set(&TESP_PrintToSD_Remainder_Lthread.schedee, 220);
 
@@ -380,6 +366,28 @@ static int initMlinerMainMod(void)
     thread_launch(TESP_PrintToSD_Thread);
 
     thread_join(TESP_PrintToSD_Thread,NULL);
+    return 0;
+}
+uint8_t stopMliner(void)
+{
+    return 0;
+}
+
+EMBOX_UNIT_INIT(initMlinerMainMod);
+static int initMlinerMainMod(void)
+{
+
+    lthread_init(&TESP_Subscribe_Lthread, &runTESP_Subscribe_Lthread);
+
+
+    TESP_PrintToSD_Thread = thread_create(THREAD_FLAG_SUSPENDED, runTESP_PrintToSD_Thread, NULL);
+    mutex_init(&TESP_PrintToSD_Mutex);
+    cond_init(&TESP_PrintToSD_Signal, NULL);
+    lthread_init(&TESP_PrintToSD_Remainder_Lthread, runTESP_PrintToSD_Remainder_Lthread);
+
+    lthread_init(&TESMAF_CheckExactoStorage_Lthread, runTESMAF_CheckExactoStorage_Lthread);
+    lthread_init(&TESMAF_AfterCheckExStr_Lthread, runTESMAF_AfterCheckExStr_Lthread);
+    
 	return 0;
 }
 
