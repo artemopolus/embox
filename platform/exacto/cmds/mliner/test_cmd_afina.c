@@ -25,6 +25,7 @@ static uint8_t Command[40] = {1,17,1,17,1,17,0};
 
 int main(int argc, char *argv[]) {
     printf("Test one command\n");
+    ex_setExactolinkType(EXACTOLINK_SNS_XLXLGR);
 
     setDataToExactoDataStorage(Command, 0, EX_THR_CTRL_INIT); 
 

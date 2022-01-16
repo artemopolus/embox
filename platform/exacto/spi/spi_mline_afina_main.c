@@ -346,12 +346,13 @@ void SPI1_updateTx()
 {
     if (!ExDtStr_Output_Storage[EX_THR_SPi_TX].isready)
         return;
-    uint8_t value;
-    for (uint16_t i = 0; i < ExDtStr_Output_Storage[EX_THR_SPi_TX].datalen; i++)
-    {
-        grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value);
-        SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
-    }
+    //uint8_t value;
+    // for (uint16_t i = 0; i < SPI1_FULL_DMA_RXTX_BUFFER_SIZE ; i++)
+    // {
+    //     grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value);
+    //     SPI1_FULL_DMA_tx_buffer.dt_buffer[i] = value;
+    // }
+    getMailFromExactoDataStorage(SPI1_FULL_DMA_tx_buffer.dt_buffer, SPI1_FULL_DMA_tx_buffer.dt_count);
     ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 0;
 }
 
