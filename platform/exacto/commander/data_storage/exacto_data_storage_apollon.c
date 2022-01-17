@@ -232,14 +232,6 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_
 {
     switch (result)
     {
-    case EX_THR_CTRL_INIT:
-        /* code */
-        // clearExactoDataStorage();
-        //начало итерации записи данных
-        break;
-    case EX_THR_CTRL_OK:
-        //конец итерации записи
-        break;
     case EX_THR_CTRL_UNKNOWN_ERROR:
     case EX_THR_CTRL_NO_RESULT:
         return 1;
@@ -254,27 +246,8 @@ uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_
         }
         EDS_DataStorage_UdtCnt+=datacount;
     }
-    // for (uint16_t i = 0; i < datacount; i++)
-    // {
-        // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, data[i]);
-        // updateData2EDS(data[i]);
-        // EDS_DataStorage_UdtCnt++;
-    // }
     ExDtStr_Output_Storage[EX_THR_SPi_TX].result = result;
-    switch (EDS_CurrentExactolinkType)
-    {
-    case EXACTOLINK_LSM303AH_TYPE0:
-        if (result == EX_THR_CTRL_WAIT)
-        {
-            // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, 0x00);
-            // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, 0x00);
-            // updateData2EDS(0x00);
-            // updateData2EDS(0x00);
-        }
-        break;
-    default:
-        break;
-    }
+    
     return 0;
 }
 uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type)
