@@ -75,6 +75,45 @@ module test_cmd_afina
 	depends embox.kernel.thread.sync
 
 }
+
+@AutoCmd
+@Cmd(name="start_mliner", help=" Start MLINE service ", man='''
+AUTHOR Kuznetcov
+''')
+module start_mliner_afina 
+{
+	source "start_mliner_afina.c"
+
+	depends exacto.commander.data_storage
+	depends exacto.mliner.main_mod
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
+@AutoCmd
+@Cmd(name="stop_mliner", help=" Stop MLINE service ", man='''
+AUTHOR Kuznetcov
+''')
+module stop_mliner_afina 
+{
+	source "stop_mliner_afina.c"
+
+	depends exacto.commander.data_storage
+	depends exacto.mliner.main_mod
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
 @AutoCmd
 @Cmd(name="test_read", help=" Test reading data of MLINE ", man='''
 AUTHOR Kuznetcov

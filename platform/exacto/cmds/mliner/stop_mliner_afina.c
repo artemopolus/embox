@@ -18,20 +18,11 @@
 #include <kernel/printk.h>
 
   
-#include "commander/exacto_data_storage.h"
 #include "mliner/main_mod.h"
 
 
-
 int main(int argc, char *argv[]) {
-    printf("Test read state\n");
-
-    uint32_t val = 0;
-    uint8_t res = 0;
-    getMlinerVars(DATACHECK_COUNTER, &val, &res );
-
-    printf("Datacheck: %d \n", val);
-
-    printf("Done\n");
+    printf("Stop MLINE\n");
+    stopMliner();
     return 0;
 }

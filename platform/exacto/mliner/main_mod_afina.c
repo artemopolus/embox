@@ -29,6 +29,8 @@ static uint32_t     TESMAF_Ticker_Start = 0,
                     TESMAF_Ticker_Result = 0;
 #endif
 
+static mliner_main_mod_modes_t Mode = MLINER_M_FIRST_START;
+
 static struct lthread TESP_Subscribe_Lthread;
 uint8_t               TESP_Subscribe_Marker = 0;
 
@@ -40,6 +42,10 @@ static cond_t           TESP_PrintToSD_Signal;
 static struct mutex     TESP_PrintToSD_Mutex;
 static struct lthread   TESP_PrintToSD_Remainder_Lthread;
 
+static struct lthread GetValue_Lthread;
+uint32_t * GetValuePtr;
+uint8_t * GetValueRes;
+mliner_main_mod_vars_t GetValueType;
 //----------------------------------------------------------------------------
 
 #define TESMAF_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
@@ -282,6 +288,8 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
     printk("!");
 #endif
     // printk("!");
+    if (Mode == MLINER_M_STOP_ALL)
+        return 0;
 
     TESP_TimReceiver_Counter++;
     if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
@@ -316,7 +324,9 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
         TESMAF_Sensors_GoodCnt = 0;
         ex_toggleLed(EX_LED_GREEN);
     }    // printk("+");
-    // lthread_launch(&TESP_PrintToSD_Remainder_Lthread);
+
+    if (Mode == MLINER_M_STOP_MLINE)
+        return 0;
     updateMline();
     
     return 0;
@@ -334,6 +344,12 @@ uint8_t setMlinerMode(const uint16_t address, exactolink_package_result_t mode)
 }
 uint8_t startMliner(void)
 {
+
+    if (Mode != MLINER_M_FIRST_START)
+    {
+        Mode = MLINER_M_NONE;
+        return 0;
+    }
 #ifdef TESMAF_TICK_VIZ
     ex_dwt_cyccnt_reset();
 #endif
@@ -366,16 +382,55 @@ uint8_t startMliner(void)
     thread_launch(TESP_PrintToSD_Thread);
 
     thread_join(TESP_PrintToSD_Thread,NULL);
+    Mode = MLINER_M_NONE;
     return 0;
 }
 uint8_t stopMliner(void)
 {
+    Mode = MLINER_M_STOP_ALL;
     return 0;
 }
+static int runGetValue_Lthread(struct lthread * self)
+{
+    if (GetValueType == TX_BUFFER)
+        *GetValuePtr = TESMAF_Tx_Buffer;
+    else if (GetValueType == RX_BUFFER)
+        *GetValuePtr = TESMAF_Rx_Buffer;
+    else if (GetValueType == DATACHECK_CNTBUFF)
+        *GetValuePtr = TESMAF_DataCheck_CntBuff;
+    else if (GetValueType == DATACHECK_COUNTER)
+        *GetValuePtr = TESMAF_DataCheck_Counter;
+    else if (GetValueType == DATACHECK_SCSBUFF)
+        *GetValuePtr = TESMAF_DataCheck_ScsBuff;
+    else if (GetValueType == DATACHECK_SUCCESS)
+        *GetValuePtr = TESMAF_DataCheck_Success;
+    else if (GetValueType == TEST_CALLFUNTOOMANYFAILED)
+        *GetValuePtr = TESMAF_test_CallFunTooManyFailed;
+    else if (GetValueType == TEST_INPUTLST)
+        *GetValuePtr = TESMAF_test_InputLst;
+    else if (GetValueType == TEST_UPDTELST)
+        *GetValuePtr = TESMAF_test_UpdteLst;
 
+    *GetValueRes = 1;
+    return 0;
+}
+void getMlinerVars(mliner_main_mod_vars_t type, uint32_t * ptr, uint8_t * check)
+{
+    while(!GetValueRes);
+    ptr = GetValuePtr;
+    check = GetValueRes;
+    *GetValueRes = 0;
+    *GetValuePtr = 0;
+    GetValueType = type;
+    lthread_launch(&GetValue_Lthread);
+    while(!GetValueRes);
+}
 EMBOX_UNIT_INIT(initMlinerMainMod);
 static int initMlinerMainMod(void)
 {
+    *GetValuePtr = 0;
+    *GetValueRes = 1;
+    lthread_init(&GetValue_Lthread, runGetValue_Lthread);
 
     lthread_init(&TESP_Subscribe_Lthread, &runTESP_Subscribe_Lthread);
 
