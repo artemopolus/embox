@@ -23,7 +23,15 @@
 
 static uint8_t Command[40] = {1,17,1,17,1,17,0};
 
+static struct lthread Upload_Lthread;
+
+static int runUpload_Lthread(struct lthread * self)
+{
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
+    lthread_init(&Upload_Lthread, runUpload_Lthread);
     printf("Test one command\n");
     ex_setExactolinkType(EXACTOLINK_SNS_XLXLGR);
 
