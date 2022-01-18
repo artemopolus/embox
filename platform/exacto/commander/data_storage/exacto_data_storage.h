@@ -23,6 +23,7 @@ typedef enum t_c_r_t{
     EX_THR_CTRL_INIT,
     EX_THR_CTRL_WAIT,
     EX_THR_CTRL_READY,
+    EX_THR_CTRL_OVRFL,
     EX_THR_CTRL_UNKNOWN_ERROR,
     EX_THR_CTRL_NO_RESULT = 0xFF
 }ex_thread_control_result_t;

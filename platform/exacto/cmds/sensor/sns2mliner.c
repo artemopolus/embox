@@ -131,24 +131,26 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 		return 0;
 	}
 	sns->cnt_cur = 0;
-	uint8_t * buffer = &trg[*ptr];	
+	//uint8_t * buffer = &trg[*ptr];	
 	PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
 	PackageToGett.cmd = sns->address;//cmd;
 	PackageToGett.datalen = sns->datalen;
 	uint8_t try_cnt = 1;
 	const uint8_t tmp_length = (sns->datalen - sns->shift);
-	if ((*ptr + tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
-		return 0;
+	//if ((*ptr + tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
+	//	return 0;
 	enableExactoSensor(sns->sns);
 	if (ex_gettSpiSns(&PackageToGett))
 		try_cnt = 0;
 	disableExactoSensor(sns->sns);
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
 	{
-		buffer[0] = EXACTOLINK_SNS_ID;
-		buffer[1] = (uint8_t)sns->sns;
-		for (uint8_t i = 0; i < tmp_length; i++)
-			buffer[i+2] = PackageToGett.data[i + sns->shift];
+		Ender[0] = EXACTOLINK_SNS_ID;
+		Ender[1] = (uint8_t)sns->sns;
+		setDataToExactoDataStorage(Ender, 2, EX_THR_CTRL_WAIT);
+		//for (uint8_t i = 0; i < tmp_length; i++)
+			//buffer[i+2] = PackageToGett.data[i + sns->shift];
+		setDataToExactoDataStorage(&PackageToGett.data[sns->shift], tmp_length, EX_THR_CTRL_WAIT);
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
 		return (tmp_length + 2);
@@ -316,7 +318,7 @@ static int runSnsContainerLthread(struct lthread * self)
 
 	if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
 	{
-        setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
+        //setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
 
 		SnsContainer.sns[0].dtrd = 0;
 		SnsContainer.sns[1].dtrd = 0;
