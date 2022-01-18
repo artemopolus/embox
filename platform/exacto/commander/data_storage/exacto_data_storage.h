@@ -109,6 +109,8 @@ extern uint32_t ExDtStr_TrasmitSPI_LostCnt;
 extern uint32_t ExDtStr_TrasmitSPI_DbleCnt;
 extern uint32_t ExDtStr_TrasmitSPI_OverFlw;
 extern uint16_t ExDtStr_OutputSPI_OverFlw;
+extern uint32_t ExDtStr_TransmitSPI_TxCounter;
+extern uint32_t ExDtStr_TransmitSPI_RxCounter;
 
 // функции
 extern uint8_t ex_setExactolinkType( exactolink_package_result_t new_type);

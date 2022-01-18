@@ -20,6 +20,9 @@
 #define TMP_BUFFER_DATA_SZ 40
 #define RX_DATA_SZ 40
 
+static uint32_t MlineReceive = 0;
+static uint32_t MlineTransmit = 0;
+
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
 
 static uint8_t Ender[] = {5,5,5,5};
@@ -336,6 +339,8 @@ static int runSnsContainerLthread(struct lthread * self)
 }
 static int run_CheckMline_Lthread(struct lthread * self)
 {
+	MlineReceive = ExDtStr_TransmitSPI_RxCounter;
+	MlineTransmit = ExDtStr_TransmitSPI_TxCounter;
 	exactolink_package_result_t exactolink_result;
 	exactolink_result = ex_checkData_ExDtStr();
 	if (exactolink_result == EXACTOLINK_NO_DATA)
@@ -441,7 +446,7 @@ int main(int argc, char *argv[]) {
 		
 		if (Ticker_Readable)
 		{
-			printf("Ticker: %d\n", Ticker_Buf);
+			printf("Ticker: %d TxCnt: %d RxCnt %d \n", Ticker_Buf, MlineTransmit, MlineReceive);
 			Ticker_Readable = 0;
 		}
 		if (RxReadable)
