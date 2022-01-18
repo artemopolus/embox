@@ -249,3 +249,8 @@ uint8_t  pshsft_exbextu8(        ExactoBufferExtended * buffer, const uint8_t va
     ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type*) buffer;
     return pshsft_exbu8(tmp, value);
 }
+uint8_t  setemp_exbextu8(        ExactoBufferExtended * buffer)
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type *) buffer;
+    return setemp_exbu8(tmp);
+}

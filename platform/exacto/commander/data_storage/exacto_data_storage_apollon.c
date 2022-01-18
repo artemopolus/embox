@@ -158,6 +158,7 @@ static int initExactoDataStorage(void)
     ExDtStr_Output_Storage[1].type = EX_THR_SPi_TX;
     // ExDtStr_Output_Storage[2].type = EX_THR_STR_CALC_IN;
     // ExDtStr_Output_Storage[3].type = EX_THR_STR_CALC_OUT;
+    setini_exbextu8(&ExDtStr_SD_buffer);
     for (uint8_t i = 0 ; i < THREAD_OUTPUT_TYPES_SZ; i++)
     {
         ExDtStr_Output_Storage[i].result = EX_THR_CTRL_NO_RESULT;
@@ -488,8 +489,9 @@ exactolink_package_result_t ex_checkData_ExDtStr()
 }
 uint16_t ex_getRawFromSD_ExDtStr(uint8_t * trg, const uint16_t copylen)
 {
-    
-    return watchsvr_exbextu8(&ExDtStr_SD_buffer, trg, copylen);
+    const uint16_t length = watchsvr_exbextu8(&ExDtStr_SD_buffer, trg, copylen);
+    setemp_exbextu8(&ExDtStr_SD_buffer);
+    return length;
 }
 uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
 {

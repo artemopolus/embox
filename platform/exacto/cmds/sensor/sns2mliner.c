@@ -327,7 +327,7 @@ static int runSnsContainerLthread(struct lthread * self)
 		Mline_Counter++;
 	else{
 		Mline_Counter = 0;
-		//transmitExactoDataStorage();
+		transmitExactoDataStorage();
 		}
 	trg->done = 1;
 	return 0;
@@ -447,6 +447,16 @@ int main(int argc, char *argv[]) {
 			printf("Get rx data: ");
 			for (uint8_t i = 0; i < RxPtr; i++)
 				printf("%d ,", RxData[i]);
+			
+			if (
+				(RxData[0] 		== 0x01)
+				&&(RxData[1] 	== 0x11)
+				&&(RxData[2] 	== 0x01)
+				&&(RxData[3] 	== 0x11)
+			)
+			{
+				printf("\nGet CMD");
+			}
 			RxReadable = 0;
 			RxPtr = 0;
 			printf("\nOverflow: %d\n", OverFlow);
