@@ -441,12 +441,14 @@ int main(int argc, char *argv[]) {
 
 	printf("Start sns2mliner module\n");
 
+	uint16_t iter = 0;
+
 	while(1)
 	{
 		
 		if (Ticker_Readable)
 		{
-			printf("Ticker: %d TxCnt: %d RxCnt %d \n", Ticker_Buf, MlineTransmit, MlineReceive);
+			printf("i: %d Ticker: %d TxCnt: %d RxCnt: %d \n", iter++, Ticker_Buf, MlineTransmit, MlineReceive);
 			Ticker_Readable = 0;
 		}
 		if (RxReadable)
