@@ -24,5 +24,6 @@
 int main(int argc, char *argv[]) {
     printf("Start MLINE\n");
     startMliner();
+    printf("Done\n");
     return 0;
 }

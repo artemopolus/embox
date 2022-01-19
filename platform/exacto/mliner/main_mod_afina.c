@@ -41,6 +41,7 @@ static struct thread *  TESP_PrintToSD_Thread;
 static cond_t           TESP_PrintToSD_Signal;
 static struct mutex     TESP_PrintToSD_Mutex;
 static struct lthread   TESP_PrintToSD_Remainder_Lthread;
+static uint8_t          TESP_PrintToSD_enabled = 0;
 
 static struct lthread GetValue_Lthread;
 uint32_t * GetValuePtr;
@@ -217,6 +218,13 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     uint32_t lst_cnt = 0;
     uint32_t delta = 0;
     uint16_t fast_write_cnt = 0;
+
+  //  while (!TESP_PrintToSD_enabled)
+    //{
+      //  sleep(1);
+    //}
+    
+
     while(1)
     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
@@ -287,7 +295,8 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("!");
 #endif
-    // printk("!");
+	ex_subs_service_t * trg = (ex_subs_service_t*)self;
+   // printk("!");
     if (Mode == MLINER_M_STOP_ALL)
         return 0;
 
@@ -328,7 +337,7 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
     if (Mode == MLINER_M_STOP_MLINE)
         return 0;
     updateMline();
-    
+    trg->done = 1; 
     return 0;
 }
 static int runTESP_Subscribe_Lthread( struct lthread * self)
@@ -353,7 +362,6 @@ uint8_t startMliner(void)
 #ifdef TESMAF_TICK_VIZ
     ex_dwt_cyccnt_reset();
 #endif
-    ex_setFreqHz(100);
     
     ex_enableGpio(EX_GPIO_SPI_MLINE);
     syncMasterSpiDma();
@@ -362,14 +370,10 @@ uint8_t startMliner(void)
         return 1;
 
     printf("Create file\nWrite in file: Data from afina\nReporting about execution\n\n\n");
-    schedee_priority_set(&TESP_PrintToSD_Thread->schedee, 200);
-    schedee_priority_set(&TESP_PrintToSD_Remainder_Lthread.schedee, 220);
 
-    schedee_priority_set(&TESMAF_AfterCheckExStr_Lthread.schedee, 225);
-    schedee_priority_set(&TESMAF_CheckExactoStorage_Lthread.schedee, 230);
-
-
+    TESP_Subscribe_Marker = 0;
     lthread_launch(&TESP_Subscribe_Lthread);
+
     while(!TESP_Subscribe_Marker)
     {
     }
@@ -380,8 +384,10 @@ uint8_t startMliner(void)
 #endif
 
     thread_launch(TESP_PrintToSD_Thread);
+    TESP_PrintToSD_enabled = 1;
+    ex_setFreqHz(100);
 
-    thread_join(TESP_PrintToSD_Thread,NULL);
+    //thread_join(TESP_PrintToSD_Thread,NULL);
     Mode = MLINER_M_NONE;
     return 0;
 }
@@ -416,14 +422,14 @@ static int runGetValue_Lthread(struct lthread * self)
 }
 void getMlinerVars(mliner_main_mod_vars_t type, uint32_t * ptr, uint8_t * check)
 {
-    while(!GetValueRes);
+    while(!*GetValueRes);
     ptr = GetValuePtr;
     check = GetValueRes;
     *GetValueRes = 0;
     *GetValuePtr = 0;
     GetValueType = type;
     lthread_launch(&GetValue_Lthread);
-    while(!GetValueRes);
+    while(!*GetValueRes);
 }
 EMBOX_UNIT_INIT(initMlinerMainMod);
 static int initMlinerMainMod(void)
@@ -435,13 +441,22 @@ static int initMlinerMainMod(void)
     lthread_init(&TESP_Subscribe_Lthread, &runTESP_Subscribe_Lthread);
 
 
-    TESP_PrintToSD_Thread = thread_create(THREAD_FLAG_SUSPENDED, runTESP_PrintToSD_Thread, NULL);
+    TESP_PrintToSD_Thread = thread_create( THREAD_FLAG_DETACHED | THREAD_FLAG_SUSPENDED , runTESP_PrintToSD_Thread, NULL);
     mutex_init(&TESP_PrintToSD_Mutex);
     cond_init(&TESP_PrintToSD_Signal, NULL);
     lthread_init(&TESP_PrintToSD_Remainder_Lthread, runTESP_PrintToSD_Remainder_Lthread);
 
     lthread_init(&TESMAF_CheckExactoStorage_Lthread, runTESMAF_CheckExactoStorage_Lthread);
     lthread_init(&TESMAF_AfterCheckExStr_Lthread, runTESMAF_AfterCheckExStr_Lthread);
+
+    schedee_priority_set(&TESP_PrintToSD_Thread->schedee, 200);
+    schedee_priority_set(&TESP_PrintToSD_Remainder_Lthread.schedee, 220);
+    schedee_priority_set(&TESMAF_AfterCheckExStr_Lthread.schedee, 225);
+    schedee_priority_set(&TESMAF_CheckExactoStorage_Lthread.schedee, 230);
+
+    TESP_PrintToSD_enabled = 0; 
+    //thread_detach(TESP_PrintToSD_Thread);
+    //thread_launch(TESP_PrintToSD_Thread);
     
 	return 0;
 }
