@@ -1,0 +1,4 @@
+#ifndef EXACTO_SENSORS_SNS_LSMISM_H
+#define EXACTO_SENSORS_SNS_LSMISM_H
+
+#endif
