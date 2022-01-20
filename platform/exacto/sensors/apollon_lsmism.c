@@ -18,8 +18,11 @@
 #define TMP_BUFFER_DATA_SZ 40
 #define RX_DATA_SZ 40
 
-static uint32_t MlineReceive = 0;
-static uint32_t MlineTransmit = 0;
+uint32_t Apollon_lsmism_MlineReceive = 0;
+uint32_t Apollon_lsmism_MlineTransmit = 0;
+uint8_t Apollon_lsmism_MlineRXTx_Readable = 0;
+uint32_t Apollon_lsmism_Ticker_Buf = 0;
+uint8_t Apollon_lsmism_Ticker_Readable = 0;
 
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
 
@@ -45,9 +48,8 @@ static uint8_t Ticker_Enable = 0;
 static uint32_t Ticker_Start = 0;
 static uint32_t Ticker_Stop = 0;
 static uint32_t Ticker_Res = 0;
-static uint32_t Ticker_Buf = 0;
 static uint32_t Ticker_Cnt = 0;
-static uint8_t Ticker_Readable = 0;
+
 
 static uint16_t OverFlow = 0;
 
@@ -299,10 +301,10 @@ static int runSnsContainerLthread(struct lthread * self)
 		Ticker_Res += Ticker_Stop - Ticker_Start;
 		Ticker_Cnt++;
 		Ticker_Start = dwt_cyccnt_start();
-		if (Ticker_Readable == 0)
+		if (Apollon_lsmism_Ticker_Readable == 0)
 		{
-			Ticker_Readable = 1;
-			Ticker_Buf = Ticker_Res/Ticker_Cnt;
+			Apollon_lsmism_Ticker_Readable = 1;
+			Apollon_lsmism_Ticker_Buf = Ticker_Res/Ticker_Cnt;
 			Ticker_Cnt = 0;
 			Ticker_Res = 0;
 		}
@@ -331,14 +333,19 @@ static int runSnsContainerLthread(struct lthread * self)
 	else{
 		Mline_Counter = 0;
 		transmitExactoDataStorage();
+		lthread_launch(&CheckMline_Lthread);
 		}
 	trg->done = 1;
 	return 0;
 }
 static int run_CheckMline_Lthread(struct lthread * self)
 {
-	MlineReceive = ExDtStr_TransmitSPI_RxCounter;
-	MlineTransmit = ExDtStr_TransmitSPI_TxCounter;
+	if (Apollon_lsmism_MlineRXTx_Readable == 0)
+	{
+		Apollon_lsmism_MlineReceive = ExDtStr_TransmitSPI_RxCounter;
+		Apollon_lsmism_MlineTransmit = ExDtStr_TransmitSPI_TxCounter;
+		Apollon_lsmism_MlineRXTx_Readable = 1;
+	}
 	exactolink_package_result_t exactolink_result;
 	exactolink_result = ex_checkData_ExDtStr();
 	if (exactolink_result == EXACTOLINK_NO_DATA)
@@ -385,7 +392,7 @@ static int run_Init_Lthread(struct lthread * self)
 {
 	Counter = 0;
 	PackRecvCounter = 0;
-	Ticker_Readable = 0;
+	Apollon_lsmism_Ticker_Readable = 0;
 	Ticker_Enable = 0;
 	SnsContainer.sns_count = 2;
 	SnsContainer.sns[0].isenabled = 1;
