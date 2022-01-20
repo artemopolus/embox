@@ -29,6 +29,10 @@ void HAL_MspInit(void)
 
 static void SystemClock_Config(void)
 {
+
+  (DBGMCU)->APB1FZ = 0x7E01BFF;
+  (DBGMCU)->APB2FZ = 0x70003;
+
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
