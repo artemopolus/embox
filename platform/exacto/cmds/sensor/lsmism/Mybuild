@@ -12,4 +12,5 @@ module start {
 	
 	depends exacto.commander.data_storage
 	depends exacto.apollon.tim.tim3
+    depends exacto.sensors.apollon_lsmism
 }

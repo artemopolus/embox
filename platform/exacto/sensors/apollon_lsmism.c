@@ -1,8 +1,6 @@
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
+
+#include "sensors/sns_lsmism.h"
+
 #include "commander/exacto_data_storage.h"
 #include "commander/exacto_sns_ctrl.h"
 #include "commander/exacto_data_storage_options.h"
@@ -423,15 +421,9 @@ static int run_Init_Lthread(struct lthread * self)
 	ex_frcTimReload();
     return 0;
 }
-int main(int argc, char *argv[]) {
-	//init
-	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
-	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
-	resetExactoDataStorage();
-	lthread_init(&Init_Lthread, run_Init_Lthread);
-	lthread_init(&CheckMline_Lthread, run_CheckMline_Lthread);
-	lthread_init(&GetRaw_Lthread, run_GetRaw_Lthread);
 
+uint8_t exSnsStart(void)
+{
 	lthread_launch(&Init_Lthread);
 
 	dwt_cyccnt_reset();
@@ -439,42 +431,22 @@ int main(int argc, char *argv[]) {
 	if ( ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSnsContainerLthread) != 0)
 	        return 1;
 
-	printf("Start sns2mliner module\n");
+	return 0;
+}
+uint8_t exSnsStop(void)
+{
+	return 0;
+}
+EMBOX_UNIT_INIT(initApollon_lsmism);
+static int initApollon_lsmism()
+{
+	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
 
-	uint16_t iter = 0;
-
-	while(1)
-	{
-		
-		if (Ticker_Readable)
-		{
-			printf("i: %d Ticker: %d TxCnt: %d RxCnt: %d \n", iter++, Ticker_Buf, MlineTransmit, MlineReceive);
-			Ticker_Readable = 0;
-		}
-		if (RxReadable)
-		{
-			printf("Get rx data: ");
-			for (uint8_t i = 0; i < RxPtr; i++)
-				printf("%d ,", RxData[i]);
-			
-			if (
-				(RxData[0] 		== 0x01)
-				&&(RxData[1] 	== 0x11)
-				&&(RxData[2] 	== 0x01)
-				&&(RxData[3] 	== 0x11)
-			)
-			{
-				printf("\nGet CMD");
-			}
-			RxReadable = 0;
-			RxPtr = 0;
-			printf("\nOverflow: %d\n", OverFlow);
-		}
-		else
-			lthread_launch(&CheckMline_Lthread);
-		usleep((unsigned int)1000000);
-	}
-
+	resetExactoDataStorage();
+	lthread_init(&Init_Lthread, run_Init_Lthread);
+	lthread_init(&CheckMline_Lthread, run_CheckMline_Lthread);
+	lthread_init(&GetRaw_Lthread, run_GetRaw_Lthread);
 	return 0;
 }
 
