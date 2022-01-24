@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "commander/exacto_filemanager.h"
+#include "commander/exacto_data_storage.h"
 #include <util/err.h>
 #include <embox/test.h>
 #include <kernel/sched.h>
@@ -17,9 +18,21 @@ struct lthread MainLightThread;
 static struct thread *MainBasicThread;
 static void *runMainBasicThread(void *arg) {
     printf("Basic full thread run\n");
-    uint8_t buffer0[] = "type typ type from common thread\n";
+//    uint8_t buffer0[] = "type typ type from common thread\n";
+    uint8_t ck = 0;
+    for (int i = 0; i < 1048; i++)
+    {
+        ck++;
+        if (!pshsft_exbextu8(&ExDtStr_SD_buffer, ck))
+            break;
+    }
+    ex_saveDataToExBufSD();
 
-    ex_saveToFile(buffer0, sizeof(buffer0));
+    printf("Writing..\n");
+    if(ex_pshExBufToSD())
+        printf("Bad\n");
+    else
+        printf("Success\n");
 
 
 	return NULL;
@@ -48,9 +61,9 @@ int main(int argc, char *argv[]) {
     ex_saveToFile(buffer1, sizeof(buffer1));
     lthread_init(&MainLightThread, runMainLightThread);
 
-	MainBasicThread = thread_create(THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
+	MainBasicThread = thread_create(THREAD_FLAG_DETACHED |THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
     thread_launch(MainBasicThread);
-    thread_join(MainBasicThread, NULL);
+    //thread_join(MainBasicThread, NULL);
 
 
 

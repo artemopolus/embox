@@ -3,4 +3,4 @@
 //"sns_reader_smpl"
 //"spi_txrx"
 //"sns2mliner"
-"sns_start"
+//"sns_start"
