@@ -15,50 +15,58 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <embox/unit.h>
 
-#include "tests/print2sd.h"
+#include "smpl_mod.h"
 
 static uint8_t buffer[1048];
 uint8_t Print2SDFlag;
-static int Res;
-int Pt;
+int PrintRes;
+static uint8_t BBBFlag = 0;
+
 static struct thread *MainBasicThread;
 
 
 static void *runMainBasicThread(void *arg) {
+    
 	printf("Start thread\n");
+
+    while(BBBFlag == 0)
+        sleep(1);
+	Print2SDFlag = 0;
+    int	Pt = open("/mnt/test.txt",O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
+	if (0 > Pt)
+	{
+    //   printf("Can't open Data file\n");
+		return NULL;
+	}
+	// else
+    //   printf("Data file is opened\n");
+
+    
     uint8_t ck = 0;
     for (int i = 0; i < 1048; i++)
     {
         ck++;
 		  buffer[i] = ck;
 	 }
-   Res = write (Pt, buffer, 1048);
+   PrintRes = write (Pt, buffer, 1048);
 
 	Print2SDFlag = 1;
 	//printf("Done: %d\n", Res);
 	return NULL;
 }
-
-int main(int argc, char *argv[]) 
+void startSmplMod()
 {
-	Print2SDFlag = 1;
-	Pt = open("/mnt/test.txt",O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
-	if (0 > Pt)
-	{
-      printf("Can't open Data file\n");
-		return 1;
-	}
-	else
-      printf("Data file is opened\n");
 
+    BBBFlag = 1;
+}
+EMBOX_UNIT_INIT(initTestSmplMod);
+static int initTestSmplMod()
+{
+	Print2SDFlag = 0;
+    BBBFlag = 0;
 	MainBasicThread = thread_create(THREAD_FLAG_DETACHED |THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
-   thread_launch(MainBasicThread);
-
-	//while(Flag == 0)
-	//	sleep(1);
-
-//	printf("Done: %d\n", Res);
-
+    thread_launch(MainBasicThread);
 	return 0;
 }
