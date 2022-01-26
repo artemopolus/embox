@@ -219,11 +219,14 @@ static void * runTESP_PrintToSD_Thread(void * arg)
     uint32_t delta = 0;
     uint16_t fast_write_cnt = 0;
 
-  //  while (!TESP_PrintToSD_enabled)
-    //{
-      //  sleep(1);
-    //}
-    
+    while (!TESP_PrintToSD_enabled)
+       sleep(1);
+     
+    if(initExactoFileManager())
+    {
+        return NULL;
+    }
+    TESP_PrintToSD_enabled = 2;
 
     while(1)
     {
@@ -359,36 +362,40 @@ uint8_t startMliner(void)
         Mode = MLINER_M_NONE;
         return 0;
     }
-#ifdef TESMAF_TICK_VIZ
-    ex_dwt_cyccnt_reset();
-#endif
     
+
+
+
+    if(TESP_Subscribe_Marker == 0)
+    {
+        lthread_launch(&TESP_Subscribe_Lthread);
+
+        while(!TESP_Subscribe_Marker)
+            sleep(1);
+        printf("Subscribing is done\n");
+    }
+
+    if (TESP_PrintToSD_enabled != 2)
+    {
+        TESP_PrintToSD_enabled = 1;
+        int index = 0;
+        while ( TESP_PrintToSD_enabled != 2)
+        {
+            index++;
+            sleep(1); 
+            if (index > 20)
+            {
+                printf("Can't start SD server\n");
+                return 1;
+            }
+        }
+    }
+    
+    printf("Create file\n\n\n");
+    ex_setFreqHz(100);
+    Mode = MLINER_M_NONE;
     ex_enableGpio(EX_GPIO_SPI_MLINE);
     syncMasterSpiDma();
-
-    if(initExactoFileManager())
-        return 1;
-
-    printf("Create file\nWrite in file: Data from afina\nReporting about execution\n\n\n");
-
-    TESP_Subscribe_Marker = 0;
-    lthread_launch(&TESP_Subscribe_Lthread);
-
-    while(!TESP_Subscribe_Marker)
-    {
-    }
-    printf("Subscribing is done\n");
-
-#ifdef PRINTK_ID_FOR_THREAD_ON
-    printk("+ -- tim run\ni -- win run\n& -- exdtst run\n");
-#endif
-
-    thread_launch(TESP_PrintToSD_Thread);
-    TESP_PrintToSD_enabled = 1;
-    ex_setFreqHz(100);
-
-    //thread_join(TESP_PrintToSD_Thread,NULL);
-    Mode = MLINER_M_NONE;
     return 0;
 }
 uint8_t stopMliner(void)
@@ -455,9 +462,9 @@ static int initMlinerMainMod(void)
     schedee_priority_set(&TESMAF_CheckExactoStorage_Lthread.schedee, 230);
 
     TESP_PrintToSD_enabled = 0; 
-    //thread_detach(TESP_PrintToSD_Thread);
-    //thread_launch(TESP_PrintToSD_Thread);
     
+    thread_launch(TESP_PrintToSD_Thread);
+
 	return 0;
 }
 
