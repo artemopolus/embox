@@ -9,6 +9,15 @@ void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t ref
                 //pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
    pshfrc_exbextu8(buffer, EXACTOLINK_SDPACK_ID);
    pshfrc_exbextu8(buffer, type);
-	
+	pshsft_exbextu8(buffer, (uint8_t) (cnt));
+	pshsft_exbextu8(buffer, (uint8_t) (cnt >> 8));
+	pshsft_exbextu8(buffer, (uint8_t) (refcnt));
+	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 8));
+	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 16));
+	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 24));
 
+}
+uint8_t exlnk_pushtoSDpack(const uint8_t value, ExactoBufferExtended * buffer)
+{
+	return pshsft_exbextu8(buffer, value);
 }

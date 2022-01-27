@@ -723,7 +723,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
                 }
                 else
                 {
-                    if (!pshsft_exbextu8(&ExDtStr_SD_buffer, value))
+                    if (!exlnk_pushtoSDpack(value, &ExDtStr_SD_buffer))
                     {
 #ifdef PRINTK_ID_FOR_THREAD_ON
                         printk("\nqqqqqqqqqqqqqqqqqq\n");
