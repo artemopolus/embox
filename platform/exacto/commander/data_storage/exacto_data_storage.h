@@ -10,6 +10,8 @@
 
 #include "commander/exacto_data_storage_options.h"
 
+#include "exactolink/exactolink_base.h"
+
 #include <stdint.h>
 // typedef enum{
 //     APPEND = 0,

@@ -24,3 +24,10 @@ module basis_code {
     source "/../../../../exactoLink/exactolink_pack.c"
     @NoRuntime depends base_cppflags
 }
+module exactolink_base
+{
+    source "exactolink_base.c"
+    @IncludeExport(path="exactolink")
+    source "exactolink_base.h"
+	depends exacto.commander.buffer	
+}

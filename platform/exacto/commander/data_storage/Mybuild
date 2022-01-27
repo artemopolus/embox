@@ -37,10 +37,13 @@ module data_storage_afina extends data_storage {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 
-	depends exacto.commander.buffer	
+	//depends exacto.commander.buffer	
 	//depends exacto.commander.blink	
 	depends exacto.commander.services
 	depends exacto.hardtools.basic
 	depends exacto.commander.tools
+
+	depends exacto.exactolink.exactolink_base
+
     @NoRuntime depends data_storage_options
 }
