@@ -663,19 +663,17 @@ exactolink_package_result_t ex_checkData_ExDtStr()
 
             ExDtStr_TrasmitSPI_RefCounterPrev = ExDtStr_TrasmitSPI_RefCounter;  //<=== сохраняем предудцщие данные
 
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, 0x11);
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, EXACTOLINK_SNS_XLXLGR);
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, (uint8_t)(cnt_data));
-            pshfrc_exbextu8(&ExDtStr_SD_buffer, (uint8_t)(cnt_data >> 8));
-            //===================================================================
+                  //===================================================================
             exdtstr_xtspi_refcnt = 0;
             for (uint8_t i = 0; i < 4; i++)
             {
                 grbfst_exbu8(tmp_buffer, &value); //[9] 
                 exdtstr_xtspi_refcnt += (uint32_t)(value << i*8);
                 ExDtStr_TrasmitSPI_Info.counter_raw[i] = value;
-                pshfrc_exbextu8(&ExDtStr_SD_buffer, value);
             }
+
+            exlnk_initSDpack(EXACTOLINK_SNS_XLXLGR, cnt_data, exdtstr_xtspi_refcnt, &ExDtStr_SD_buffer);
+
             // grbfst_exbu8(tmp_buffer, &value); //[10] 
             // exdtstr_xtspi_refcnt += (uint32_t)(value << 8);
             // ExDtStr_TrasmitSPI_Info.counter_raw[1] = value;
