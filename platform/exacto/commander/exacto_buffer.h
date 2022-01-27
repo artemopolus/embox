@@ -167,6 +167,8 @@ extern uint16_t watchsvr_exbu8( ExactoBufferUint8Type * buffer, uint8_t * dst, c
 
 extern uint8_t grbfstPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t datalen);
 extern uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen);
+extern uint8_t checkSpace_exbu8(ExactoBufferUint8Type * buffer, const uint16_t datalen);
+extern void writetoSpace_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen);
 
 extern uint8_t  setemp_exbextu8(        ExactoBufferExtended * buffer);
 extern int      setini_exbextu8(        ExactoBufferExtended * buffer);

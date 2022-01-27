@@ -20,7 +20,8 @@ module data_storage_apollon extends data_storage {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 
-	depends exacto.commander.buffer	
+	//depends exacto.commander.buffer	
+	depends exacto.exactolink.exactolink_base
 	//depends exacto.commander.blink	
 	depends exacto.commander.services
 	depends exacto.hardtools.basic

@@ -21,3 +21,14 @@ uint8_t exlnk_pushtoSDpack(const uint8_t value, ExactoBufferExtended * buffer)
 {
 	return pshsft_exbextu8(buffer, value);
 }
+uint8_t exlnk_pushSnsPack( const uint8_t sns_id, uint8_t * data, const uint16_t datacount,  ExactoBufferUint8Type * buffer)
+{
+	if (checkSpace_exbu8(buffer,(datacount + 2)))
+	{
+		pshsft_exbu8(buffer, EXACTOLINK_MLINE_SNSPACK_ID);
+		pshsft_exbu8(buffer, sns_id);
+		writetoSpace_exbu8(buffer, data, datacount);
+		return 1;
+	}
+	return 0;
+}

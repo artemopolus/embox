@@ -148,12 +148,7 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	disableExactoSensor(sns->sns);
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
 	{
-		Ender[0] = EXACTOLINK_SNS_ID;
-		Ender[1] = (uint8_t)sns->sns;
-		setDataToExactoDataStorage(Ender, 2, EX_THR_CTRL_WAIT);
-		//for (uint8_t i = 0; i < tmp_length; i++)
-			//buffer[i+2] = PackageToGett.data[i + sns->shift];
-		setDataToExactoDataStorage(&PackageToGett.data[sns->shift], tmp_length, EX_THR_CTRL_WAIT);
+		exds_setSnsData((uint8_t)sns->sns, &PackageToGett.data[sns->shift] , tmp_length);
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
 		return (tmp_length + 2);

@@ -123,7 +123,10 @@ extern uint8_t transmitExactoDataStorage();
 extern uint8_t receiveExactoDataStorage();
 extern uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length);
 extern uint8_t clearExactoDataStorage();
+
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result);
+extern uint8_t exds_setSnsData(const uint8_t sns_id, uint8_t * data, const uint16_t datacount);
+
 extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();

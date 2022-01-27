@@ -97,6 +97,23 @@ uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)
         return 0;
     return pshsft_exbu8_ns(buffer, value);
 }
+uint8_t checkSpace_exbu8(ExactoBufferUint8Type * buffer, const uint16_t datalen)
+{
+    if(!buffer->isExist)     
+        return 0;
+    uint16_t freespace = buffer->datalen - getlen_exbu8(buffer);
+    if (freespace < datalen)
+        return 0;
+    return 1;
+}
+void writetoSpace_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen)
+{
+    for (uint16_t i = 0; i < datalen; i++)
+    {
+        if (! pshsft_exbu8_ns(buffer, data[i]))
+            return;
+    }
+}
 uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const uint16_t datalen)
 {
     if(!buffer->isExist)     

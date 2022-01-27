@@ -228,6 +228,16 @@ void updateData2EDS(uint8_t value)
         ExDtStr_OutputSPI_OverFlw++;
     }
 }
+uint8_t exds_setSnsData(const uint8_t sns_id, uint8_t * data, const uint16_t datacount)
+{
+    if (datacount == 0)
+        return 1;
+    if (!exlnk_pushSnsPack(sns_id, data, datacount,&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage))
+        ExDtStr_OutputSPI_OverFlw += datacount;       
+    EDS_DataStorage_UdtCnt+=datacount;
+    ExDtStr_Output_Storage[EX_THR_SPi_TX].result = EX_THR_CTRL_WAIT;
+    return 0;
+}
 uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
 {
     switch (result)
