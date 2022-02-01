@@ -18,13 +18,15 @@
 #define TMP_BUFFER_DATA_SZ 40
 #define RX_DATA_SZ 40
 
+uint32_t Apollon_lsmism_MlineOverFlow = 0;
 uint32_t Apollon_lsmism_MlineReceive = 0;
-uint32_t Apollon_lsmism_MlineTransmit = 0;
+//uint32_t Apollon_lsmism_MlineTransmit = 0;
 uint8_t Apollon_lsmism_MlineRXTx_Readable = 0;
 uint32_t Apollon_lsmism_Ticker_Buf = 0;
 uint8_t Apollon_lsmism_Ticker_Readable = 0;
 
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
+static uint8_t InitFlag = 0;
 
 static uint8_t Ender[] = {5,5,5,5};
 // #define SNS_SERVICE_TESTING
@@ -158,48 +160,10 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 
 uint8_t switchStage(const exactolink_package_result_t type)
 {
-    uint8_t value_sns_option_lsm303ah = 0xC5;       //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
-    uint8_t value_sns_option_ism330dlc_xl = 0x44;   //0100 01 0 0 : 104 Hz 16g 
-    uint8_t value_sns_option_ism330dlc_gr = 0x4c;   //0100 11 0 0 : 104 Hz 2000 dps 
-//     switch (state)
-//     {
-// 	case EXACTO_TIM_10:
-// 	case EXACTO_TIM_50:
-// 	case EXACTO_TIM_100:
-// 		Mline_Max = 0;
-// 		Delay = 1000;
-// 	        break;
-// 	case EXACTO_TIM_200:
-// 	 	Mline_Max = 2;
-// 	        value_sns_option_lsm303ah = 0xC5;//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
-// 	        value_sns_option_ism330dlc_xl = 0x50;
-// 	        value_sns_option_ism330dlc_gr = 0x5c; //0101 11 0 0
-// 		Delay = 50;
-// 	        break;
-// 	case EXACTO_TIM_400:
-// 	  	Mline_Max = 4;
-// 	        value_sns_option_lsm303ah = 0xE5;//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
-// 	        value_sns_option_ism330dlc_xl = 0x60;
-// 	        value_sns_option_ism330dlc_gr = 0x6c; //0110 11 00
-// 		Delay = 25;
-//         	break;
-// 	case EXACTO_TIM_800:
-// 		Mline_Max = 8;
-// 		Delay = 12;
-// 	        value_sns_option_lsm303ah = 0xE5;	//1111 01 0 1 	: 800 Hz 16g HF_ODR= 0 BDU=1
-// 	        value_sns_option_ism330dlc_xl = 0x74;	//0111 01 0 0 	: 800 hz 16g 
-// 	        value_sns_option_ism330dlc_gr = 0x7c;	//0111 11 00	: 800
-// 		break;
-// 	case EXACTO_TIM_1600:
-// 		Mline_Max = 16;
-// 		Delay = 6;
-// 	        value_sns_option_lsm303ah = 0x57;	//0101 01 1 1 	: 1600 Hz 16g HF_ODR= 1 BDU=1
-// 	        value_sns_option_ism330dlc_xl = 0x74;	//1000 01 0 0 	: 1666 hz 16g 
-// 	        value_sns_option_ism330dlc_gr = 0x8c;	//1000 11 0 0
-// 		break;
-//     default:
-//         break;
-//     }
+//    uint8_t value_sns_option_lsm303ah = 0xC5;       //1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+//    uint8_t value_sns_option_ism330dlc_xl = 0x44;   //0100 01 0 0 : 104 Hz 16g 
+//    uint8_t value_sns_option_ism330dlc_gr = 0x4c;   //0100 11 0 0 : 104 Hz 2000 dps 
+
 	const uint8_t try_cnt = 5;
 	switch (type)
 	{
@@ -207,7 +171,7 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    case EXACTOLINK_NO_DATA:
 	    return 1;
 	    case EXACTOLINK_SNS_XL_0100_XLGR_0100:
-	    ex_setFreqHz(EXACTO_TIM_100);
+	    ex_setFreqHz(100);
 	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xc5, try_cnt);	//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x44, try_cnt);	//0100 01 0 0 : 104 Hz 16g 
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
@@ -216,7 +180,7 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    Mline_Max = 0;
 	break;
 	    case EXACTOLINK_SNS_XL_0200_XLGR_0100:
-	    ex_setFreqHz(EXACTO_TIM_200);
+	    ex_setFreqHz(200);
 	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xd5, try_cnt);	//1101 01 0 1 : 200 Hz 16g HF_ODR= 0 BDU=1
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x40, try_cnt);	//0100 00 0 0 : 104 Hz 2g 
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
@@ -225,7 +189,7 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    Mline_Max = 2;
 	break;
 	    case EXACTOLINK_SNS_XL_0400_XLGR_0100:
-	    ex_setFreqHz(EXACTO_TIM_400);
+	    ex_setFreqHz(400);
 	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xe5, try_cnt);	//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x40, try_cnt);	//0100 00 0 0 : 104 Hz 2g 
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
@@ -234,7 +198,7 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    Mline_Max = 4;
 	break;
 	    case EXACTOLINK_SNS_XL_0800_XLGR_0100:
-	    ex_setFreqHz(EXACTO_TIM_800);
+	    ex_setFreqHz(800);
 	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xf5, try_cnt);	//1111 01 0 1 : 800 Hz 16g HF_ODR= 0 BDU=1
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x40, try_cnt);	//0100 00 0 0 : 104 Hz 2g 
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
@@ -243,7 +207,7 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    Mline_Max = 8;
 	break;
 	    case EXACTOLINK_SNS_XL_1600_XLGR_0100:
-	    ex_setFreqHz(EXACTO_TIM_1600);
+	    ex_setFreqHz(1600);
 	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0x57, try_cnt);	//0101 01 1 1 : 800 Hz 16g HF_ODR= 1 BDU=1
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x40, try_cnt);	//0100 00 0 0 : 104 Hz 2g 
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
@@ -252,28 +216,28 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    Mline_Max = 16;
 	break;
 
-    case EXACTOLINK_LSM303AH_TYPE0:
-        sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
-        for (uint8_t i = 0; i < SnsContainer.sns_count; i++)
-        {
-            if (SnsContainer.sns[i].sns == LSM303AH)
-                SnsContainer.sns[i].isenabled = 1;
-            else
-                SnsContainer.sns[i].isenabled = 0;
-        }
-        break;
-    case EXACTOLINK_SNS_XLXLGR:
-        sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A, value_sns_option_lsm303ah, 5);
-        sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL, value_sns_option_ism330dlc_xl, 5);
-        sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, value_sns_option_ism330dlc_gr, 5);
-        for (uint8_t i = 0; i < SnsContainer.sns_count; i++)
-        {
-            if ((SnsContainer.sns[i].sns == LSM303AH)||(SnsContainer.sns[i].sns == ISM330DLC))
-                SnsContainer.sns[i].isenabled = 1;
-            else
-                SnsContainer.sns[i].isenabled = 0;
-        }
-        break;
+    // case EXACTOLINK_LSM303AH_TYPE0:
+    //     sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, 0x44, 5);
+    //     for (uint8_t i = 0; i < SnsContainer.sns_count; i++)
+    //     {
+    //         if (SnsContainer.sns[i].sns == LSM303AH)
+    //             SnsContainer.sns[i].isenabled = 1;
+    //         else
+    //             SnsContainer.sns[i].isenabled = 0;
+    //     }
+    //     break;
+    // case EXACTOLINK_SNS_XLXLGR:
+    //     sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A, 0xC5, 5);
+    //     sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL, 0x44, 5);
+    //     sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 0x4c, 5);
+    //     for (uint8_t i = 0; i < SnsContainer.sns_count; i++)
+    //     {
+    //         if ((SnsContainer.sns[i].sns == LSM303AH)||(SnsContainer.sns[i].sns == ISM330DLC))
+    //             SnsContainer.sns[i].isenabled = 1;
+    //         else
+    //             SnsContainer.sns[i].isenabled = 0;
+    //     }
+    //     break;
     default:
         break;
     }
@@ -292,6 +256,12 @@ static int runSnsContainerLthread(struct lthread * self)
 	}
 	else
 	{
+		// static int iiii = 0;
+		// if (iiii++ > 1000)
+		// {
+		// 	iiii = 0;
+		// 	printk("!\n");
+		// }
 		Ticker_Stop = dwt_cyccnt_stop();
 		Ticker_Res += Ticker_Stop - Ticker_Start;
 		Ticker_Cnt++;
@@ -338,7 +308,8 @@ static int run_CheckMline_Lthread(struct lthread * self)
 	if (Apollon_lsmism_MlineRXTx_Readable == 0)
 	{
 		Apollon_lsmism_MlineReceive = ExDtStr_TransmitSPI_RxCounter;
-		Apollon_lsmism_MlineTransmit = ExDtStr_TransmitSPI_TxCounter;
+//		Apollon_lsmism_MlineTransmit = ExDtStr_TransmitSPI_TxCounter;
+		Apollon_lsmism_MlineOverFlow = ExDtStr_OutputSPI_OverFlw;
 		Apollon_lsmism_MlineRXTx_Readable = 1;
 	}
 	exactolink_package_result_t exactolink_result;
@@ -421,13 +392,28 @@ static int run_Init_Lthread(struct lthread * self)
 	switchStage(Mode);
 	ex_setExactolinkType        (EXACTOLINK_SNS_XLXLGR);
 	ex_frcTimReload();
+	InitFlag = 1;
     return 0;
 }
 
-uint8_t exSnsStart(void)
+uint8_t exSnsStart(const uint8_t type)
 {
-	lthread_launch(&Init_Lthread);
+	// if (type == 0)
+	// 	Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
+	// else if (type == 1)
+	// 	Mode = EXACTOLINK_SNS_XL_0200_XLGR_0100;
+	// else if (type == 2)
+	// 	Mode = EXACTOLINK_SNS_XL_0400_XLGR_0100;
+	// else if (type == 3)
+	// 	Mode = EXACTOLINK_SNS_XL_0800_XLGR_0100;
+	// else if (type == 4)
+	// 	Mode = EXACTOLINK_SNS_XL_1600_XLGR_0100;
+	Mode = (exactolink_package_result_t)(type + 7);
 
+	InitFlag = 0;
+	lthread_launch(&Init_Lthread);
+	while(InitFlag == 0)
+		sleep(1);
 	dwt_cyccnt_reset();
 
 	if ( ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, runSnsContainerLthread) != 0)

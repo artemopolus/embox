@@ -1,7 +1,7 @@
 package exacto.cmds.sensor.lsmism
 
 @AutoCmd
-@Cmd(name="sns_start", help="", man='''
+@Cmd(name="start", help="", man='''
 AUTHOR Kuznetcov
 ''')
 module start {
@@ -15,7 +15,7 @@ module start {
     depends exacto.sensors.apollon_lsmism
 }
 @AutoCmd
-@Cmd(name="sns_stop", help="", man='''
+@Cmd(name="stop", help="", man='''
 AUTHOR Kuznetcov
 ''')
 module stop {
@@ -29,7 +29,7 @@ module stop {
     depends exacto.sensors.apollon_lsmism
 }
 @AutoCmd
-@Cmd(name="sns_read", help="", man='''
+@Cmd(name="read", help="", man='''
 AUTHOR Kuznetcov
 ''')
 module read {

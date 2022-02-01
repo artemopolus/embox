@@ -517,21 +517,21 @@ uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
 }
 uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info)
 {
-    info->counter = ExDtStr_TrasmitSPI_Info.counter;
-    info->datasrc = ExDtStr_TrasmitSPI_Info.datasrc;
-    info->datatype = ExDtStr_TrasmitSPI_Info.datatype;
-    info->is_data_available = ExDtStr_TrasmitSPI_Info.is_data_available;
-    info->length = ExDtStr_TrasmitSPI_Info.length;
-    info->packagetype = ExDtStr_TrasmitSPI_Info.packagetype;
-    info->priority = ExDtStr_TrasmitSPI_Info.priority;
+    // info->counter = ExDtStr_TrasmitSPI_Info.counter;
+    // info->datasrc = ExDtStr_TrasmitSPI_Info.datasrc;
+    // info->datatype = ExDtStr_TrasmitSPI_Info.datatype;
+    // info->is_data_available = ExDtStr_TrasmitSPI_Info.is_data_available;
+    // info->length = ExDtStr_TrasmitSPI_Info.length;
+    // info->packagetype = ExDtStr_TrasmitSPI_Info.packagetype;
+    // info->priority = ExDtStr_TrasmitSPI_Info.priority;
 
-    info->counter_raw[0] = ExDtStr_TrasmitSPI_Info.counter_raw[0];
-    info->counter_raw[1] = ExDtStr_TrasmitSPI_Info.counter_raw[1];
-    info->counter_raw[2] = ExDtStr_TrasmitSPI_Info.counter_raw[2];
-    info->counter_raw[3] = ExDtStr_TrasmitSPI_Info.counter_raw[3];
+    // info->counter_raw[0] = ExDtStr_TrasmitSPI_Info.counter_raw[0];
+    // info->counter_raw[1] = ExDtStr_TrasmitSPI_Info.counter_raw[1];
+    // info->counter_raw[2] = ExDtStr_TrasmitSPI_Info.counter_raw[2];
+    // info->counter_raw[3] = ExDtStr_TrasmitSPI_Info.counter_raw[3];
 
-    info->length_raw[0] = ExDtStr_TrasmitSPI_Info.length_raw[0];
-    info->length_raw[1] = ExDtStr_TrasmitSPI_Info.length_raw[1];
+    // info->length_raw[0] = ExDtStr_TrasmitSPI_Info.length_raw[0];
+    // info->length_raw[1] = ExDtStr_TrasmitSPI_Info.length_raw[1];
     return 0;
 }
 void ex_updateCounter_ExDtStr(ex_thread_type_t type)
