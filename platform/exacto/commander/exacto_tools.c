@@ -15,3 +15,8 @@ void ex_convertUint8ToUint64(uint8_t * src, uint64_t * dst)
     // *dst += (uint64_t) (src[2] << 16);
     // *dst += (uint64_t) (src[3] << 24);
 }
+void ex_convertInt16ToUint8(const int16_t src, uint8_t * dst)
+{
+    dst[0] = (uint8_t) (src);
+    dst[1] = (uint8_t) (src >> 8);
+}
