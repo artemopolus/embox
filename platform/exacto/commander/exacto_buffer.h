@@ -4,6 +4,7 @@
 #include <stdint.h> 
 #include <stdlib.h>
 
+#ifndef EXT_COMPILE
 
 #include <framework/mod/options.h>
 #include <module/exacto/commander/buffer.h>
@@ -63,6 +64,8 @@
 #else
 #error Unsupported exacto extended buffer sz
 #endif
+
+#endif //EXT_COMPILE
 
 typedef struct{
     uint16_t str;
