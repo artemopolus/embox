@@ -1,5 +1,5 @@
 #include "exactolink/exactolink_base.h"
-
+#include <stdio.h>
 void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t refcnt, ExactoBufferExtended * buffer)
 {
       // pshfrc_exbextu8(&ExDtStr_SD_buffer, 0x11);
@@ -19,7 +19,7 @@ void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t ref
 uint8_t exlnk_getSDpack(uint8_t * type, uint16_t * datalen, uint32_t * refcnt, ExactoBufferExtended * buffer)
 {
 	uint8_t value, is_pck = 0;
-	uint8_t arr[4]; 
+	uint8_t arr[4] = {0}; 
 	while(grbfst_exbextu8(buffer, &value))
 	{
 		if (value == EXACTOLINK_SDPACK_ID)
@@ -34,7 +34,9 @@ uint8_t exlnk_getSDpack(uint8_t * type, uint16_t * datalen, uint32_t * refcnt, E
 	*type = value;
 	for(int i = 0; (i < 2)&&(!grbfst_exbextu8(buffer, &arr[i])); i++)
 			return 0;
+	// printf("%d %d", arr[0], arr[1]);
 	exlnk_cv_Uint8_Uint16(arr, datalen);
+	// printf("dt=%d", *datalen);
 	for(int i = 0; (i < 4)&&(!grbfst_exbextu8(buffer, &arr[i])); i++)
 			return 0;
 	exlnk_cv_Uint8_Uint32(arr, refcnt);
@@ -44,6 +46,7 @@ uint8_t exlnk_readsnsSDpack(const uint8_t type, uint8_t * sns_type, int16_t * ds
 {
 	uint8_t is_pck = 0, datalen = 0;
 	uint8_t arr[2]; 
+	// printf("dddddone\n");
 	while (grbfst_exbextu8(buffer, arr))
 	{
 		if (arr[0] == EXACTOLINK_MLINE_SNSPACK_ID)
@@ -54,17 +57,23 @@ uint8_t exlnk_readsnsSDpack(const uint8_t type, uint8_t * sns_type, int16_t * ds
 	}
 	if (!is_pck)
 		return 0;
+	// printf("dddddone\n");
 	if (!grbfst_exbextu8(buffer, sns_type))
 		return 0;
 	if (*sns_type == 1)
 		datalen = 3;
 	else if (*sns_type == 2)
 		datalen = 6;
+	// printf("dddddone\n");
 	for (uint8_t i = 0; i < datalen; i++)
 	{
-		for (uint8_t j = 0; (j < 2)&&(!grbfst_exbextu8(buffer, &arr[j])); j++)
-			return 0;
-		exlnk_cv_Uint8_Int16(arr, &dst[i]);	
+		for (uint8_t j = 0; (j < 2); j++)
+		{
+			if (!grbfst_exbextu8(buffer, &arr[j]))
+				return 0;
+			if (j == 1)
+				exlnk_cv_Uint8_Int16(arr, &dst[i]);	
+		}
 	}
 	return datalen;
 }

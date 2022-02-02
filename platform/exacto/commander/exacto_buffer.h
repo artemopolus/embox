@@ -136,7 +136,8 @@ extern uint8_t pshsft_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value);
  *
  * @return     успешна ли операция
  */
-extern uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst);
+extern uint16_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst);
+extern uint16_t grball_exbextu8(ExactoBufferExtended * buffer, uint8_t * dst);
 extern uint8_t grbsvr_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length);
 
 /**

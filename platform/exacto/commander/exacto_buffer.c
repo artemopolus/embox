@@ -128,7 +128,7 @@ uint8_t pshsftPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * data, const u
     }
     return 1;
 }
-uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
+uint16_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
 {
     if(!buffer->isExist || buffer->isEmpty)     return 0;
     uint16_t i = 0, adr = buffer->str;
@@ -139,7 +139,12 @@ uint8_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
         i++;
     }
 	while(adr != buffer->lst);
-    return 1;
+    return i;
+}
+uint16_t grball_exbextu8(ExactoBufferExtended * buffer, uint8_t * dst)
+{
+    ExactoBufferUint8Type * tmp = (ExactoBufferUint8Type *) buffer;
+    return grball_exbu8(tmp, dst);
 }
 uint8_t grbsvr_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t length)
 {
