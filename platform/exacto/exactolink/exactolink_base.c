@@ -16,12 +16,14 @@ void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t ref
 	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 16));
 	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 24));
 }
-uint8_t exlnk_getSDpack(uint8_t * type, uint16_t * datalen, uint32_t * refcnt, ExactoBufferExtended * buffer)
+uint16_t exlnk_getSDpack(uint8_t * type, uint16_t * datalen, uint32_t * refcnt, ExactoBufferExtended * buffer)
 {
 	uint8_t value, is_pck = 0;
 	uint8_t arr[4] = {0}; 
+	uint16_t index = 0;
 	while(grbfst_exbextu8(buffer, &value))
 	{
+		index++;
 		if (value == EXACTOLINK_SDPACK_ID)
 		{
 			is_pck = 1;
@@ -32,15 +34,22 @@ uint8_t exlnk_getSDpack(uint8_t * type, uint16_t * datalen, uint32_t * refcnt, E
 		return 0;
 	grbfst_exbextu8(buffer, &value);
 	*type = value;
-	for(int i = 0; (i < 2)&&(!grbfst_exbextu8(buffer, &arr[i])); i++)
+	for(int i = 0; (i < 2); i++)
+	{
+		if(!grbfst_exbextu8(buffer, &arr[i]))
 			return 0;
+	}
 	// printf("%d %d", arr[0], arr[1]);
 	exlnk_cv_Uint8_Uint16(arr, datalen);
 	// printf("dt=%d", *datalen);
-	for(int i = 0; (i < 4)&&(!grbfst_exbextu8(buffer, &arr[i])); i++)
+	for(int i = 0; (i < 4); i++)
+	{
+		if(!grbfst_exbextu8(buffer, &arr[i]))
 			return 0;
+	}
 	exlnk_cv_Uint8_Uint32(arr, refcnt);
-	return 1;
+	// printf("dt=%d", *refcnt);
+	return index += 7;
 }
 uint8_t exlnk_readsnsSDpack(const uint8_t type, uint8_t * sns_type, int16_t * dst, ExactoBufferExtended * buffer )
 {
