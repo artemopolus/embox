@@ -132,7 +132,7 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 	// remember to set CS -->LL_GPIO_SetOutputPin(GPIOA,LL_GPIO_PIN_4);
     return 0;
 }
-uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
+uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
 {
 	ipl_t ipl;
 
@@ -141,7 +141,7 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
     EDS_spidmairq_Marker = 0;
     const uint8_t address = output->cmd;
     uint8_t value = address | 0x80;
-    uint8_t result = 0;
+    static uint8_t result = 0;
 	// remember to reset CS --> LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
 	// while(!LL_SPI_IsActiveFlag_TXE(SPI1));
     // LL_SPI_Disable(SPI1);
@@ -193,26 +193,19 @@ uint8_t ex_gettSpiSns(ex_spi_pack_t *output)
         }
     }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
-    // LL_SPI_Disable(SPI1);
-    i = 0;
-	while(!LL_SPI_IsActiveFlag_RXNE(SPI1))
-    {
-        i++;
-        if (i > SPI_APPOLON_INDEX_MAX)
-        {
-            result = 1;
-            break;
-        }
-    }
-    output->data[output->datalen - 1] = LL_SPI_ReceiveData8(SPI1);
-	// while(LL_SPI_IsActiveFlag_BSY(SPI1));
-	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1));
-    // LL_SPI_Enable(SPI1);
+
+    // i = 0;
+	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1))
+    // {
+    //     if (i++ > SPI_APPOLON_INDEX_MAX)
+    //     {
+    //         result = 1;
+    //         break;
+    //     }
+    // }
+    // output->data[output->datalen - 1] = LL_SPI_ReceiveData8(SPI1);
     if (EDS_spidmairq_Marker)
-    {
-        // printk("irq\n");
         result = 1;
-    }
 	ipl_restore(ipl);
     return result;
 }

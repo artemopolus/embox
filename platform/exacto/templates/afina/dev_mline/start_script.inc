@@ -9,4 +9,5 @@
 //"print_to_sd"
 //"test_buffer_fifo_test",
 //"test_ex_spi_mline_main"
-"help"
+"help",
+"start_mliner"

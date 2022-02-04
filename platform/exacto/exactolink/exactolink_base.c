@@ -1,5 +1,17 @@
 #include "exactolink/exactolink_base.h"
 #include <stdio.h>
+uint8_t exlnk_pushSnsPack( const uint8_t sns_id, uint8_t * data, const uint16_t datacount,  ExactoBufferUint8Type * buffer)
+{
+	if (checkSpace_exbu8(buffer,(datacount + 2)))
+	{
+		pshsft_exbu8(buffer, EXACTOLINK_MLINE_SNSPACK_ID);
+		pshsft_exbu8(buffer, sns_id);
+		writetoSpace_exbu8(buffer, data, datacount);
+		return 1;
+	}
+	return 0;
+}
+#ifdef EXACTOLINK_FULL
 void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t refcnt, ExactoBufferExtended * buffer)
 {
       // pshfrc_exbextu8(&ExDtStr_SD_buffer, 0x11);
@@ -16,6 +28,7 @@ void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t ref
 	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 16));
 	pshsft_exbextu8(buffer, (uint8_t) (refcnt >> 24));
 }
+
 uint16_t exlnk_getSDpack(uint8_t * type, uint16_t * datalen, uint32_t * refcnt, ExactoBufferExtended * buffer)
 {
 	uint8_t value, is_pck = 0;
@@ -90,17 +103,6 @@ uint8_t exlnk_pushtoSDpack(const uint8_t value, ExactoBufferExtended * buffer)
 {
 	return pshsft_exbextu8(buffer, value);
 }
-uint8_t exlnk_pushSnsPack( const uint8_t sns_id, uint8_t * data, const uint16_t datacount,  ExactoBufferUint8Type * buffer)
-{
-	if (checkSpace_exbu8(buffer,(datacount + 2)))
-	{
-		pshsft_exbu8(buffer, EXACTOLINK_MLINE_SNSPACK_ID);
-		pshsft_exbu8(buffer, sns_id);
-		writetoSpace_exbu8(buffer, data, datacount);
-		return 1;
-	}
-	return 0;
-}
 void exlnk_cv_Uint8_Uint16(uint8_t * src, uint16_t * dst)
 {
     uint16_t first = (uint16_t) src[1];
@@ -127,3 +129,4 @@ void exlnk_cv_Uint32_Uint8(const uint32_t src, uint8_t * dst)
    for (uint16_t i = 0; i < 4; i++)
       dst[i] = (uint8_t)(src >> 8*i);
 }
+#endif
