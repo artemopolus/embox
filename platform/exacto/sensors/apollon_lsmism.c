@@ -25,7 +25,9 @@ volatile uint8_t Apollon_lsmism_MlineRXTx_Readable = 0;
 uint32_t Apollon_lsmism_Ticker_Buf = 0;
 volatile uint8_t Apollon_lsmism_Ticker_Readable = 0;
 volatile uint8_t Apollon_lsmism_Buffer_Readable = 0;
-volatile uint8_t Apollon_lsmism_Buffer_Data[12] = {0};
+volatile int16_t Apollon_lsmism_Buffer_Data0[3] = {0};
+volatile int16_t Apollon_lsmism_Buffer_Data1[3] = {0};
+volatile int16_t Apollon_lsmism_Buffer_Data2[3] = {0};
 
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
 static uint8_t InitFlag = 0;
@@ -158,11 +160,15 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 		{
 			if (sns->sns == LSM303AH)
 			{
-
+				for(int i = 0; i < 3; i++)
+					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
 			}
-			else if (sns->sns = ISM330DLC)
+			else if (sns->sns == ISM330DLC)
 			{
-
+				for(int i = 0; i < 3; i++)
+					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
+				for(int i = 0; i < 3; i++)
+					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + (i+3)*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
 			}
 			Apollon_lsmism_Buffer_Readable = 1;
 		}

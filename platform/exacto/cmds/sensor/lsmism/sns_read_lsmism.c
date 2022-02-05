@@ -10,12 +10,16 @@ int main(int argc, char *argv[])
         Apollon_lsmism_MlineRXTx_Readable = 0;
         Apollon_lsmism_MlineRXTx_Readable = 0;
         //printf("Start read\n");
-        while(!Apollon_lsmism_MlineRXTx_Readable)
-            sleep(1);
-        while (!Apollon_lsmism_Ticker_Readable)
-            sleep(1);
+        while(!Apollon_lsmism_MlineRXTx_Readable);
+        while (!Apollon_lsmism_Ticker_Readable);
+        while(!Apollon_lsmism_Buffer_Readable);
 
-        printf("[%d]Tk: %d OvrFw: %d RX %d\n",index++, Apollon_lsmism_Ticker_Buf, Apollon_lsmism_MlineOverFlow, Apollon_lsmism_MlineReceive);
+        printf("[%d]Tk: %d OvrFw: %d RX %d|=|%d\t%d\t%d|=|%d\t%d\t%d|=|%d\t%d\t%d|\n",index++,
+                                            Apollon_lsmism_Ticker_Buf, Apollon_lsmism_MlineOverFlow, Apollon_lsmism_MlineReceive
+                                            ,Apollon_lsmism_Buffer_Data0[0], Apollon_lsmism_Buffer_Data0[1], Apollon_lsmism_Buffer_Data0[2]
+                                            ,Apollon_lsmism_Buffer_Data1[0], Apollon_lsmism_Buffer_Data1[1], Apollon_lsmism_Buffer_Data2[2]
+                                            ,Apollon_lsmism_Buffer_Data2[0], Apollon_lsmism_Buffer_Data2[1], Apollon_lsmism_Buffer_Data2[2]
+                                            );
         Apollon_lsmism_MlineRXTx_Readable = 0;
         Apollon_lsmism_MlineRXTx_Readable = 0;
         sleep(1);
