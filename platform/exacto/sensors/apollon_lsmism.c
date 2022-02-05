@@ -21,9 +21,11 @@
 uint32_t Apollon_lsmism_MlineOverFlow = 0;
 uint32_t Apollon_lsmism_MlineReceive = 0;
 //uint32_t Apollon_lsmism_MlineTransmit = 0;
-uint8_t Apollon_lsmism_MlineRXTx_Readable = 0;
+volatile uint8_t Apollon_lsmism_MlineRXTx_Readable = 0;
 uint32_t Apollon_lsmism_Ticker_Buf = 0;
-uint8_t Apollon_lsmism_Ticker_Readable = 0;
+volatile uint8_t Apollon_lsmism_Ticker_Readable = 0;
+volatile uint8_t Apollon_lsmism_Buffer_Readable = 0;
+volatile uint8_t Apollon_lsmism_Buffer_Data[12] = {0};
 
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
 static uint8_t InitFlag = 0;
@@ -137,9 +139,10 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	}
 	sns->cnt_cur = 0;
 	//uint8_t * buffer = &trg[*ptr];	
-	PackageToGett.result = EX_SPI_DT_TRANSMIT_RECEIVE;
+	PackageToGett.result = EXACTO_WAITING;
 	PackageToGett.cmd = sns->address;//cmd;
 	PackageToGett.datalen = sns->datalen;
+	PackageToGett.type = EX_SPI_DT_TRANSMIT_RECEIVE;
 	uint8_t try_cnt = 1;
 	const uint8_t tmp_length = (sns->datalen - sns->shift);
 	//if ((*ptr + tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
@@ -151,6 +154,18 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
 	{
 		exds_setSnsData((uint8_t)sns->sns, &PackageToGett.data[sns->shift] , tmp_length);
+		if (!Apollon_lsmism_Buffer_Readable)
+		{
+			if (sns->sns == LSM303AH)
+			{
+
+			}
+			else if (sns->sns = ISM330DLC)
+			{
+
+			}
+			Apollon_lsmism_Buffer_Readable = 1;
+		}
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
 		return (tmp_length + 2);

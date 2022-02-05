@@ -10,9 +10,11 @@
 extern uint32_t Apollon_lsmism_MlineReceive;
 //extern uint32_t Apollon_lsmism_MlineTransmit;
 extern uint32_t Apollon_lsmism_MlineOverFlow;
-extern uint8_t Apollon_lsmism_MlineRXTx_Readable;
+extern volatile uint8_t Apollon_lsmism_MlineRXTx_Readable;
 extern uint32_t Apollon_lsmism_Ticker_Buf;
-extern uint8_t Apollon_lsmism_Ticker_Readable;
+extern volatile uint8_t Apollon_lsmism_Ticker_Readable;
+extern volatile uint8_t Apollon_lsmism_Buffer_Readable;
+extern volatile uint8_t Apollon_lsmism_Buffer_Data[12];
 
 extern uint8_t exSnsStart(const uint8_t type);
 extern uint8_t exSnsStop(void);
