@@ -1,7 +1,6 @@
 
 #include "sensors/sns_lsmism.h"
 
-#include "commander/exacto_data_storage.h"
 #include "commander/exacto_sns_ctrl.h"
 #include "commander/exacto_data_storage_options.h"
 #include "spi/spi_sns.h"
@@ -211,9 +210,9 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	break;
 	    case EXACTOLINK_SNS_XL_0400_XLGR_0100:
 	    ex_setFreqHz(400);
-	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xe5, try_cnt);	//1110 01 0 1 : 400 Hz 16g HF_ODR= 0 BDU=1
+	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xe1, try_cnt);	//1110 00 0 1 : 400 Hz 2g HF_ODR= 0 BDU=1
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x40, try_cnt);	//0100 00 0 0 : 104 Hz 2g 
-	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
+	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x40, try_cnt);	//0100 00 0 0 : 104 Hz 245 dps FS on 125 = off
 	    SnsContainer.sns[0].cnt_max = 0;
 	    SnsContainer.sns[1].cnt_max = 4;
 	    Mline_Max = 4;
@@ -235,7 +234,25 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    SnsContainer.sns[0].cnt_max = 0;
 	    SnsContainer.sns[1].cnt_max = 16;
 	    Mline_Max = 16;
-	break;
+		 break;
+		case EXACTOLINK_SNS_XL_0200_XLGR_0200:
+			ex_setFreqHz(200);
+			sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xd1, try_cnt);	//1101 00 0 1 : 200 Hz 2g HF_ODR= 0 BDU=1
+			sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x50, try_cnt);	//0101 00 0 0 : 208 Hz 2g 
+			sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x50, try_cnt);	//0101 00 0 0 : 208 Hz 245 dps FS on 125 = off
+			SnsContainer.sns[0].cnt_max = 0;
+			SnsContainer.sns[1].cnt_max = 0;
+			Mline_Max = 2;
+		break;
+		case EXACTOLINK_SNS_XL_0400_XLGR_0400:
+			ex_setFreqHz(400);
+			sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xd1, try_cnt);	//1101 00 0 1 : 400 Hz 2g HF_ODR= 0 BDU=1
+			sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x60, try_cnt);	//0110 00 0 0 : 416 Hz 2g 
+			sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x60, try_cnt);	//0110 00 0 0 : 416 Hz 245 dps FS on 125 = off
+			SnsContainer.sns[0].cnt_max = 0;
+			SnsContainer.sns[1].cnt_max = 0;
+			Mline_Max = 4;
+		break;
 
     // case EXACTOLINK_LSM303AH_TYPE0:
     //     sendOptionsRaw(LSM303AH, ISM330DLC_CTRL1_XL, 0x44, 5);
@@ -429,7 +446,7 @@ uint8_t exSnsStart(const uint8_t type)
 	// 	Mode = EXACTOLINK_SNS_XL_0800_XLGR_0100;
 	// else if (type == 4)
 	// 	Mode = EXACTOLINK_SNS_XL_1600_XLGR_0100;
-	Mode = (exactolink_package_result_t)(type + 7);
+	Mode = (exactolink_package_result_t)(type);
 
 	InitFlag = 0;
 	lthread_launch(&Init_Lthread);
@@ -450,7 +467,7 @@ EMBOX_UNIT_INIT(initApollon_lsmism);
 static int initApollon_lsmism()
 {
 	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
-	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // 0 1 0 0 1 1 0 0
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // BOOT BDU H_ACTIVE PP_OD SIM IF_INC BLE SW_RESET=0 1 0 0 1 1 0 0
 
 	resetExactoDataStorage();
 	lthread_init(&Init_Lthread, run_Init_Lthread);
