@@ -184,7 +184,12 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
         }
     }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
-
+    // if (LL_SPI_IsActiveFlag_RXNE(SPI1))
+    // {
+        for(SPI_APPOLON_INDEX_SZ_INT j = 0; ((!LL_SPI_IsActiveFlag_RXNE(SPI1))&&(j < SPI_APPOLON_INDEX_MAX)); j++)
+            ;
+            output->data[output->datalen] = LL_SPI_ReceiveData8(SPI1);
+    // }
     // i = 0;
 	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1))
     // {

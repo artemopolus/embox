@@ -27,6 +27,8 @@ volatile uint8_t Apollon_lsmism_Buffer_Readable = 0;
 volatile int16_t Apollon_lsmism_Buffer_Data0[3] = {0};
 volatile int16_t Apollon_lsmism_Buffer_Data1[3] = {0};
 volatile int16_t Apollon_lsmism_Buffer_Data2[3] = {0};
+volatile uint8_t Apollon_lsmism_Buffer_dtrd0 = 0;
+volatile uint8_t Apollon_lsmism_Buffer_dtrd1 = 0;
 
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
 static uint8_t InitFlag = 0;
@@ -142,11 +144,11 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	//uint8_t * buffer = &trg[*ptr];	
 	PackageToGett.result = EXACTO_WAITING;
 	PackageToGett.cmd = sns->address;//cmd;
-	PackageToGett.datalen = sns->datalen;
+	PackageToGett.datalen = sns->datalen+1;
 	PackageToGett.type = EX_SPI_DT_TRANSMIT_RECEIVE;
 	uint8_t try_cnt = 1;
 	const uint8_t tmp_length = (sns->datalen - sns->shift);
-	//if ((*ptr + tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
+	//if ((*ptr + >tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
 	//	return 0;
 	enableExactoSensor(sns->sns);
 	if (ex_gettSpiSns(&PackageToGett))
@@ -155,21 +157,24 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
 	{
 		exds_setSnsData((uint8_t)sns->sns, &PackageToGett.data[sns->shift] , tmp_length);
-		if (!Apollon_lsmism_Buffer_Readable)
+		if (Apollon_lsmism_Buffer_Readable != 2)
 		{
-			if (sns->sns == LSM303AH)
+			if ((Apollon_lsmism_Buffer_Readable==0)&&(sns->sns == LSM303AH))
 			{
 				for(int i = 0; i < 3; i++)
 					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
+				Apollon_lsmism_Buffer_Readable = 1;
+				Apollon_lsmism_Buffer_dtrd0 = PackageToGett.data[0];
 			}
-			else if (sns->sns == ISM330DLC)
+			else if ((Apollon_lsmism_Buffer_Readable==1)&&(sns->sns == ISM330DLC))
 			{
 				for(int i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
+					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data1[i]);
 				for(int i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + (i+3)*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
+					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + (i+3)*2], (int16_t *)&Apollon_lsmism_Buffer_Data2[i]);
+				Apollon_lsmism_Buffer_Readable = 2;
+				Apollon_lsmism_Buffer_dtrd1 = PackageToGett.data[0];
 			}
-			Apollon_lsmism_Buffer_Readable = 1;
 		}
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
