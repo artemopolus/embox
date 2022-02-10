@@ -4,4 +4,4 @@
 //"spi_txrx"
 //"sns2mliner"
 //"sns_start"
-"start 2"
+"start 1"
