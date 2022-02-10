@@ -317,24 +317,22 @@ static int runSnsContainerLthread(struct lthread * self)
 			Ticker_Res = 0;
 		}
 	}
-	if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
+	exactolink_package_result_t res;
+	ex_getExactolinkType(&res);
+	if(res == EXACTOLINK_CMD_SEND)
 	{
+		if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
         	setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_INIT); 
-	}
-	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
-	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
-
-	SnsContainer.done = 1;
-	Counter++;
-
-	if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
-	{
-        //setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
-
-		SnsContainer.sns[0].dtrd = 0;
-		SnsContainer.sns[1].dtrd = 0;
-        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
-
+		getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
+		getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
+		SnsContainer.done = 1;
+		Counter++;
+		if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
+		{
+			SnsContainer.sns[0].dtrd = 0;
+			SnsContainer.sns[1].dtrd = 0;
+ 	       setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+		}
 	}
 	if (Mline_Counter < Mline_Max)
 		Mline_Counter++;
@@ -361,6 +359,31 @@ static int run_CheckMline_Lthread(struct lthread * self)
 	{
 		//error
 		return 0;
+	}
+	if (exactolink_result == EXACTOLINK_CMD_SEND)
+	{
+		RxPtr = ex_getRawFromSD_ExDtStr(RxData, RX_DATA_SZ);
+		uint16_t len, adr, cmd;
+		uint32_t ref, trg_num;
+		exlnk_cv_Uint8_Uint16(&RxData[2], &len);
+		if (len > 16)
+		{
+			exlnk_cv_Uint8_Uint32(&RxData[4], &ref);
+			exlnk_cv_Uint8_Uint16(&RxData[8], &adr);
+			exlnk_cv_Uint8_Uint16(&RxData[10], &cmd);
+			exlnk_cv_Uint8_Uint32(&RxData[12], &trg_num);
+			exactolink_package_result_t res = (exactolink_package_result_t) cmd;
+			if ((Mode != res)
+				&& (res >= EXACTOLINK_SNS_XL_0100_XLGR_0100)
+				&& (res <= EXACTOLINK_SNS_XL_0400_XLGR_0400)
+				)
+			{
+				Mode = res;
+				lthread_launch(&Init_Lthread);
+			}
+			ex_setExactolinkType(EXACTOLINK_CMD_SEND);
+		}
+		
 	}
 	if (RxReadable == 0)
 	{
@@ -428,10 +451,10 @@ static int run_Init_Lthread(struct lthread * self)
 
 	SnsContainer.done = 0;
     
-    turnOffSPI2_FULL_DMA();
-    setupSPI2_FULL_DMA();
+//    turnOffSPI2_FULL_DMA();
+//    setupSPI2_FULL_DMA();
+	setupSpiReceiveSlave();
 
-//    ex_setFreqHz(100);
 	switchStage(Mode);
 	ex_setExactolinkType        (EXACTOLINK_SNS_XLXLGR);
 	ex_frcTimReload();
@@ -441,16 +464,6 @@ static int run_Init_Lthread(struct lthread * self)
 
 uint8_t exSnsStart(const uint8_t type)
 {
-	// if (type == 0)
-	// 	Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
-	// else if (type == 1)
-	// 	Mode = EXACTOLINK_SNS_XL_0200_XLGR_0100;
-	// else if (type == 2)
-	// 	Mode = EXACTOLINK_SNS_XL_0400_XLGR_0100;
-	// else if (type == 3)
-	// 	Mode = EXACTOLINK_SNS_XL_0800_XLGR_0100;
-	// else if (type == 4)
-	// 	Mode = EXACTOLINK_SNS_XL_1600_XLGR_0100;
 	Mode = (exactolink_package_result_t)(type);
 
 	InitFlag = 0;
@@ -475,6 +488,7 @@ static int initApollon_lsmism()
 	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // BOOT BDU H_ACTIVE PP_OD SIM IF_INC BLE SW_RESET=0 1 0 0 1 1 0 0
 
 	resetExactoDataStorage();
+	ex_setExactolinkType(EXACTOLINK_NO_DATA);
 	lthread_init(&Init_Lthread, run_Init_Lthread);
 	lthread_init(&CheckMline_Lthread, run_CheckMline_Lthread);
 	lthread_init(&GetRaw_Lthread, run_GetRaw_Lthread);

@@ -276,6 +276,8 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
 {
     if (!ExDtStr_Output_Storage[EX_THR_SPi_TX].isready)
         return 1;
+    if (EDS_CurrentExactolinkType == EXACTOLINK_NO_DATA)
+        return 1;
     uint8_t type = EDS_CurrentExactolinkType;
     const uint8_t pck_id = EXACTOLINK_PCK_ID;
     uint16_t address = 1;
@@ -441,6 +443,10 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     uint16_t i;
     uint16_t frame_index;
     exdtstr_xtspi_refcnt = 0;
+    if ((uint8_t)exactolink_type == EXACTOLINK_CMD_SEND)
+    {
+        setemp_exbextu8(&ExDtStr_SD_buffer);
+    }
     pshfrc_exbextu8(&ExDtStr_SD_buffer, 0x11);
     pshfrc_exbextu8(&ExDtStr_SD_buffer, exactolink_type);
     pshfrc_exbextu8(&ExDtStr_SD_buffer, (uint8_t)(cnt_data));
@@ -504,34 +510,10 @@ uint16_t ex_getRawFromSD_ExDtStr(uint8_t * trg, const uint16_t copylen)
 }
 uint8_t  ex_getRawDataStr_ExDtStr(int16_t * dst, const uint16_t dstlen)
 {
-    //for (uint16_t i = 0; i < EXDTSTR_SINGLE_DATA_STR_LENGTH; i++)
-    // uint16_t i = 0;
-    // for (i = 0; i < dstlen; i++)
-    // {
-    //     //dst[i] = ExDtStr_Tmp_Str[i];
-    //     if (!grbfst_exbextu8(&ExDtStr_SD_buffer, &dst[i]))
-    //         break;   
-    // }
-
     return 0;
 }
 uint8_t ex_getInfo_ExDtStr(exactolink_package_info_t * info)
 {
-    // info->counter = ExDtStr_TrasmitSPI_Info.counter;
-    // info->datasrc = ExDtStr_TrasmitSPI_Info.datasrc;
-    // info->datatype = ExDtStr_TrasmitSPI_Info.datatype;
-    // info->is_data_available = ExDtStr_TrasmitSPI_Info.is_data_available;
-    // info->length = ExDtStr_TrasmitSPI_Info.length;
-    // info->packagetype = ExDtStr_TrasmitSPI_Info.packagetype;
-    // info->priority = ExDtStr_TrasmitSPI_Info.priority;
-
-    // info->counter_raw[0] = ExDtStr_TrasmitSPI_Info.counter_raw[0];
-    // info->counter_raw[1] = ExDtStr_TrasmitSPI_Info.counter_raw[1];
-    // info->counter_raw[2] = ExDtStr_TrasmitSPI_Info.counter_raw[2];
-    // info->counter_raw[3] = ExDtStr_TrasmitSPI_Info.counter_raw[3];
-
-    // info->length_raw[0] = ExDtStr_TrasmitSPI_Info.length_raw[0];
-    // info->length_raw[1] = ExDtStr_TrasmitSPI_Info.length_raw[1];
     return 0;
 }
 void ex_updateCounter_ExDtStr(ex_thread_type_t type)

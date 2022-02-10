@@ -173,6 +173,13 @@ static int SPI2_FULL_DMA_init(void)
 #endif
     return 0;
 }
+extern void setupSpiReceiveSlave()
+{
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+    LL_SPI_EnableDMAReq_RX(SPI2);
+    LL_SPI_Enable(SPI2);
+}
 void setupSPI2_FULL_DMA()
 {
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
@@ -272,6 +279,18 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 #ifdef SAM_REPORTER
     SAM_Ticker_Start = ex_dwt_cyccnt_start();
 #endif
+    exactolink_package_result_t res;
+    ex_getExactolinkType(&res);
+    if (res == EXACTOLINK_NO_DATA)
+    {
+        if (!ExDtStr_Output_Storage[EX_THR_SPi_RX].isready&&!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
+        {
+            LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+            LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+            LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+        }
+        return 1;
+    }
     if  (
             (ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_OK)
         )
