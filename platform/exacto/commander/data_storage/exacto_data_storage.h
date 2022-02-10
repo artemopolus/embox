@@ -71,6 +71,7 @@ typedef enum{
     EXACTOLINK_LSM303AH_TYPE1,
     EXACTOLINK_LSM303AH_TYPE3,
     EXACTOLINK_CMD_COMMON,
+    EXACTOLINK_CMD_SEND,
     EXACTOLINK_SNS_XLXLGR,
     EXACTOLINK_SNS_XL_0100_XLGR_0100,
     EXACTOLINK_SNS_XL_0200_XLGR_0100,
@@ -92,8 +93,9 @@ typedef struct{
     uint32_t counter;
     uint8_t counter_raw[4];
     uint8_t is_data_available;
-    exactolink_package_result_t packagetype;
     uint16_t overflow;
+    exactolink_package_result_t packagetype;
+    exacto_process_result_t status;
 }exactolink_package_info_t;
 
 // переменные

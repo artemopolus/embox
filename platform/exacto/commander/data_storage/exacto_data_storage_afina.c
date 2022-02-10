@@ -244,47 +244,9 @@ uint8_t clearExactoDataStorage()
     setemp_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage);
     return 0;
 }
-// void setHeaderExactoDataStorage(const uint8_t type, const uint16_t address, const uint16_t length)
-// {
-//     // HEADER
-//     //[00] 0x17 
-//     //[01] 0x17
-//     //----------------------
-//     //Datalen
-//     //[02] 0x00
-//     //[03] 0x00
-//     //----------------------
-//     //TYPE
-//     //[04] 
-//     //----------------------
-//     //pointer on data start
-//     //[05] 0x09 
-//     //----------------------
-//     //ADDRESS
-//     //[06]
-//     //[07]
-//     //----------------------
-//     //DATA PACKAGE
-//     //[08] 0x00
-
-//     const uint8_t pck_id = EXACTOLINK_PCK_ID;
-//     const uint8_t addrH = (uint8_t) (address << 8);
-//     const uint8_t addrL = (uint8_t) (address);
-//     const uint8_t lenH = (uint8_t) (length << 8);
-//     const uint8_t lenL = (uint8_t) (length);
-//     const uint8_t data_start_point = EXACTOLINK_START_DATA_POINT_VAL;
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, pck_id);             //[0]
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, lenH);               //[1]
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, lenL);               //[2]
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, type);               //[3]
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, data_start_point);   //[4]
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, addrH);              //[5]
-//     pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, addrL);              //[6]
-// }
 
 void updateData2EDS(uint8_t value)
 {
-    // pshfrc_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, value);
     if (!pshsft_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, value))
     {
         ExDtStr_OutputSPI_OverFlw++;
@@ -417,6 +379,7 @@ getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
         receiver[length - 1] = (uint8_t)(crc >> 24);        
         break;
     case EXACTOLINK_CMD_COMMON:
+    case EXACTOLINK_CMD_SEND:
     case EXACTOLINK_SNS_XLXLGR:
         //начало пакета
         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)

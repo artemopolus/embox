@@ -90,6 +90,18 @@ uint32_t TESMAF_test_CallFunTooManyFailed = 0;
 uint32_t TESMAF_test_InputLst = 0;
 uint32_t TESMAF_test_UpdteLst = 0;
 
+typedef struct mline_sender{
+    uint32_t last_recv;
+    uint16_t adr;
+    exactolink_package_result_t cmd;
+}mline_sender_t;
+
+mline_sender_t MlineSender = {
+    .adr = 0,
+    .cmd = EXACTOLINK_NO_DATA,
+    .last_recv = 0,
+};
+
 
 static struct lthread   TESMAF_AfterCheckExStr_Lthread;
 static int runTESMAF_AfterCheckExStr_Lthread(struct lthread * self)
@@ -110,6 +122,7 @@ start:
         return 0;
     }
     cnt_buf = TESMAF_ReceivedData_Info.counter;
+    MlineSender.last_recv = cnt_buf;
     if ((TESMAF_CounterBuffer_Input - TESMAF_CounterBuffer_Middl) > 5)
     {
         //количество вызовов функций не совпадает с ее удачным завершением
@@ -169,8 +182,21 @@ static int runTESMAF_CheckExactoStorage_Lthread(struct lthread * self)
     printk("$");
 #endif
     
-    TESMAF_DataCheck_Counter++; 
+    TESMAF_DataCheck_Counter++;
 
+    exactolink_package_result_t cmd;
+    ex_getExactolinkType(&cmd);
+    if (cmd == EXACTOLINK_CMD_SEND)
+    { 
+        exlnk_cv_Uint16_Uint8(MlineSender.adr, &TESMAF_DataToBuffer[0]);
+        exlnk_cv_Uint16_Uint8((uint16_t)MlineSender.cmd, &TESMAF_DataToBuffer[2]);
+        exlnk_cv_Uint32_Uint8((MlineSender.last_recv + 1),&TESMAF_DataToBuffer[4]); 
+    }
+    else
+    {
+        for(int i = 0; i < 6;i++)
+            TESMAF_DataToBuffer[i] = 0;
+    }
     setDataToExactoDataStorage(TESMAF_DataToBuffer, TESMAF_MESSAGE_SIZE , EX_THR_CTRL_OK);
     if (ExDtStr_TrasmitSPI_DbleCnt > 100)
     {
@@ -352,6 +378,8 @@ static int runTESP_Subscribe_Lthread( struct lthread * self)
 }
 uint8_t setMlinerMode(const uint16_t address, exactolink_package_result_t mode)
 {
+    MlineSender.adr = address;
+    MlineSender.cmd = mode;
 	return 0;
 }
 uint8_t startMliner(void)
@@ -363,7 +391,7 @@ uint8_t startMliner(void)
         return 0;
     }
     
-
+    ex_setExactolinkType(EXACTOLINK_CMD_SEND);
 
 
     if(TESP_Subscribe_Marker == 0)
