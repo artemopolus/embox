@@ -11,7 +11,6 @@ uint8_t exlnk_pushSnsPack( const uint8_t sns_id, uint8_t * data, const uint16_t 
 	}
 	return 0;
 }
-#ifdef EXACTOLINK_FULL
 void exlnk_initSDpack(const uint8_t type, const uint16_t cnt, const uint32_t refcnt, ExactoBufferExtended * buffer)
 {
       // pshfrc_exbextu8(&ExDtStr_SD_buffer, 0x11);
@@ -129,4 +128,13 @@ void exlnk_cv_Uint32_Uint8(const uint32_t src, uint8_t * dst)
    for (uint16_t i = 0; i < 4; i++)
       dst[i] = (uint8_t)(src >> 8*i);
 }
-#endif
+void exlnk_cv_Uint16_Uint8(const uint16_t src, uint8_t * dst)
+{
+	dst[0] = (uint8_t) (src);
+	dst[1] = (uint8_t) (src >> 8);
+}
+void exlnk_cv_Uint8_Uint16(uint8_t * src, uint16_t * dst)
+{
+    uint16_t first = (uint16_t) src[1];
+    *dst = (first << 8) + (uint16_t)src[0];
+}
