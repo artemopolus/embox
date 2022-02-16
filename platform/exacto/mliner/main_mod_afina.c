@@ -302,7 +302,19 @@ static int runTESP_TimReceiver_Lthread(struct  lthread * self)
    // printk("!");
     if (Mode == MLINER_M_STOP_ALL)
         return 0;
+    if (TESP_TimReceiver_Counter == 0)
+    {
+        uint8_t str[] = "Start TIM recv\n";
+        exfm_print2log(str, sizeof(str));
+    }
 
+        // ex_writeToLogChar("Start TIM recv\n");
+    if (TESP_TimReceiver_Counter % 1000);
+    {
+        // ex_writeToLogChar("1000 done\n");
+        uint8_t str[] = "100 done\n";
+        exfm_print2log(str, sizeof(str));
+    }
     TESP_TimReceiver_Counter++;
     if (TESMAF_Sensors_TickCnt < TESMAF_Sensors_TickMax)
     {

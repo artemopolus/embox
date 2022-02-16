@@ -8,6 +8,8 @@
 //переменные
 // extern uint32_t EFM_
 //функции
+
+extern void exfm_print2log(uint8_t * data, uint16_t datalen);
 extern uint8_t ex_writeToLogChar(char * info);
 extern uint8_t ex_saveExBufToFile( ExactoBufferUint8Type * buffer );
 extern uint8_t ex_saveExExtBufToFile( ExactoBufferExtended * buffer );

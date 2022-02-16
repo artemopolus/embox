@@ -12,6 +12,12 @@
 #include <fcntl.h>
 #include <kernel/printk.h>
 #include <kernel/sched/sched_lock.h>
+#include <kernel/sched/sync/mutex.h>
+#include <kernel/thread.h>
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/sync/cond.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/sync/mutex.h>
 
 #define EX_FM_PATH_TO_FILE_PT 17
 #define EX_FM_PATH_TO_LOG_PT 12
@@ -36,6 +42,15 @@ uint32_t    ExFm_Data_pulledmax = 5000;
 static uint32_t EFM_PushToBuffer_BasicCnt = 0;
 static uint32_t EFM_PushToBuffer_TmpCnt = 0;
 static uint32_t EFM_BufferToSD_BasicCnt = 0;
+
+static struct thread *  PrintToLog_Thread;
+static cond_t           PrintToLog_Signal;
+static struct mutex     PrintToLog_Mutex;
+static struct lthread   PrintToLog_Run_Lthread;
+#define PRINTTOLOG_DATA_SZ 128
+static uint8_t PrintToLog_Data[PRINTTOLOG_DATA_SZ] = {0};
+static uint16_t PrintToLog_Len = 0;
+static uint8_t PrintToLog_isenabled = 0;
 
 void updateNamesForFileManager()
 {
@@ -181,7 +196,53 @@ uint8_t ex_saveToLog(uint8_t * data, uint16_t datalen)
     return 0;
 }
 
+static void * runPrintToLog_Thread(void * arg)
+{
+    FILE * pt;
+    char buffer[128];
 
+    mutex_lock(&PrintToLog_Mutex);
+    cond_wait(&PrintToLog_Signal, &PrintToLog_Mutex);
+
+    pt =  fopen(ExFm_Log_Path, "a");
+
+    fprintf(pt, "Start print2log thread\n");
+
+    while(1)
+    {
+        mutex_lock(&PrintToLog_Mutex);
+
+        for (int i = 0; i < PrintToLog_Len; i++)
+            buffer[i] = (char) PrintToLog_Data[i];
+        buffer[PrintToLog_Len] = '\0';
+        fprintf(pt, buffer);
+        cond_wait(&PrintToLog_Signal, &PrintToLog_Mutex);
+    }
+    fclose(pt);
+    return NULL;
+}
+
+static int runPrintToLog_Run_Lthread(struct lthread * self)
+{
+    mutex_retry:
+	if (mutex_trylock_lthread(self, &PrintToLog_Mutex) == -EAGAIN) {
+        return lthread_yield(&&mutex_retry, &&mutex_retry);
+	}
+    cond_signal(&PrintToLog_Signal);
+	mutex_unlock_lthread(self, &PrintToLog_Mutex);
+    return 0;
+}
+static void exfm_initLogger(void)
+{
+    if (PrintToLog_isenabled)
+        return;
+    lthread_init(&PrintToLog_Run_Lthread, runPrintToLog_Run_Lthread);
+    PrintToLog_Thread = thread_create( THREAD_FLAG_DETACHED | THREAD_FLAG_SUSPENDED , runPrintToLog_Thread, NULL);
+    mutex_init(&PrintToLog_Mutex);
+    cond_init(&PrintToLog_Signal, NULL);
+    thread_launch(PrintToLog_Thread);
+    PrintToLog_isenabled = 1;
+}
 // EMBOX_UNIT_INIT(initExactoFileManager);
 uint8_t initExactoFileManager(void)
 {
@@ -263,6 +324,11 @@ uint8_t initExactoFileManager(void)
             printf("Data file is opened\n");
             ex_writeToLogChar("Data file is opened\n");
         }
+
+        fclose(ExFm_Log_Pointer);
+
+        exfm_initLogger();
+
     }
     else
     {
@@ -270,4 +336,20 @@ uint8_t initExactoFileManager(void)
         return 1;
     }
 return 0;
+}
+void exfm_print2log(uint8_t * data, uint16_t datalen)
+{
+    if (PrintToLog_isenabled == 0)
+    {
+        exfm_initLogger();
+    }
+    PrintToLog_Len = datalen;
+    int i = 0;
+    for (i = 0; (i < PrintToLog_Len)&&(i < PRINTTOLOG_DATA_SZ); i++)
+        PrintToLog_Data[i] = data[i];
+    if (i < PRINTTOLOG_DATA_SZ - 1)
+        PrintToLog_Data[i+1] = '\0';
+    else
+        PrintToLog_Data[PRINTTOLOG_DATA_SZ - 1] = '\0';
+    lthread_launch(&PrintToLog_Run_Lthread);
 }
