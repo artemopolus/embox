@@ -6,8 +6,14 @@
 
 #define EXACTO_DATA_STORAGE_TEST
 
-uint8_t EDS_spidmairq_Marker = 0;
+mline_sender_t MlineGetter = 
+{
+    .adr = 0,
+    .cmd = EXACTOLINK_NO_DATA,
+    .last_recv = 0,
+};
 
+uint8_t EDS_spidmairq_Marker = 0;
 uint32_t ExDtStr_TransmitSPI_TxCounter = 0;
 uint32_t ExDtStr_TransmitSPI_RxCounter = 0;
 uint32_t EDS_SPI_pullcount = 0;
@@ -363,6 +369,7 @@ exactolink_package_result_t ex_checkData_ExDtStr()
 {
     uint8_t value = 0;
     exactolink_package_result_t exactolink_type = EXACTOLINK_NO_DATA;
+    MlineGetter.cmd = EXACTOLINK_NO_DATA;
     ExactoBufferUint8Type * tmp_buffer = NULL;
 
     //void * tmp = NULL;
@@ -483,21 +490,39 @@ exactolink_package_result_t ex_checkData_ExDtStr()
     grbfst_exbu8(tmp_buffer, &value); //[19] 
     //[20]
     frame_index = EXACTOLINK_SD_PT_DATA_START;
-    //uint8_t pair[2] = {0};
-    //uint16_t j = 0;
-    for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length); i++)
+    if ((uint8_t)exactolink_type == EXACTOLINK_CMD_SEND)
     {
-        if (!grbfst_exbu8(tmp_buffer, &value))
-            break;
-        else
-        {
-            if (!pshsft_exbextu8(&ExDtStr_SD_buffer, value))
-                break;
-            frame_index++;
-        }
+        uint8_t arr[4];
+        uint16_t val;
+        grbfst_exbu8(tmp_buffer, &arr[0]);
+        grbfst_exbu8(tmp_buffer, &arr[1]);
+        exlnk_cv_Uint8_Uint16(arr, &(MlineGetter.adr));
+        grbfst_exbu8(tmp_buffer, &arr[0]);
+        grbfst_exbu8(tmp_buffer, &arr[1]);
+        exlnk_cv_Uint8_Uint16(arr, &val);
+        MlineGetter.cmd = EXACTOLINK_CMD_SEND;
+        grbfst_exbu8(tmp_buffer, &arr[0]);
+        grbfst_exbu8(tmp_buffer, &arr[1]);
+        grbfst_exbu8(tmp_buffer, &arr[2]);
+        grbfst_exbu8(tmp_buffer, &arr[3]);
+        exlnk_cv_Uint8_Uint32(arr, &(MlineGetter.last_recv));
+        EDS_SPI_pullcount += 8;
     }
-            
-    EDS_SPI_pullcount += getlen_exbextu8(&ExDtStr_SD_buffer);
+    else
+    {
+        for (i = 0; i < (ExDtStr_TrasmitSPI_Info.length); i++)
+        {
+            if (!grbfst_exbu8(tmp_buffer, &value))
+                break;
+            else
+            {
+                if (!pshsft_exbextu8(&ExDtStr_SD_buffer, value))
+                    break;
+                frame_index++;
+            }
+        }        
+        EDS_SPI_pullcount += getlen_exbextu8(&ExDtStr_SD_buffer);
+    }
     ExDtStr_TrasmitSPI_Info.packagetype = EXACTOLINK_OK;
 
     return exactolink_type;
@@ -584,5 +609,19 @@ uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length)
     lthread_launch(&SetupParamsThread.thread);
     return 0;
 }
-
+uint8_t exds_getStatus(ex_thread_type_t type)
+{
+    if (type == EX_THR_SPi_TX)
+    {
+        if (MlineGetter.cmd == EXACTOLINK_NO_DATA)
+            return (uint8_t)EXACTOLINK_NO_DATA;
+        if (ExDtStr_TransmitSPI_TxCounter == MlineGetter.last_recv)
+            return (uint8_t)EXACTOLINK_OK;
+        if (ExDtStr_TransmitSPI_TxCounter == (MlineGetter.last_recv + 1))
+            return (uint8_t)EXACTOLINK_REPEAT;
+        ExDtStr_TransmitSPI_TxCounter = MlineGetter.last_recv; 
+        return (uint8_t)EXACTOLINK_OK;
+    }
+    return (uint8_t)EXACTOLINK_NO_DATA;
+}
 

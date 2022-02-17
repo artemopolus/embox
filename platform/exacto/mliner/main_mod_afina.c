@@ -90,11 +90,6 @@ uint32_t TESMAF_test_CallFunTooManyFailed = 0;
 uint32_t TESMAF_test_InputLst = 0;
 uint32_t TESMAF_test_UpdteLst = 0;
 
-typedef struct mline_sender{
-    uint32_t last_recv;
-    uint16_t adr;
-    exactolink_package_result_t cmd;
-}mline_sender_t;
 
 mline_sender_t MlineSender = {
     .adr = 0,

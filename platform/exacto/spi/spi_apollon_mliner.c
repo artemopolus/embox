@@ -274,13 +274,23 @@ void SPI2_updateRx()
         ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 0;
     }
 }
+static void repeatSend(void)
+{
+    if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
+    {
+        SPI2_disableChannels();
+        SPI2_updateRx();
+        SPI2_enableChannels();
+    }
+
+}
 static int SPI2_FULL_DMA_transmit(struct lthread * self)
 {
 #ifdef SAM_REPORTER
     SAM_Ticker_Start = ex_dwt_cyccnt_start();
 #endif
-    exactolink_package_result_t res;
-    ex_getExactolinkType(&res);
+    exactolink_package_result_t res = (exactolink_package_result_t) exds_getStatus(EX_THR_SPi_TX);
+    //если требований от мастера не поступало, продолжаем прослушивание
     if (res == EXACTOLINK_NO_DATA)
     {
         if (!ExDtStr_Output_Storage[EX_THR_SPi_RX].isready&&!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
@@ -289,16 +299,21 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
             LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
             LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
         }
-        return 1;
+        return 0;
     }
+    //Требуется повтор передачи данных
+    if(res == EXACTOLINK_REPEAT)
+    {
+        repeatSend();
+        return 0;
+    }
+    //Пришел запрос
     if  (
             (ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_OK)
         )
     {
         ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_NO_RESULT;
     }
-
-
     if (
         (ExDtStr_Output_Storage[EX_THR_SPi_TX].result == EX_THR_CTRL_OK)
         &&(ExDtStr_Output_Storage[EX_THR_SPi_TX].isready)
@@ -330,12 +345,7 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
     else // ! ExDtStr_Output_Storage[EX_THR_SPi_TX].isready
     {
         //шлюз занят, готовность данных не имеет значения : повторить отправку
-        if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
-        {
-            SPI2_disableChannels();
-            SPI2_updateRx();
-            SPI2_enableChannels();
-        }
+        repeatSend();
     }
     return 0;
 }

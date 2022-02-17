@@ -133,8 +133,3 @@ void exlnk_cv_Uint16_Uint8(const uint16_t src, uint8_t * dst)
 	dst[0] = (uint8_t) (src);
 	dst[1] = (uint8_t) (src >> 8);
 }
-void exlnk_cv_Uint8_Uint16(uint8_t * src, uint16_t * dst)
-{
-    uint16_t first = (uint16_t) src[1];
-    *dst = (first << 8) + (uint16_t)src[0];
-}

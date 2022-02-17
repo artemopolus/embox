@@ -67,6 +67,7 @@ typedef enum{
 typedef enum{
     EXACTOLINK_NO_DATA = 0,
     EXACTOLINK_OK,
+    EXACTOLINK_REPEAT,
     EXACTOLINK_LSM303AH_TYPE0,
     EXACTOLINK_LSM303AH_TYPE1,
     EXACTOLINK_LSM303AH_TYPE3,
@@ -97,6 +98,12 @@ typedef struct{
     exactolink_package_result_t packagetype;
     exacto_process_result_t status;
 }exactolink_package_info_t;
+
+typedef struct mline_sender{
+    uint32_t last_recv;
+    uint16_t adr;
+    exactolink_package_result_t cmd;
+}mline_sender_t;
 
 // переменные
 
@@ -130,7 +137,7 @@ extern uint8_t clearExactoDataStorage();
 
 extern uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result);
 extern uint8_t exds_setSnsData(const uint8_t sns_id, uint8_t * data, const uint16_t datacount);
-
+extern uint8_t exds_getStatus(ex_thread_type_t type);
 extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
