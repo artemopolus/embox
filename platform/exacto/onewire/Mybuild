@@ -1,0 +1,9 @@
+package exacto.onewire
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module apollon_m_smpl{
+	source "ow.c"
+	@IncludeExport(path="onewire")
+	source "ow.h"
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+}
