@@ -11,8 +11,10 @@ typedef struct{
     uint8_t cmd;
 }ex_ow_pack_t;
 
-extern uint8_t ex_onewire_reset();
-extern uint8_t ex_onewire_send();
-extern uint8_t ex_onewire_read();
+extern uint8_t ex_onewire_reset(void );
+
+extern uint8_t ex_onewire_send(ex_ow_pack_t * out);
+
+extern uint8_t ex_onewire_read(ex_ow_pack_t * in);
 
 #endif
