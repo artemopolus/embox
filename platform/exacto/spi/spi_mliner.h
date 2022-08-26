@@ -1,7 +1,7 @@
 #ifndef SPI_MLINER_H
 #define SPI_MLINER_H
 #include <stdint.h>
-
+//TODO: сделать названия функций более абстрактными
 #define SPI_MLINER_BUFFER_SIZE EXACTOLINK_MESSAGE_SIZE
 
 extern void SPI1_FULL_DMA_SetEnabled();
