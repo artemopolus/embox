@@ -1,0 +1,13 @@
+package exacto.cmds.tests.mliner
+@AutoCmd
+@Cmd(name="test_mliner_sender", help=" Test send using address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module main_sender{
+}
+@AutoCmd
+@Cmd(name="test_mliner_getter", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module sec_getter{
+}
