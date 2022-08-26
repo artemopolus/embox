@@ -9,8 +9,12 @@ uint8_t exlnk_getHeader( uint8_t * trg, uint16_t len, exlnk_get_header_str_t * o
         return 0;
     out->len = (uint16_t) trg[1];
     out->len += (uint16_t) (trg[2] << 8);
+	if(out->len > len)
+		return 0;
     out->type_msg = trg[3];
     out->type_pack = trg[4];
+    if (out->type_msg != 1 && out->type_pack != 20 && trg[out->len] != 5)
+        return 0;
     out->adr = (uint16_t) trg[7];
     out->adr += (uint16_t) (trg[8] << 8);
     out->cnt = 0;

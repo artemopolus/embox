@@ -34,3 +34,38 @@ void exlnk_setEnder(uint8_t * trg)
     trg[2] = 5;
     trg[3] = 5;
 }
+void exlnk_initHeader(exlnk_set_header_str_t * trg, uint8_t * buffer)
+{
+    trg->pt_data = 0;
+    trg->data = buffer;
+}
+void exlnk_fillHeader(exlnk_set_header_str_t * trg, uint16_t adr, uint8_t type_msg, uint8_t type_pack, uint16_t len, uint32_t cnt, uint16_t ovrflw)
+{
+    exlnk_setHeader(adr, trg->data, type_msg, type_pack, len, cnt, ovrflw);
+    trg->pt_data = type_pack;
+    trg->adr = adr;
+    trg->cnt = cnt;
+    trg->type_msg = type_msg;
+    trg->type_pack = type_pack;
+    trg->len = len;
+    trg->ovrflw = ovrflw;
+}
+void exlnk_uploadHeader(exlnk_set_header_str_t * trg, uint8_t * datasrc, uint16_t datalen)
+{
+    for (uint16_t i = 0; i < datalen; i++)
+    {
+        trg->data[trg->pt_data++] = datasrc[i];
+    }
+}
+void exlnk_closeHeader(exlnk_set_header_str_t * trg)
+{
+    trg->data[trg->pt_data++] = 5;
+    trg->data[trg->pt_data++] = 5;
+    trg->data[trg->pt_data++] = 5;
+    trg->data[trg->pt_data++] = 5;
+    uint16_t length = trg->pt_data;
+    trg->data[1] = (uint8_t) (length);
+    trg->data[2] = (uint8_t) (length >> 8);
+    trg->len = length;
+}
+
