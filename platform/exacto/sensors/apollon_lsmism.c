@@ -322,7 +322,7 @@ static int runSnsContainerLthread(struct lthread * self)
 	if(res == EXACTOLINK_CMD_SEND)
 	{
 		if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
-        	setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_INIT); 
+        	exds_setData(Ender, 0, EX_THR_CTRL_INIT); 
 		getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
 		getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
 		SnsContainer.done = 1;
@@ -331,7 +331,7 @@ static int runSnsContainerLthread(struct lthread * self)
 		{
 			SnsContainer.sns[0].dtrd = 0;
 			SnsContainer.sns[1].dtrd = 0;
- 	       setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+ 	       exds_setData(Ender, 0, EX_THR_CTRL_OK);
 		}
 	}
 	if (Mline_Counter < Mline_Max)
@@ -413,10 +413,10 @@ static int run_GetRaw_Lthread(struct lthread * self)
 	TmpBufferPtr += 9;
 	getRawFromSns(&SnsContainer.sns[0], ISM330DLC_INT1_CTRL, 14, &TmpBufferData[TmpBufferPtr]);
 	TmpBufferPtr += 14;
-        setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
+        exds_setData(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
 	SnsContainer.sns[0].dtrd = 0;
 	SnsContainer.sns[1].dtrd = 0;
-        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+        exds_setData(Ender, 0, EX_THR_CTRL_OK);
 	transmitExactoDataStorage();
 	return 0;
 }

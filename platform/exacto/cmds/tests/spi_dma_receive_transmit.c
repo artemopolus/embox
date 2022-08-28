@@ -67,7 +67,7 @@ static int downloadDataRun(struct lthread * self)
 
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, 16); 
+    exds_setData(DataToBuffer, 16); 
     return 0;
 }
 static int sendDataThreadRun(struct lthread * self)

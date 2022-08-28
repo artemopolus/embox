@@ -35,11 +35,11 @@ int main(int argc, char *argv[]) {
     printf("Test one command\n");
     ex_setExactolinkType(EXACTOLINK_SNS_XLXLGR);
 
-    setDataToExactoDataStorage(Command, 0, EX_THR_CTRL_INIT); 
+    exds_setData(Command, 0, EX_THR_CTRL_INIT); 
 
-    setDataToExactoDataStorage(Command, 40, EX_THR_CTRL_WAIT);
+    exds_setData(Command, 40, EX_THR_CTRL_WAIT);
 
-    setDataToExactoDataStorage(Command, 0, EX_THR_CTRL_OK); 
+    exds_setData(Command, 0, EX_THR_CTRL_OK); 
 
     while (!checkTxSender())
     {

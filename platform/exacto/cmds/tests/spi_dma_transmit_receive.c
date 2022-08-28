@@ -17,7 +17,7 @@ struct lthread PrintThread;
 struct lthread MarkerCheckerThread;
 static int updateDataToBufferThreadRun(struct lthread * self)
 {
-    setDataToExactoDataStorage(DataToBuffer, 5); 
+    exds_setData(DataToBuffer, 5); 
     return 0;
 }
 static int sendDataThreadRun(struct lthread * self)

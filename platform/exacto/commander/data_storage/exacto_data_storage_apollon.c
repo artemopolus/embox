@@ -244,7 +244,7 @@ uint8_t exds_setSnsData(const uint8_t sns_id, uint8_t * data, const uint16_t dat
     ExDtStr_Output_Storage[EX_THR_SPi_TX].result = EX_THR_CTRL_WAIT;
     return 0;
 }
-uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
+uint8_t exds_setData(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
 {
     switch (result)
     {
@@ -624,4 +624,18 @@ uint8_t exds_getStatus(ex_thread_type_t type)
     }
     return (uint8_t)EXACTOLINK_NO_DATA;
 }
-
+uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_result_t result)
+{
+    uint16_t i = 0;
+    for(i = 0; i < trglen; i++)
+    {
+        uint8_t value;
+        if(grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage, &value))
+        {
+            trg[i] = value;
+        }
+        else
+            return i;
+    }
+    return i;
+}
