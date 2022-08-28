@@ -11,10 +11,18 @@ module main_sender{
 	depends embox.kernel.lthread.lthread
 	depends exacto.exactolink.exlnk_set_header
 	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
 }
 @AutoCmd
 @Cmd(name="test_mliner_getter", help=" Test reaction on address via mline ", man='''
 AUTHOR Kuznetcov
 ''')
 module sec_getter{
+	source "sec_getter.c"
+	depends exacto.commander.data_storage
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
 }

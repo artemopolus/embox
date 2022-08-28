@@ -50,3 +50,10 @@ module exlnk_set_header
     source "exlnk_setHeader.h"
     depends exacto.exactolink.exlnk_options
 }
+module exlnk_cmd
+{
+    source "exlnk_Cmd.c"
+	@IncludeExport(path="")
+    source "exlnk_Cmd.h"
+    depends exacto.exactolink.exlnk_options
+}
