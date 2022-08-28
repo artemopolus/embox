@@ -86,19 +86,19 @@ uint8_t Ender[] = {5,5,5,5};
 static int runSetHeaderThread(struct lthread * self)
 {
     clearExactoDataStorage();
-   setDataToExactoDataStorage(Header, 4, EX_THR_CTRL_WAIT); 
+   exds_setData(Header, 4, EX_THR_CTRL_WAIT); 
    MarkerStage = 1;
     return 0;
 }
 static int runSetEnderThread(struct lthread * self)
 {
-   setDataToExactoDataStorage(Ender, 4, EX_THR_CTRL_OK); 
+   exds_setData(Ender, 4, EX_THR_CTRL_OK); 
    MarkerStage = 0;
     return 0;
 }
 static int runUploadDataThread(struct lthread * self)
 {
-    setDataToExactoDataStorage(PackageToGett.data, PackageToGett.datalen, EX_THR_CTRL_WAIT);
+    exds_setData(PackageToGett.data, PackageToGett.datalen, EX_THR_CTRL_WAIT);
     MarkerStage ++;
     return 0;
 }

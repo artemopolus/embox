@@ -60,7 +60,7 @@ uint8_t BufferToData[TRANSMIT_MESSAGE_SIZE] = {0};
 
 static int runUploadDataThread(struct lthread * self)
 {
-    setDataToExactoDataStorage(PackageToGett.data, PackageToGett.datalen);
+    exds_setData(PackageToGett.data, PackageToGett.datalen);
     return 0;
 }
 
@@ -360,7 +360,7 @@ int main(int argc, char *argv[]) {
         {
             printReceivedData();
             PrintTickerMarker = 0;
-            setDataToExactoDataStorage(DataToBuffer, TRANSMIT_MESSAGE_SIZE); 
+            exds_setData(DataToBuffer, TRANSMIT_MESSAGE_SIZE); 
             transmitExactoDataStorage();
 
             receiveExactoDataStorage();

@@ -206,6 +206,7 @@ static int SPI1_FULL_DMA_init(void)
     lthread_init(&SPI1_FULL_DMA_rx_buffer.dt_lth, &SPI1_FULL_DMA_rx_handler);
 
     //init lthread for middle level driver named exacto_data_storage
+    //TODO: сделать независимым от конкретного места назначения
     lthread_init(&ExDtStr_Output_Storage[EX_THR_SPi_TX].thread, &SPI1_FULL_DMA_transmit);
     ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 1;
     lthread_init(&ExDtStr_Output_Storage[EX_THR_SPi_RX].thread, &SPI1_FULL_DMA_receive);

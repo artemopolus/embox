@@ -252,7 +252,7 @@ void updateData2EDS(uint8_t value)
         ExDtStr_OutputSPI_OverFlw++;
     }
 }
-uint8_t setDataToExactoDataStorage(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
+uint8_t exds_setData(uint8_t * data, const uint16_t datacount, ex_thread_control_result_t result)
 {
     switch (result)
     {
@@ -450,6 +450,21 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
         receiver[i] = value;
     }
     return 0;
+}
+uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_result_t result)
+{
+    uint16_t i = 0;
+    for(i = 0; i < trglen; i++)
+    {
+        uint8_t value;
+        if(grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_RX].datastorage, &value))
+        {
+            trg[i] = value;
+        }
+        else
+            return i;
+    }
+    return i;
 }
 exactolink_package_result_t ex_checkData_ExDtStr()
 {

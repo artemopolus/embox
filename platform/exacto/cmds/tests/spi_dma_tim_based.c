@@ -162,7 +162,7 @@ static int runSpiDmaTimCheckExactoStorageThread(struct lthread * self)
     ex_enableGpio(EX_GPIO_SPI_MLINE);
     enableMasterSpiDma(); 
 
-    setDataToExactoDataStorage(SpiDmaTimDataToBuffer, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE , EX_THR_CTRL_OK); 
+    exds_setData(SpiDmaTimDataToBuffer, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE , EX_THR_CTRL_OK); 
     transmitExactoDataStorage();
     receiveExactoDataStorage();
     getDataFromExactoDataStorage(SpiDmaTimReceivedData, SPI_DMA_TIM_TRANSMIT_MESSAGE_SIZE );

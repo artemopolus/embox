@@ -30,13 +30,15 @@ module mliner_apollon {
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 }
+//TODO:
 @BuildDepends(third_party.bsp.stmf7cube.cube)
 module mline_main {
 	source "spi_mline_afina_main.c"
 	@IncludeExport(path="spi")
 	source "spi_mliner.h"
 
-    	depends exacto.commander.data_storage
+	//call absract module
+	depends exacto.commander.data_storage
 	depends exacto.gpio.mline_spi_main
 	depends exacto.gpio.config
 	depends exacto.cmds.perf_tests.ex_utils

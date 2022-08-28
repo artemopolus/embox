@@ -150,10 +150,10 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	{
 		Ender[0] = EXACTOLINK_SNS_ID;
 		Ender[1] = (uint8_t)sns->sns;
-		setDataToExactoDataStorage(Ender, 2, EX_THR_CTRL_WAIT);
+		exds_setData(Ender, 2, EX_THR_CTRL_WAIT);
 		//for (uint8_t i = 0; i < tmp_length; i++)
 			//buffer[i+2] = PackageToGett.data[i + sns->shift];
-		setDataToExactoDataStorage(&PackageToGett.data[sns->shift], tmp_length, EX_THR_CTRL_WAIT);
+		exds_setData(&PackageToGett.data[sns->shift], tmp_length, EX_THR_CTRL_WAIT);
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
 		return (tmp_length + 2);
@@ -311,7 +311,7 @@ static int runSnsContainerLthread(struct lthread * self)
 	}
 	if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
 	{
-        	setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_INIT); 
+        	exds_setData(Ender, 0, EX_THR_CTRL_INIT); 
 	}
 	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
 	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
@@ -321,11 +321,11 @@ static int runSnsContainerLthread(struct lthread * self)
 
 	if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
 	{
-        //setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
+        //exds_setData(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
 
 		SnsContainer.sns[0].dtrd = 0;
 		SnsContainer.sns[1].dtrd = 0;
-        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+        exds_setData(Ender, 0, EX_THR_CTRL_OK);
 
 	}
 	if (Mline_Counter < Mline_Max)
@@ -376,10 +376,10 @@ static int run_GetRaw_Lthread(struct lthread * self)
 	TmpBufferPtr += 9;
 	getRawFromSns(&SnsContainer.sns[0], ISM330DLC_INT1_CTRL, 14, &TmpBufferData[TmpBufferPtr]);
 	TmpBufferPtr += 14;
-        setDataToExactoDataStorage(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
+        exds_setData(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
 	SnsContainer.sns[0].dtrd = 0;
 	SnsContainer.sns[1].dtrd = 0;
-        setDataToExactoDataStorage(Ender, 0, EX_THR_CTRL_OK);
+        exds_setData(Ender, 0, EX_THR_CTRL_OK);
 	transmitExactoDataStorage();
 	return 0;
 }

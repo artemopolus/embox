@@ -82,6 +82,9 @@ abstract module spi_dev{
 @AutoCmd
 @Cmd(name="test_afina_transmit", help=" Test for sending test array throw spi dma ", man='''
 AUTHOR Kuznetcov
+
+Testing SPI with DMA. Using abstract module spi_dev
+
 ''')
 module spi_dma_transmit_receive {
 	source "spi_dma_transmit_receive.c"
