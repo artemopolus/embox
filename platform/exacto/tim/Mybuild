@@ -1,4 +1,10 @@
 package exacto.tim
+
+abstract module base
+{
+
+}
+
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module apollon_tim3 extends exacto.cmds.tests.timbase{
 	source "tim3.c"

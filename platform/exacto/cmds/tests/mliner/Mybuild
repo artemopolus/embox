@@ -22,6 +22,8 @@ module sec_getter{
 	depends exacto.commander.data_storage
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
+
+	depends exacto.tim.base
 	depends exacto.exactolink.exlnk_set_header
 	depends exacto.exactolink.exlnk_get_header
 	depends exacto.exactolink.exlnk_cmd
