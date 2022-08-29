@@ -26,11 +26,14 @@ uint8_t TmpBuffer[100];
 
 static void sending(int value)
 {
+	receiveExactoDataStorage();
+
 	printf("iteration[%d]\n", ECTM_SendData_Counter);
 	exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0); 
 
 
 	exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer);
+
 	if(GettBuffer.adr == 7)
 	{
 		exlnk_cmd_str_t in;

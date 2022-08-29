@@ -43,7 +43,7 @@ typedef struct
     uint8_t is_full;
 } SPI2_FULL_DMA_buffer;
 
-// static uint8_t PtExactoStorage = 0xFF;
+static uint8_t SpiIsEnabled = 0;
 
 static SPI2_FULL_DMA_buffer SPI2_FULL_DMA_rx_buffer = {
     .dt_count = SPI2_FULL_DMA_RXTX_BUFFER_SIZE,
@@ -66,6 +66,7 @@ static int SPI2_FULL_DMA_receive(struct lthread * self);
 EMBOX_UNIT_INIT(SPI2_FULL_DMA_init);
 static int SPI2_FULL_DMA_init(void)
 {
+    SpiIsEnabled = 0;
   LL_SPI_InitTypeDef SPI_InitStruct = {0};
 
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -179,6 +180,7 @@ extern void setupSpiReceiveSlave()
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_Enable(SPI2);
+    SpiIsEnabled = 1;
 }
 void setupSPI2_FULL_DMA()
 {
@@ -189,7 +191,7 @@ void setupSPI2_FULL_DMA()
     LL_SPI_EnableDMAReq_TX(SPI2);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);   //transmit
     LL_SPI_Enable(SPI2);
-
+    SpiIsEnabled = 1;
 }
 void turnOffSPI2_FULL_DMA()
 {
@@ -198,6 +200,8 @@ void turnOffSPI2_FULL_DMA()
     LL_SPI_Disable(SPI2);
     LL_SPI_DisableDMAReq_RX(SPI2);
     LL_SPI_DisableDMAReq_TX(SPI2);
+    SpiIsEnabled = 0;
+
 }
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
 {
@@ -351,11 +355,18 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)
 {
+
     ex_thread_control_t * _trg_thread;
     _trg_thread = (ex_thread_control_t *)self;
     const uint32_t _datacount = SPI2_FULL_DMA_rx_buffer.dt_count ;
-    if (SPI2_FULL_DMA_rx_buffer.is_full == 0)
-        return 1;
+
+    if(SpiIsEnabled == 0)
+    {
+        setupSpiReceiveSlave();
+    }
+
+    // if (SPI2_FULL_DMA_rx_buffer.is_full == 0)
+    //     return 1;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
     for (uint16_t i = 0; i < _datacount; i++)
         pshfrc_exbu8(&_trg_thread->datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
