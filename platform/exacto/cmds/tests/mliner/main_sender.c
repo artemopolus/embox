@@ -25,7 +25,10 @@ exlnk_get_header_str_t GettBuffer;
 
 uint8_t TmpBuffer[100];
 
-static void sending(int value)
+uint8_t AddressArray[] = {0, 0, 7, 7, 16, 7, 0, 0, 0, 16};
+static uint8_t AddressCount = 10;
+
+static void sending(uint8_t value)
 {
     exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0); 
 
@@ -37,7 +40,7 @@ static void sending(int value)
 
 
     exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
-    exlnk_fillHeader(&SendBuffer, 7, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+    exlnk_fillHeader(&SendBuffer, value, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
 
     exlnk_cmd_str_t out;
     exlnk_setCmd(&out, 65, 112);
@@ -79,10 +82,14 @@ int main(int argc, char *argv[])
         }
 	}
     init();
+    uint8_t i = 0;
     while(index_max != 0)
     {
-        for(int i = 0; i < var_cnt; i++)
-            sending(i);
+        sending(AddressArray[i++]);
+        if(i >= AddressCount)
+        {
+            i = 0;
+        }
         index_max --;
         sleep(2);
     }
