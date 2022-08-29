@@ -379,6 +379,16 @@ getMailFromExactoDataStorage_EXACTOLINK_LSM303AH_TYPE0_dataisempty_marker:
         receiver[length - 1] = (uint8_t)(crc >> 24);        
         break;
     case EXACTOLINK_CMD_COMMON:
+        for(int i = 0; i < receiver_length; i++)
+        {
+            uint8_t value;
+            if(!grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value))
+            {
+                break; 
+            }
+            receiver[i] = value;
+        }
+        break;
     case EXACTOLINK_CMD_SEND:
     case EXACTOLINK_SNS_XLXLGR:
         //начало пакета

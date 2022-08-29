@@ -54,6 +54,7 @@ static void sending(int value)
 static void init()
 {
     ECTM_SendData_Counter = 0;
+    ex_setExactolinkType(EXACTOLINK_CMD_COMMON);
 }
 int main(int argc, char *argv[]) 
 {
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
         }
 	}
     init();
-    while(index_max == 0)
+    while(index_max != 0)
     {
         for(int i = 0; i < var_cnt; i++)
             sending(i);
