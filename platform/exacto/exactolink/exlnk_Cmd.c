@@ -21,3 +21,25 @@ uint8_t exlnk_getCmd(exlnk_cmd_str_t * trg, uint8_t * data, uint16_t datalen)
 	memcpy(trg, data, sizeof( exlnk_cmd_str_t));
 	return 1;
 }
+void exlnk_setCmdAck(exlnk_cmdack_str_t * trg, uint8_t address, uint8_t result)
+{
+	trg->id = EXLNK_DATA_ID_CMDACK;
+	trg->address = address;
+	trg->result = result;
+}
+uint8_t exlnk_CmdAckToArray(exlnk_cmdack_str_t * src, uint8_t * data, uint16_t datalen)
+{
+	if(datalen < sizeof(exlnk_cmdack_str_t))
+		return 0;
+	memcpy(data, src, sizeof( exlnk_cmdack_str_t));
+	return 1;
+}
+uint8_t exlnk_getCmdAck(exlnk_cmdack_str_t * trg, uint8_t * data, uint16_t datalen)
+{
+	if(data[0] != EXLNK_DATA_ID_CMDACK && datalen < sizeof(exlnk_cmdack_str_t))
+		return 0;
+	memcpy(trg, data, sizeof( exlnk_cmdack_str_t));
+	return 1;
+
+}
+
