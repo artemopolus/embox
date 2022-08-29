@@ -34,6 +34,7 @@ static void sending(int value)
 		exlnk_cmd_str_t in;
 		exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
 
+    	printf(" Cnt: %d\nin:\nadr: %d\nval: \n", ECTM_SendData_Counter, in.address, in.value);
 
 		exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
 		exlnk_fillHeader(&SendBuffer, 7, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
