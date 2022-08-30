@@ -1,5 +1,5 @@
-#ifndef EXACTO_SERVICES_H
-#define EXACTO_SERVICES_H
+#ifndef EXACTO_SERVICES_H_
+#define EXACTO_SERVICES_H_
 #include <stdint.h>
 #include <errno.h>
 #include <kernel/lthread/lthread.h>
@@ -40,6 +40,11 @@ extern uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t *
  ex_thread_type_t type ,int (*run)(struct lthread *));
 extern void ex_updateEventForSubs(ex_service_info_t info, ex_subs_service_t * service, 
     ex_thread_type_t type);
+
+extern int exse_subscribe(ex_service_info_t * info, ex_subs_service_t * service,
+ ex_thread_type_t type ,int (*run)(struct lthread *));
+extern void exse_ack(ex_subs_service_t * service);
+
 extern void ex_initSubscribeEvents(ex_service_info_t  info, ex_subs_service_t * service);
 
 extern uint8_t ex_initServiceMsg( ex_service_transport_msg_t * msg);

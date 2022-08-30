@@ -28,10 +28,15 @@ static uint8_t TmpBuffer[100];
 
 static uint8_t NeedToSend = 0;
 
+static int PointToTim;
+
+static void checking();
+
 // static struct lthread Tim_Lthread;
 static int run_Tim_Lthread(struct  lthread * self)
 {
 	checking();
+	exse_ack(&ExTimServices[PointToTim]);
 	return 0;
 }
 
@@ -82,7 +87,7 @@ static void sending()
 static void init()
 {
     ECTM_SendData_Counter = 0;
- 	ex_subscribeOnEvent(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
+	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 
 	ex_setFreqHz(100);
 }

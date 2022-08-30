@@ -13,6 +13,23 @@ uint8_t ex_subscribeOnEvent(ex_service_info_t * info, ex_subs_service_t * servic
     info->current_count++;
     return 0;
 }
+int exse_subscribe(ex_service_info_t * info, ex_subs_service_t * service,
+ ex_thread_type_t type ,int (*run)(struct lthread *))
+{
+    int i = info->current_count;
+    if (i == (info->max_count))
+        return -1;
+    service[i].isenabled = 1;
+    service[i].type = type;
+    service[i].done = 1;
+    lthread_init(&service[i].thread, run);
+    info->current_count++;
+    return i;
+}
+void exse_ack(ex_subs_service_t * service)
+{
+    service->done = 1;
+}
 void ex_updateEventForSubs(ex_service_info_t info, ex_subs_service_t * service, 
     ex_thread_type_t type)
 {
