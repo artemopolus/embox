@@ -294,6 +294,17 @@ uint8_t getMailFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver
     uint16_t data_body_length, length;
     switch (EDS_CurrentExactolinkType)
     {
+    case EXACTOLINK_CMD_COMMON:
+        for(int i = 0; i < receiver_length; i++)
+        {
+            uint8_t value;
+            if(!grbfst_exbu8(&ExDtStr_Output_Storage[EX_THR_SPi_TX].datastorage, &value))
+            {
+                break; 
+            }
+            receiver[i] = value;
+        }
+        break;
     case EXACTOLINK_LSM303AH_TYPE0:
     case EXACTOLINK_SNS_XLXLGR:
         if (receiver_length <  EXACTOLINK_START_DATA_POINT_VAL + 4)

@@ -92,6 +92,7 @@ static void init()
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 
 	ex_setFreqHz(100);
+	ex_setExactolinkType(EXACTOLINK_CMD_COMMON);
 }
 int main(int argc, char *argv[]) 
 {
@@ -100,6 +101,7 @@ int main(int argc, char *argv[])
     while(1)
     {
 		sending();
+		printf("iter[%d]\n", ECTM_SendData_Counter);
 		sleep(2);
     }
     return 1;

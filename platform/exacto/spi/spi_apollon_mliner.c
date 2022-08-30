@@ -132,11 +132,13 @@ static int SPI2_FULL_DMA_init(void)
     // DMA_CHANNEL_5 -> TX
     LL_DMA_ConfigAddresses(DMA1,
                             LL_DMA_CHANNEL_4,
-                            LL_SPI_DMA_GetRegAddr(SPI2), (uint32_t)SPI2_FULL_DMA_rx_buffer.dt_buffer,
+                            LL_SPI_DMA_GetRegAddr(SPI2),
+                            (uint32_t)SPI2_FULL_DMA_rx_buffer.dt_buffer,
                             LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_4));
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_rx_buffer.dt_count);
     LL_DMA_ConfigAddresses(DMA1,
-                            LL_DMA_CHANNEL_5, (uint32_t)SPI2_FULL_DMA_tx_buffer.dt_buffer,
+                            LL_DMA_CHANNEL_5, 
+                            (uint32_t)SPI2_FULL_DMA_tx_buffer.dt_buffer,
                             LL_SPI_DMA_GetRegAddr(SPI2),
                             LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_tx_buffer.dt_count);
@@ -362,7 +364,8 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
 
     if(SpiIsEnabled == 0)
     {
-        setupSpiReceiveSlave();
+        // setupSpiReceiveSlave();
+        setupSPI2_FULL_DMA();
     }
 
     // if (SPI2_FULL_DMA_rx_buffer.is_full == 0)
