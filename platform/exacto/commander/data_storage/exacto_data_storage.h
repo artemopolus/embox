@@ -141,6 +141,7 @@ extern uint8_t exds_getStatus(ex_thread_type_t type);
 extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t receiver_length, uint8_t type);
 
 extern uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_result_t result);
+extern void exds_setMlineStatus(uint32_t lst, uint16_t adr, exactolink_package_result_t cmd);
 
 extern exactolink_package_result_t ex_checkData_ExDtStr();
 extern uint16_t ex_getRawFromSD_ExDtStr(uint8_t * trg, const uint16_t copylen);
@@ -159,7 +160,7 @@ extern void startTickReactionThread( );
 extern uint8_t subscribeOnEvent(int (*run)(struct lthread *));
 
 extern uint8_t  ex_getInfo_ExDtStr(exactolink_package_info_t * info);
-extern uint32_t ex_getCounter_ExDtStr(ex_thread_type_t type);
+extern uint32_t exds_getCounter(ex_thread_type_t type);
 extern uint8_t  ex_getExactolinkType( exactolink_package_result_t * type);
 extern uint16_t ex_getLength_ExDtStr(ex_thread_type_t type);
 extern uint8_t  ex_getRawDataStr_ExDtStr( int16_t * dst, const uint16_t dstlen);

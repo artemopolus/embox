@@ -157,8 +157,8 @@ mutex_chk:
 #ifdef PRINTK_ID_FOR_THREAD_ON
     printk("+");
 #endif
-    TESMAF_Rx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_RX);
-    TESMAF_Tx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_TX);
+    TESMAF_Rx_Buffer = exds_getCounter(EX_THR_SPi_RX);
+    TESMAF_Tx_Buffer = exds_getCounter(EX_THR_SPi_TX);
     TESMAF_DataCheck_Success++;
     TESMAF_DataCheck_CntBuff = TESMAF_DataCheck_Counter;
     TESMAF_DataCheck_ScsBuff = TESMAF_DataCheck_Success;

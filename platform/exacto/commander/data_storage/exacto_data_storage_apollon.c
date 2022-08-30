@@ -555,7 +555,7 @@ void ex_updateCounter_ExDtStr(ex_thread_type_t type)
         break;
     }
 }
-uint32_t ex_getCounter_ExDtStr(ex_thread_type_t type)
+uint32_t exds_getCounter(ex_thread_type_t type)
 {
     switch (type)
     {
@@ -609,6 +609,12 @@ uint8_t setupReceiveLengthExactoDataStorage( const uint8_t length)
     lthread_launch(&SetupParamsThread.thread);
     return 0;
 }
+void exds_setMlineStatus(uint32_t lst, uint16_t adr, exactolink_package_result_t cmd)
+{
+    MlineGetter.adr = adr;
+    MlineGetter.last_recv = lst;
+    MlineGetter.cmd = cmd;
+}
 uint8_t exds_getStatus(ex_thread_type_t type)
 {
     if (type == EX_THR_SPi_TX)
@@ -639,3 +645,4 @@ uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_re
     }
     return i;
 }
+

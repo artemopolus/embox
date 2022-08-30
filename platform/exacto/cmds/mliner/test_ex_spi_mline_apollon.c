@@ -122,8 +122,8 @@ static int runTESMA_DownloadData_Lthread(struct lthread * self)
         }
         watchPackFromExactoDataStorage(TESMA_ReceivedData, 8, 0);
         TESMA_DownloadData_Marker = 1;
-        TESMA_Rx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_RX);
-        TESMA_Tx_Buffer = ex_getCounter_ExDtStr(EX_THR_SPi_TX);
+        TESMA_Rx_Buffer = exds_getCounter(EX_THR_SPi_RX);
+        TESMA_Tx_Buffer = exds_getCounter(EX_THR_SPi_TX);
         TESMA_SnsCounters_Buffer[0] = SNSSRV_SendAndUpload_Container.sns[0].counter;
         TESMA_SnsCounters_Buffer[1] = SNSSRV_SendAndUpload_Container.sns[1].counter;
         TESMA_Tim_Buffer = TESMA_Tim_Counter;

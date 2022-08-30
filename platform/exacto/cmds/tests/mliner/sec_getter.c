@@ -46,7 +46,6 @@ static void checking()
 	{
 		receiveExactoDataStorage();
 
-		printf("iteration[%d]\n", ECTM_SendData_Counter);
 		if(exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0) > 0)
 		{
 			memset(&GettBuffer, 0, sizeof(GettBuffer));
@@ -54,6 +53,8 @@ static void checking()
 			if(GettBuffer.adr == 7)
 			{
 				NeedToSend = 1;
+				uint32_t val = exds_getCounter(EX_THR_SPi_TX);
+				exds_setMlineStatus(val, 7, EXACTOLINK_CMD_COMMON);
 			}
 		}
 	}
@@ -81,6 +82,7 @@ static void sending()
 		exds_setData(SendBuffer.data, SendBuffer.pt_data, EX_THR_CTRL_OK);
 
 		transmitExactoDataStorage();
+		exds_setMlineStatus(0, 0, EXACTOLINK_NO_DATA);
 
 	}
 }
