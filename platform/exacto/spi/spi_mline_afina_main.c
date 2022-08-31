@@ -318,11 +318,11 @@ mutex_retry:
     }
     ExDtStorage.isEmpty = 0;
     mutex_unlock_lthread(self, &ExDtStorage.dtmutex);
+    ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
     // receiveExactoDataStorage();
     if (SPI1_FULL_DMA_rx_buffer.dt_buffer[SAM_PACKAGE_START_POINTER] == EXACTOLINK_PCK_ID)
     {
         ex_updateCounter_ExDtStr(EX_THR_SPi_RX);
-        ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
         SAM_PackageStart_Buffer = SAM_PACKAGE_START_POINTER;
         return 0;
     }
@@ -334,7 +334,7 @@ mutex_retry:
             {
                 SAM_PackageStart_Buffer = i;
                 ex_updateCounter_ExDtStr(EX_THR_SPi_RX);
-                ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
+                //ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
                 return 0;
             }
         }

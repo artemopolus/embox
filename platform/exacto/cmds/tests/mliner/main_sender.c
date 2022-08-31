@@ -25,7 +25,7 @@ exlnk_get_header_str_t GettBuffer;
 
 uint8_t TmpBuffer[100];
 
-uint8_t AddressArray[] = {0, 0, 7, 7, 16, 7, 0, 0, 0, 16};
+uint8_t AddressArray[] = {7, 0, 7, 7, 16, 7, 0, 0, 0, 16};
 static uint8_t AddressCount = 10;
 
 static void sending(uint8_t value)
@@ -61,7 +61,8 @@ static void init()
 }
 int main(int argc, char *argv[]) 
 {
-    int index_max = -1, var_cnt = 2;
+    int index_max = -1;
+    int var_cnt = 2;
 	int opt;
     extern char * optarg;
 	while((opt = getopt(argc, argv, "M:f:h")) != -1)
@@ -83,9 +84,10 @@ int main(int argc, char *argv[])
 	}
     init();
     uint8_t i = 0;
+    printf("%d", var_cnt);
     while(index_max != 0)
     {
-        sending(AddressArray[i++]);
+        sending(AddressArray[0]);
         if(i >= AddressCount)
         {
             i = 0;
