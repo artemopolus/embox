@@ -464,6 +464,7 @@ uint8_t getDataFromExactoDataStorage(uint8_t * receiver, const uint8_t receiver_
 uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_result_t result)
 {
     uint16_t i = 0;
+    ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_OK;
     for(i = 0; i < trglen; i++)
     {
         uint8_t value;
