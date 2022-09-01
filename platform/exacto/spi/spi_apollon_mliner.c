@@ -372,7 +372,10 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
     //     return 1;
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
     for (uint16_t i = 0; i < _datacount; i++)
+    {
         pshfrc_exbu8(&_trg_thread->datastorage, SPI2_FULL_DMA_rx_buffer.dt_buffer[i]);
+        SPI2_FULL_DMA_rx_buffer.dt_buffer[i] = 0;
+    }
     SPI2_FULL_DMA_rx_buffer.is_full = 0;
     _trg_thread->isready = 0;
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, _datacount);

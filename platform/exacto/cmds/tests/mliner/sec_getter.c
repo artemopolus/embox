@@ -20,6 +20,7 @@
 static uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint32_t ECTM_SendData_Counter = 0;
+static uint32_t ECTM_Trial_Counter = 0;
 
 static exlnk_set_header_str_t SendBuffer;
 static exlnk_get_header_str_t GettBuffer;
@@ -68,7 +69,7 @@ static void sending()
 		exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
 		NeedToSend = 0;
 
-		printf(" Cnt: %d\nin:\nadr: %d\nval: \n", ECTM_SendData_Counter, in.address, in.value);
+		printf("in[adr: %d\tval: %d] <=", in.address, in.value);
 
 		exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
 		exlnk_fillHeader(&SendBuffer, 7, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
@@ -78,12 +79,16 @@ static void sending()
 
 		exlnk_closeHeader(&SendBuffer);
 
-		ECTM_SendData_Counter++;
 		exds_setData(SendBuffer.data, SendBuffer.pt_data, EX_THR_CTRL_OK);
 
 		transmitExactoDataStorage();
 		exds_setMlineStatus(0, 0, EXACTOLINK_NO_DATA);
-
+		ECTM_SendData_Counter++;
+		ECTM_Trial_Counter = 0;
+	}
+	else
+	{
+		ECTM_Trial_Counter++;
 	}
 }
 static void init()
@@ -101,7 +106,7 @@ int main(int argc, char *argv[])
     while(1)
     {
 		sending();
-		printf("iter[%d]\n", ECTM_SendData_Counter);
+		printf("send[%d]try[%d]\n", ECTM_SendData_Counter, ECTM_Trial_Counter);
 		sleep(2);
     }
     return 1;
