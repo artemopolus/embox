@@ -107,6 +107,12 @@ int main(int argc, char *argv[])
     {
 		sending();
 		printf("send[%d]try[%d]\n", ECTM_SendData_Counter, ECTM_Trial_Counter);
+		if(ECTM_Trial_Counter > 5)
+		{
+			printf("Try to reset Mline\n");
+			ECTM_Trial_Counter = 0;
+			exds_resetInterface(1);
+		}
 		sleep(2);
     }
     return 1;

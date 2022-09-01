@@ -6,6 +6,8 @@
 
 #define EXACTO_DATA_STORAGE_TEST
 
+uint8_t ResetInterfaces = 0;
+
 mline_sender_t MlineGetter = 
 {
     .adr = 0,
@@ -155,6 +157,7 @@ EMBOX_UNIT_INIT(initExactoDataStorage);
  */
 static int initExactoDataStorage(void)
 {
+    ResetInterfaces = 0;
     mutex_init_schedee(&ExDtStorage.dtmutex);
     lthread_init(&ResetThread, resetThreadRun);
     lthread_init(&SetupParamsThread.thread, setupParamsThreadRun);
@@ -655,5 +658,13 @@ uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_re
             return i;
     }
     return i;
+}
+uint8_t exds_isNeedToReset()
+{
+    return ResetInterfaces;
+}
+void exds_resetInterface(uint8_t to_reset)
+{
+    ResetInterfaces = to_reset;
 }
 

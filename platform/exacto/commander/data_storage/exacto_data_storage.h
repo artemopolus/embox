@@ -143,6 +143,9 @@ extern uint8_t watchPackFromExactoDataStorage(uint8_t * receiver, const uint16_t
 extern uint16_t exds_getData(uint8_t * trg, const uint16_t trglen, ex_thread_control_result_t result);
 extern void exds_setMlineStatus(uint32_t lst, uint16_t adr, exactolink_package_result_t cmd);
 
+extern uint8_t exds_isNeedToReset();
+extern void exds_resetInterface(uint8_t to_reset);
+
 extern exactolink_package_result_t ex_checkData_ExDtStr();
 extern uint16_t ex_getRawFromSD_ExDtStr(uint8_t * trg, const uint16_t copylen);
 #ifdef EXDTSTR_EXTENDED

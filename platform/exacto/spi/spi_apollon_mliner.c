@@ -145,16 +145,17 @@ static int SPI2_FULL_DMA_init(void)
 
 
     // DMA interrupts
-    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_4);
-    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_4);
-    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_5);
-    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_5);
+    // LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_4);
+    // LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_4);
+    // LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_5);
+    // LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_5);
 
     /* embox specific section  */
     // embox DMA interrupts handlers
-    irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_TX_irq_handler");
-    irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_RX_irq_handler");
-
+   // irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_TX_irq_handler");
+   // irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_RX_irq_handler");
+    // irq_detach(15, NULL);
+    // irq_detach(14, NULL);
     // init lthread for receive and transmit events
     lthread_init(&SPI2_FULL_DMA_tx_buffer.dt_lth, &SPI2_FULL_DMA_tx_handler);
     lthread_init(&SPI2_FULL_DMA_rx_buffer.dt_lth, &SPI2_FULL_DMA_rx_handler);
@@ -186,23 +187,51 @@ extern void setupSpiReceiveSlave()
 }
 void setupSPI2_FULL_DMA()
 {
+   irq_attach(15, SPI2_FULL_DMA_tx_irq_handler, 0, NULL, "SPI2_FULL_DMA_TX_irq_handler");
+   irq_attach(14, SPI2_FULL_DMA_rx_irq_handler, 0, NULL, "SPI2_FULL_DMA_RX_irq_handler");
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_5);
+    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_5);
+    
+
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_SPI_EnableDMAReq_TX(SPI2);
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);   //transmit
     LL_SPI_Enable(SPI2);
     SpiIsEnabled = 1;
 }
 void turnOffSPI2_FULL_DMA()
 {
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
+    // irq_detach(15, NULL);
+    // irq_detach(14, NULL);
+
+    // LL_DMA_DisableIT_TC(DMA1, LL_DMA_CHANNEL_4);
+    // LL_DMA_DisableIT_TE(DMA1, LL_DMA_CHANNEL_4);
+    // LL_DMA_DisableIT_TC(DMA1, LL_DMA_CHANNEL_5);
+    // LL_DMA_DisableIT_TE(DMA1, LL_DMA_CHANNEL_5);
+
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    // LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
+
+
+    // LL_SPI_DisableDMAReq_RX(SPI2);
+    // LL_SPI_DisableDMAReq_TX(SPI2);
+
+
+
+
     LL_SPI_Disable(SPI2);
-    LL_SPI_DisableDMAReq_RX(SPI2);
-    LL_SPI_DisableDMAReq_TX(SPI2);
+    LL_SPI_DeInit(SPI2);
+    LL_DMA_DeInit(DMA1, LL_DMA_CHANNEL_4);
+    LL_DMA_DeInit(DMA1, LL_DMA_CHANNEL_5);
+
     SpiIsEnabled = 0;
+//   LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_SPI2);
 
 }
 static irq_return_t SPI2_FULL_DMA_tx_irq_handler(unsigned int irq_nr, void *data)
@@ -357,6 +386,13 @@ static int SPI2_FULL_DMA_transmit(struct lthread * self)
 }
 static int SPI2_FULL_DMA_receive(struct lthread * self)
 {
+    if(exds_isNeedToReset())
+    {
+        turnOffSPI2_FULL_DMA();
+        exds_resetInterface(0);
+        // HAL_NVIC_SystemReset(); <= hard reset to MCU
+        return 0;
+    }
 
     ex_thread_control_t * _trg_thread;
     _trg_thread = (ex_thread_control_t *)self;
@@ -365,6 +401,7 @@ static int SPI2_FULL_DMA_receive(struct lthread * self)
     if(SpiIsEnabled == 0)
     {
         // setupSpiReceiveSlave();
+        SPI2_FULL_DMA_init();
         setupSPI2_FULL_DMA();
     }
 

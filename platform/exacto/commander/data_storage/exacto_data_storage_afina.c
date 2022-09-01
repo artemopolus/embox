@@ -895,3 +895,12 @@ void exds_setMlineStatus(uint32_t lst, uint16_t adr, exactolink_package_result_t
 {
 
 }
+uint8_t exds_isNeedToReset()
+{
+    return 0;
+}
+void exds_resetInterface(uint8_t to_reset)
+{
+
+}
+
