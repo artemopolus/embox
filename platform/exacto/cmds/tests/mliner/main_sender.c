@@ -25,7 +25,7 @@ exlnk_get_header_str_t GettBuffer;
 
 uint8_t TmpBuffer[100];
 
-uint8_t AddressArray[] = {7, 0, 7, 7, 16, 7, 0, 0, 0, 16};
+uint8_t AddressArray[] = {7, 0, 7, 7, 16, 7, 7, 0, 0, 16};
 static uint8_t AddressCount = 10;
 
 static void sending(uint8_t value)
@@ -43,7 +43,10 @@ static void sending(uint8_t value)
     exlnk_fillHeader(&SendBuffer, value, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
 
     exlnk_cmd_str_t out;
-    exlnk_setCmd(&out, 65, 112);
+    if(value == 7)
+        exlnk_setCmd(&out, 65, 112);
+    else
+        exlnk_setCmd(&out, 55, 86);
     exlnk_CmdToArray(&out, TmpBuffer, 100);
     exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmd_str_t));
 
@@ -87,7 +90,7 @@ int main(int argc, char *argv[])
     printf("%d", var_cnt);
     while(index_max != 0)
     {
-        sending(AddressArray[0]);
+        sending(AddressArray[i++]);
         if(i >= AddressCount)
         {
             i = 0;
