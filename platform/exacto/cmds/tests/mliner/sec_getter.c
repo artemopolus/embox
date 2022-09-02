@@ -20,7 +20,7 @@
 static uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint32_t ECTM_SendData_Counter = 0;
-static uint8_t ECTM_Trial_Counter = 0;
+static uint16_t ECTM_Trial_Counter = 0;
 
 static exlnk_set_header_str_t SendBuffer;
 static exlnk_get_header_str_t GettBuffer;
@@ -28,6 +28,8 @@ static exlnk_get_header_str_t GettBuffer;
 static uint8_t TmpBuffer[100];
 
 static uint8_t NeedToSend = 0;
+
+// static uint8_t ExLnkDetected = 0;
 
 static int PointToTim;
 
@@ -56,13 +58,13 @@ static void checking()
 				{
 					NeedToSend = 1;
 					uint32_t val = exds_getCounter(EX_THR_SPi_TX);
-					exds_setMlineStatus(val, 7, EXACTOLINK_CMD_COMMON);
+					exds_setMlineStatus(val, 16, EXACTOLINK_CMD_COMMON);
 				}
 				ECTM_Trial_Counter = 0;
 			}
 			else
 			{
-				if(ECTM_Trial_Counter < 200)
+				if(ECTM_Trial_Counter < 600)
 					ECTM_Trial_Counter++;
 			}
 		}
@@ -110,10 +112,12 @@ int main(int argc, char *argv[])
     {
 		sending();
 		printf("send[%d]try[%d]\n", ECTM_SendData_Counter, ECTM_Trial_Counter);
-		if(ECTM_Trial_Counter > 20)
+		if(ECTM_Trial_Counter > 500)
 		{
 			printf("Try to reset Mline\n");
+			ipl_disable();
 			ECTM_Trial_Counter = 0;
+			ipl_enable();
 			exds_resetInterface(1);
 		}
 		sleep(2);
