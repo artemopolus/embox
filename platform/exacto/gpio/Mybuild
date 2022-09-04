@@ -4,7 +4,10 @@ abstract module config
 {
 
 }
+abstract module mline_spi_sec
+{
 
+}
 @BuildDepends(third_party.bsp.stmf7cube.cube)
 module mline_spi_main
 {

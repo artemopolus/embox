@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/sync/mutex.h>
+// #include <kernel/lthread/sync/mutex.h>
 #include "gpio/gpio.h"
 
 //static struct lthread   Ex_Gpio_Lthread;

@@ -98,7 +98,7 @@ void setBoardSpiBuffer(
 									LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
 	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, transmit->dmabufferlen);
 }
-uint8_t runBoardSpiIRQhandlerTX(void)
+uint8_t runBoardSpiIRQhandlerRX(void)
 {
 	uint8_t res = 0;
 
@@ -156,9 +156,28 @@ void receiveBoardSpi(spi_mline_dev_t * receiver)
    //  }
    //  SPI2_FULL_DMA_rx_buffer.is_full = 0;
    //  _trg_thread->isready = 0;
-	receiver->download(receiver->dmabufferlen);
+	receiver->processData(receiver->dmabufferlen);
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
 }
 
+void resetBoardSpiRx(spi_mline_dev_t * receiver)
+{
+	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
+	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+}
+void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+{
+	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+   LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
+
+	receiver->processData(receiver->dmabufferlen);
+	transmit->processData(transmit->dmabufferlen);
+
+	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, transmit->dmabufferlen);
+   LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
+   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
+}
 

@@ -18,6 +18,5 @@ module tim_3 extends exacto.tim.base{
 	source "tim.h"
 	depends embox.kernel.lthread.lthread
 	depends exacto.commander.services
-	depends exacto.commander.data_storage
 }
 

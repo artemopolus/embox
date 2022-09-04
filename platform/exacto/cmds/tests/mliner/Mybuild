@@ -28,3 +28,22 @@ module sec_getter{
 	depends exacto.exactolink.exlnk_get_header
 	depends exacto.exactolink.exlnk_cmd
 }
+@AutoCmd
+@Cmd(name="test_mline_sec", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module sec_module{
+
+	source "sec_module.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+
+	depends exacto.spi.mline_sec
+
+	depends exacto.tim.base
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+	depends exacto.commander.buffer
+}

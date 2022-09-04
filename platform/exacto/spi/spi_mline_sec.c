@@ -5,14 +5,13 @@
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/sync/mutex.h>
 
+
+#include "gpio/gpio.h"
 
 uint8_t ReceiveBuffer[SPI_MLINE_RXTX_BUFFER_SIZE];
 uint8_t TransmitBuffer[SPI_MLINE_RXTX_BUFFER_SIZE];
 
-ExactoBufferUint8Type TransmitStore;
-ExactoBufferUint8Type ReceiveStore;
 
 spi_mline_dev_t TransmitSpiDev;
 spi_mline_dev_t ReceiveSpiDev;
@@ -62,7 +61,7 @@ int downloadSpiDevSecData(uint32_t len)
 {
 	for(uint32_t i = 0; i < ReceiveSpiDev.dmabufferlen; i++)
 	{
-		if(!pshsft_exbu8(&ReceiveSpiDev.storage, TransmitSpiDev.dmabufferdata[i]))
+		if(!pshsft_exbu8(ReceiveSpiDev.storage, TransmitSpiDev.dmabufferdata[i]))
 		{
 			break;
 		}
@@ -73,7 +72,7 @@ int uploadSpiDevSecData(uint32_t len)
 {
 	for(uint32_t i = 0; i < TransmitSpiDev.dmabufferlen; i++)
 	{
-		if(!grbfst_exbu8(&TransmitSpiDev.storage, &TransmitSpiDev.dmabufferdata[i]))
+		if(!grbfst_exbu8(TransmitSpiDev.storage, &TransmitSpiDev.dmabufferdata[i]))
 			break;
 	}
 	return 0;
@@ -84,15 +83,15 @@ static int initSpiDevSec(void)
 	initBoardSpi();
 	TransmitSpiDev.dmabufferdata = TransmitBuffer;
 	TransmitSpiDev.dmabufferlen = SPI_MLINE_RXTX_BUFFER_SIZE;
-	TransmitSpiDev.download = uploadSpiDevSecData;
-	TransmitSpiDev.storage = &TransmitStore;
+	TransmitSpiDev.processData = uploadSpiDevSecData;
+	// TransmitSpiDev.storage = &TransmitStore;
 	TransmitSpiDev.isfull = 0;
 	TransmitSpiDev.isready = 1;
 
 	ReceiveSpiDev.dmabufferdata = ReceiveBuffer;
 	ReceiveSpiDev.dmabufferlen = SPI_MLINE_RXTX_BUFFER_SIZE;
-	ReceiveSpiDev.download = downloadSpiDevSecData;
-	ReceiveSpiDev.storage = &ReceiveStore;
+	ReceiveSpiDev.processData = downloadSpiDevSecData;
+	// ReceiveSpiDev.storage = &ReceiveStore;
 	ReceiveSpiDev.isfull = 0;
 	ReceiveSpiDev.isready = 1;
 
@@ -148,5 +147,85 @@ void receiveSpiDevSec()
    //  _trg_thread->isready = 0;
    //  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, _datacount);
    //  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
+   //  return 0;
+}
+void transmitSpiDevSec()
+{
+	// exactolink_package_result_t res = (exactolink_package_result_t) exds_getStatus(EX_THR_SPi_TX);
+   //  //если требований от мастера не поступало, продолжаем прослушивание
+   //  if (res == EXACTOLINK_NO_DATA)
+   //  {
+   //      if (!ExDtStr_Output_Storage[EX_THR_SPi_RX].isready&&!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
+   //      {
+   //          LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+   //          LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+   //          LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+   //      }
+   //      return 0;
+   //  }
+	if(!ReceiveSpiDev.isready)
+	{
+		resetBoardSpiRx(&ReceiveSpiDev);	
+		return;
+	}
+   //  //Требуется повтор передачи данных
+   //  if(res == EXACTOLINK_REPEAT)
+   //  {
+   //      repeatSend();
+   //      return 0;
+   //  }
+   //  //Пришел запрос
+   //  if  (
+   //          (ExDtStr_Output_Storage[EX_THR_SPi_RX].result == EX_THR_CTRL_OK)
+   //      )
+   //  {
+   //      ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_NO_RESULT;
+   //  }
+   //  if (
+   //      (ExDtStr_Output_Storage[EX_THR_SPi_TX].result == EX_THR_CTRL_OK)
+   //      &&(ExDtStr_Output_Storage[EX_THR_SPi_TX].isready)
+   //      )
+   //  {
+   //      //данные готовы к отправке и шлюз свободен
+   //      if (!ex_checkGpio(EX_GPIO_SPI_MLINE))  //можно ли обновлять
+   //      {
+   //          SPI2_disableChannels();
+   //          getMailFromExactoDataStorage(SPI2_FULL_DMA_tx_buffer.dt_buffer, SPI2_FULL_DMA_tx_buffer.dt_count);
+   //          ExDtStr_Output_Storage[EX_THR_SPi_TX].isready = 0;
+   //          ExDtStr_Output_Storage[EX_THR_SPi_TX].result = EX_THR_CTRL_INIT;
+   //          ex_updateCounter_ExDtStr(EX_THR_SPi_TX);
+   //          SPI2_updateRx();
+   //          SPI2_enableChannels();
+   //      }
+   //  }
+	if(TransmitSpiDev.isready && (!ex_checkGpio(EX_GPIO_SPI_MLINE)))
+	{
+		receiveTransmitBoardSpi(&ReceiveSpiDev, &TransmitSpiDev);
+		TransmitSpiDev.isready = 0;
+		ReceiveSpiDev.isready = 0;	
+	}
+   //  else if (
+   //      (ExDtStr_Output_Storage[EX_THR_SPi_TX].result != EX_THR_CTRL_OK)
+   //      &&(ExDtStr_Output_Storage[EX_THR_SPi_TX].isready)
+   //      )
+   //  {
+   //      // данные не готовы, но шлюз свободен : ничего не делать, только принимать что-либо
+   //      LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+   //      SPI2_updateRx();
+   //      LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, SPI2_FULL_DMA_RXTX_BUFFER_SIZE);
+   //      LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+   //  }
+   //  else // ! ExDtStr_Output_Storage[EX_THR_SPi_TX].isready
+   //  {
+   //      //шлюз занят, готовность данных не имеет значения : повторить отправку
+   //      repeatSend();
+   //  }
+	else
+	{
+		if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
+		{
+			receiveBoardSpi(&ReceiveSpiDev);
+		}
+	}
    //  return 0;
 }

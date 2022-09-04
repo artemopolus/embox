@@ -8,3 +8,10 @@ module gpio_spi extends exacto.cmds.perf_tests.gpio{
 	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 }
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module mline_spi_sec extends exacto.gpio.mline_spi_sec{
+	source "gpio_spi.c"
+	@IncludeExport(path="gpio")
+	source "gpio.h"
+	depends embox.kernel.lthread.lthread
+}

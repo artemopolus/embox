@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <kernel/lthread/lthread.h>
-#include "commander/exacto_data_storage.h"
+// #include "commander/exacto_data_storage.h"
 
 typedef enum{
     EX_GPIO_SPI_MLINE,
