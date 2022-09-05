@@ -84,7 +84,7 @@ uint8_t pshsft_exbu8_ns(ExactoBufferUint8Type * buffer,const uint8_t value)
     }
     else
     {
-        if(nxt == (buffer->str + 1)) 
+        if(nxt == buffer->str) 
             return 0;
     }
     buffer->data[buffer->lst] = value;
@@ -139,6 +139,9 @@ uint16_t grball_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst)
         i++;
     }
 	while(adr != buffer->lst);
+    buffer->isEmpty = 1;
+    buffer->str = 0;
+    buffer->lst = 0;
     return i;
 }
 uint16_t grball_exbextu8(ExactoBufferExtended * buffer, uint8_t * dst)

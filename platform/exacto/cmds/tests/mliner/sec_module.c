@@ -52,10 +52,9 @@ static void checking()
 	if(!NeedToSend)
 	{
 		// receiveExactoDataStorage();
-		receiveSpiDevSec();
 
 		// if(exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0) > 0)
-		if(!grball_exbu8(&ReceiveStore, ECTM_ReceiveBuffer))
+		if(grball_exbu8(&ReceiveStore, ECTM_ReceiveBuffer))
 		{
 			memset(&GettBuffer, 0, sizeof(GettBuffer));
 			if(exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer))
@@ -74,6 +73,7 @@ static void checking()
 					ECTM_Trial_Counter++;
 			}
 		}
+		receiveSpiDevSec();
 	}
 }
 
@@ -108,13 +108,15 @@ static void sending()
 }
 static void init()
 {
+	setini_exbu8(&ReceiveStore);
+	setini_exbu8(&TransmitStore);
+	setRxBuffSpiDevSec(&ReceiveStore);
+	setTxBuffSpiDevSec(&TransmitStore);
     ECTM_SendData_Counter = 0;
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 
 	ex_setFreqHz(100);
 	// ex_setExactolinkType(EXACTOLINK_CMD_COMMON);
-	setRxBuffSpiDevSec(&ReceiveStore);
-	setTxBuffSpiDevSec(&TransmitStore);
 }
 int main(int argc, char *argv[]) 
 {

@@ -33,7 +33,7 @@ static irq_return_t ReceiveIRQhandler(unsigned int irq_nr, void *data)
 {
 	if(runBoardSpiIRQhandlerRX())
 	{
-		TransmitSpiDev.isready = 1;
+		ReceiveSpiDev.isready = 1;
 	// 	    SPI2_FULL_DMA_rx_buffer.is_full = 1;
    //  ExDtStr_Output_Storage[EX_THR_SPi_RX].isready = 1;
    //  ExDtStr_Output_Storage[EX_THR_SPi_RX].result = EX_THR_CTRL_WAIT;
@@ -54,18 +54,19 @@ void disableSpiDevSec()
 {
 	irq_detach(15,NULL);
 	irq_detach(14,NULL);
-	disableSpiDevSec();
+	disableBoardSpi();
 	SpiIsEnabled = 0;
 }
 int downloadSpiDevSecData(uint32_t len)
 {
-	for(uint32_t i = 0; i < ReceiveSpiDev.dmabufferlen; i++)
-	{
-		if(!pshsft_exbu8(ReceiveSpiDev.storage, TransmitSpiDev.dmabufferdata[i]))
-		{
-			break;
-		}
-	}
+   pshsftPack_exbu8(ReceiveSpiDev.storage, ReceiveSpiDev.dmabufferdata, ReceiveSpiDev.dmabufferlen);
+	// for(uint32_t i = 0; i < ReceiveSpiDev.dmabufferlen; i++)
+	// {
+	// 	if(!pshsft_exbu8(ReceiveSpiDev.storage, ReceiveSpiDev.dmabufferdata[i]))
+	// 	{
+	// 		break;
+	// 	}
+	// }
 	return 0;
 }
 int uploadSpiDevSecData(uint32_t len)

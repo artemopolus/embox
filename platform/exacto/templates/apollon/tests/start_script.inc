@@ -2,4 +2,4 @@
 //"test_ex_spi_mline"
 //"sns_reader_smpl"
 //"spi_txrx"
-"test_mliner_getter"
+"test_mline_sec"
