@@ -59,7 +59,7 @@ static void checking()
 			memset(&GettBuffer, 0, sizeof(GettBuffer));
 			if(exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer))
 			{
-				if(GettBuffer.adr == 7)
+				if(GettBuffer.adr == 16)
 				{
 					NeedToSend = 1;
 					// uint32_t val = exds_getCounter(EX_THR_SPi_TX);

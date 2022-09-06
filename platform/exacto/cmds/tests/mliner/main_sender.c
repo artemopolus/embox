@@ -25,7 +25,7 @@ exlnk_get_header_str_t GettBuffer;
 
 uint8_t TmpBuffer[100];
 
-uint8_t AddressArray[] = {7, 0, 7, 7, 16, 7, 7, 0, 0, 16};
+uint8_t AddressArray[] = {7, 7, 7, 7, 7, 16, 16, 16, 16, 16};
 static uint8_t AddressCount = 10;
 
 static void sending(uint8_t value)
@@ -36,7 +36,7 @@ static void sending(uint8_t value)
     exlnk_cmd_str_t in;
     exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
 
-    printf("in[%d] => [ adr: %d\tval: %d ]\n", ECTM_SendData_Counter, in.address, in.value);
+    printf("in[%d][%d] => [ adr: %d\tval: %d ]\n", ECTM_SendData_Counter, value, in.address, in.value);
 
 
     exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
