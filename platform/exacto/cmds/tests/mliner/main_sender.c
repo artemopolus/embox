@@ -25,20 +25,13 @@ exlnk_get_header_str_t GettBuffer;
 
 uint8_t TmpBuffer[100];
 
-uint8_t AddressArray[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
-static uint8_t AddressCount = 20;
+// uint8_t AddressArray[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
+// uint8_t AddressArray[] = {7, 0,0, 16, 0,0};
+uint8_t AddressArray[] = {7, 16, 7, 16, 7, 16};
+static uint8_t AddressCount = 6;
 
-static void sending(uint8_t value)
+static void prepareTransmit(uint8_t value)
 {
-    exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0); 
-
-    exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer);
-    exlnk_cmd_str_t in;
-    exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
-
-    printf("in[%d][%d] => [ adr: %d\tval: %d ]\n", ECTM_SendData_Counter, value, in.address, in.value);
-
-
     exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
     exlnk_fillHeader(&SendBuffer, value, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
 
@@ -49,13 +42,26 @@ static void sending(uint8_t value)
         exlnk_setCmd(&out, 55, 86);
     exlnk_CmdToArray(&out, TmpBuffer, 100);
     exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmd_str_t));
-
     exlnk_closeHeader(&SendBuffer);
 
-    ECTM_SendData_Counter++;
     exds_setData(SendBuffer.data, SendBuffer.pt_data, EX_THR_CTRL_OK);
+    
+    ECTM_SendData_Counter++;
+
+}
+static void sending(uint8_t value)
+{
+    prepareTransmit(value);
 
     transmitExactoDataStorage();
+
+    exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0); 
+
+    exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer);
+    exlnk_cmd_str_t in;
+    exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
+
+    printf("in[%d][%d] => [ adr: %d\tval: %d ]\n", ECTM_SendData_Counter, value, in.address, in.value);
 }
 static void init()
 {
