@@ -25,8 +25,8 @@ exlnk_get_header_str_t GettBuffer;
 
 uint8_t TmpBuffer[100];
 
-uint8_t AddressArray[] = {7, 7, 7, 7, 7, 16, 16, 16, 16, 16};
-static uint8_t AddressCount = 10;
+uint8_t AddressArray[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
+static uint8_t AddressCount = 20;
 
 static void sending(uint8_t value)
 {

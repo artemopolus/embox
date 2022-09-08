@@ -106,6 +106,7 @@ uint8_t runBoardSpiIRQhandlerRX(void)
 	{
 		LL_DMA_ClearFlag_GI4(DMA1);
 	//   lthread_launch(&SPI2_FULL_DMA_rx_buffer.dt_lth);
+		LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
 		res = 1;
 	}
 
@@ -117,6 +118,7 @@ uint8_t runBoardSpiIRQhandlerTX(void)
 	if (LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
 	{
 		LL_DMA_ClearFlag_GI5(DMA1);
+		LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
 	//   lthread_launch(&SPI2_FULL_DMA_tx_buffer.dt_lth);
 		res = 1;
 	}

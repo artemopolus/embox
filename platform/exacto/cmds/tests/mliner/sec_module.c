@@ -19,7 +19,7 @@
 #include "tim/tim.h"
 
 #define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
-#define SEC_MODULE_ADDRESS 16
+#define SEC_MODULE_ADDRESS	7 
 
 static uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
@@ -34,8 +34,10 @@ static exlnk_get_header_str_t GettBuffer;
 static uint8_t TmpBuffer[100];
 
 static uint8_t NeedToSend = 0;
+static uint8_t NeedToPrint = 0;
 
-// static uint8_t ExLnkDetected = 0;
+static uint16_t LastAddress = 0;
+
 ExactoBufferUint8Type TransmitStore;
 ExactoBufferUint8Type ReceiveStore;
 
@@ -43,15 +45,21 @@ static int PointToTim;
 
 static void checking();
 
-// static struct lthread Tim_Lthread;
 static int run_Tim_Lthread(struct  lthread * self)
 {
-	checking();
+	if(!NeedToSend)
+		checking();
 	exse_ack(&ExTimServices[PointToTim]);
 	if(TIM_Counter < 10000)
 		TIM_Counter++;
 	else
 		TIM_Counter = 0;
+
+	if(NeedToPrint == 0)
+	{
+		if(! (TIM_Counter % 200))
+			NeedToPrint = 1;
+	}
 	return 0;
 }
 
@@ -65,6 +73,7 @@ static void checking()
 			memset(&GettBuffer, 0, sizeof(GettBuffer));
 			if(exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer))
 			{
+				LastAddress = GettBuffer.adr;
 				if(GettBuffer.adr == SEC_MODULE_ADDRESS)
 				{
 					NeedToSend = 1;
@@ -85,12 +94,12 @@ static void sending()
 {
 	exlnk_cmd_str_t in;
 	exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
-	NeedToSend = 0;
 
-	printf("in[adr: %d\tval: %d] <=", in.address, in.value);
+	printf("in<=[adr: %d\tval: %d]\n", in.address, in.value);
 
 	exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
 	exlnk_fillHeader(&SendBuffer, SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+	in.value +=3;
 
 	exlnk_CmdToArray(&in, TmpBuffer, 100);
 	exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmd_str_t));
@@ -103,9 +112,11 @@ static void sending()
 
 	transmitSpiDevSec();
 	ECTM_SendData_Counter++;
+	NeedToSend = 0;
 }
 static void init()
 {
+	printf("My address: %d\n", SEC_MODULE_ADDRESS);
 	setini_exbu8(&ReceiveStore);
 	setini_exbu8(&TransmitStore);
 	setRxBuffSpiDevSec(&ReceiveStore);
@@ -126,9 +137,10 @@ int main(int argc, char *argv[])
 		{
 			sending();
 		}
-		if(TIM_Counter % 200)
+		if(NeedToPrint)
 		{
-			printf("send[%d]try[%d]\n", ECTM_SendData_Counter, ECTM_Trial_Counter);
+			printf("send[%d]try[%d]: %d\n", ECTM_SendData_Counter, ECTM_Trial_Counter, LastAddress);
+			NeedToPrint = 0;
 		}
 		if(ECTM_Trial_Counter >= 999)
 		{
