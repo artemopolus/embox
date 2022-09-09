@@ -68,4 +68,16 @@ void exlnk_closeHeader(exlnk_set_header_str_t * trg)
     trg->data[2] = (uint8_t) (length >> 8);
     trg->len = length;
 }
+uint8_t exlnk_isEmptyHeader(exlnk_set_header_str_t * trg)
+{
+    if (trg->type_msg == EXLNK_MSG_NONE)
+        return 1;
+    else
+        return 0;
+}
+void exlnk_clearHeader(exlnk_set_header_str_t * trg)
+{
+    trg->type_msg = EXLNK_MSG_NONE;
+    trg->pt_data = 0;
+}
 

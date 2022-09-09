@@ -9,6 +9,7 @@
 #define EXLNK_SNS_ID 0x17
 #define EXLNK_RAW_ID 0x19
 
+#define EXLNK_MSG_NONE          0x00
 #define EXLNK_MSG_SIMPLE        0x01
 #define EXLNK_MSG_SIMPLE_CRC    0x02
 #define EXLNK_MSG_SMPL_CMD      0x03

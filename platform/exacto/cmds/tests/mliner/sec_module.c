@@ -62,7 +62,17 @@ static int run_Tim_Lthread(struct  lthread * self)
 	}
 	return 0;
 }
-
+void receiveMline()
+{
+	if(grball_exbu8(&ReceiveStore, ECTM_ReceiveBuffer))
+	{
+		memset(&GettBuffer, 0, sizeof(GettBuffer));
+		if(exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer))
+		{
+			//
+		}
+	}
+}
 static void checking()
 {
 	if(!NeedToSend)
@@ -82,14 +92,32 @@ static void checking()
 			}
 			else
 			{
-				// if(ECTM_Trial_Counter < 10000)
-					ECTM_Trial_Counter++;
+				ECTM_Trial_Counter++;
 			}
 		}
 		receiveSpiDevSec();
 	}
 }
+void uploadToMline(void * data, size_t len, uint8_t id)
+{
+	if(exlnk_isEmptyHeader(&SendBuffer))
+	{
+		exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
+		exlnk_fillHeader(&SendBuffer, SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+	}
+	exlnk_CmdToArray((exlnk_cmd_str_t*)data, TmpBuffer, 100);
+	exlnk_uploadHeader(&SendBuffer, TmpBuffer, len);
+}
+void transmitMline()
+{
+	exlnk_closeHeader(&SendBuffer);
+	for(int i = 0; i < SendBuffer.pt_data; i++)
+		pshsft_exbu8(&TransmitStore, SendBuffer.data[i]);
 
+	transmitSpiDevSec();
+	ECTM_SendData_Counter++;
+	exlnk_clearHeader(&SendBuffer);
+}
 static void sending()
 {
 	exlnk_cmd_str_t in;
@@ -97,21 +125,12 @@ static void sending()
 
 	printf("in<=[adr: %d\tval: %d]\n", in.address, in.value);
 
-	exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
-	exlnk_fillHeader(&SendBuffer, SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
 	in.value +=3;
 
-	exlnk_CmdToArray(&in, TmpBuffer, 100);
-	exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmd_str_t));
+	uploadToMline(&in, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
 
-	exlnk_closeHeader(&SendBuffer);
+	transmitMline();
 
-
-	for(int i = 0; i < SendBuffer.pt_data; i++)
-		pshsft_exbu8(&TransmitStore, SendBuffer.data[i]);
-
-	transmitSpiDevSec();
-	ECTM_SendData_Counter++;
 	NeedToSend = 0;
 }
 static void init()
