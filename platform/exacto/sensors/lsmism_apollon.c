@@ -9,6 +9,7 @@
 #include "sensors/lsm303ah_reg.h"
 
 #include "sensors/ctrl.h"
+#include "spi/spi_sns.h"
 
 #define PRINT_TICKER_MAX 9 
 #define TRANSMIT_MESSAGE_SIZE EXACTOLINK_MESSAGE_SIZE

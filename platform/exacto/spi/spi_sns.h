@@ -1,7 +1,6 @@
 #ifndef SPI_SNS_H
 #define SPI_SNS_H
 #include <stdint.h>
-#include "commander/exacto_data_storage.h"
 #include "commander/exacto_services.h"
 
 #define EX_SPI_SERVICES_COUNT 2
