@@ -61,7 +61,7 @@ static void sending(uint8_t value)
     exlnk_cmd_str_t in;
     exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen);
 
-    printf("in[%d][%d] => [ adr: %d\tval: %d ]\n", ECTM_SendData_Counter, value, in.address, in.value);
+    printf("in[%d][%d] => [ adr: %d\tval: %d ]\n", ECTM_SendData_Counter, value, in.reg, in.value);
 }
 static void init()
 {
