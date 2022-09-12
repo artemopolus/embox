@@ -4,7 +4,7 @@
 void exlnk_setCmd(exlnk_cmd_str_t * trg, uint8_t address, uint8_t value)
 {
 	trg->id = EXLNK_DATA_ID_CMD;
-	trg->address = address;
+	trg->reg = address;
 	trg->value = value;
 }
 uint8_t exlnk_CmdToArray(exlnk_cmd_str_t * src, uint8_t * data, uint16_t datalen)
@@ -24,7 +24,6 @@ uint8_t exlnk_getCmd(exlnk_cmd_str_t * trg, uint8_t * data, uint16_t datalen)
 void exlnk_setCmdAck(exlnk_cmdack_str_t * trg, uint8_t address, uint8_t result)
 {
 	trg->id = EXLNK_DATA_ID_CMDACK;
-	trg->address = address;
 	trg->result = result;
 }
 uint8_t exlnk_CmdAckToArray(exlnk_cmdack_str_t * src, uint8_t * data, uint16_t datalen)

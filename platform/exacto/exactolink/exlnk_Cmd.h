@@ -6,14 +6,15 @@
 
 typedef struct exlnk_cmd_str{
 	uint8_t id;
-   uint8_t address;
+   uint32_t mnum;       // адрес, счетчик, номер по порядку
+   uint8_t reg;
    uint8_t value;
 }exlnk_cmd_str_t;
 
 
 typedef struct exlnk_cmdack_str{
 	uint8_t id;
-   uint8_t address;
+   uint32_t mnum;
    uint8_t result;
 }exlnk_cmdack_str_t;
 

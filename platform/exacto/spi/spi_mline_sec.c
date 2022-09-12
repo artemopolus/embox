@@ -127,25 +127,42 @@ void receiveSpiDevSec()
 		if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
 	receiveBoardSpi(&ReceiveSpiDev);
 }
-void transmitSpiDevSec()
+uint8_t transmitSpiDevSec()
 {
 	if(!ReceiveSpiDev.isready)
 	{
 		resetBoardSpiRx(&ReceiveSpiDev);	
-		return;
+		return 0;
 	}
-
-	if(TransmitSpiDev.isready && (!ex_checkGpio(EX_GPIO_SPI_MLINE)))
+	if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
 	{
-		receiveTransmitBoardSpi(&ReceiveSpiDev, &TransmitSpiDev);
-		TransmitSpiDev.isready = 0;
-		ReceiveSpiDev.isready = 0;	
-	}
-	else
-	{
-		if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
+		if(TransmitSpiDev.isready )
+		{
+			receiveTransmitBoardSpi(&ReceiveSpiDev, &TransmitSpiDev);
+			TransmitSpiDev.isready = 0;
+			ReceiveSpiDev.isready = 0;	
+			return 1;
+		}
+		else
 		{
 			receiveBoardSpi(&ReceiveSpiDev);
 		}
 	}
+	return 0;
+}
+uint16_t getReceivedDataSpiDevSec(uint8_t * trg, uint16_t trglen)
+{
+	if(ReceiveSpiDev.isready)
+		return grball_exbu8(ReceiveSpiDev.storage, trg);
+	return 0;
+}
+uint16_t setTransmitDataSpiDevSec(uint8_t * src, uint16_t srclen)
+{
+	int i;
+	for(i = 0; i < srclen; i++)
+	{
+		if(!pshsft_exbu8(TransmitSpiDev.storage, src[i]))
+			break;
+	}
+	return i;
 }

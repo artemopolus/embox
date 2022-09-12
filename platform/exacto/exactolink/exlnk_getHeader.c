@@ -35,3 +35,7 @@ uint8_t exlnk_getHeaderPackData(exlnk_get_header_str_t * trg, uint8_t * value)
         return 0;
     return 1;
 }
+uint16_t exlnk_isEmptyGetHeader(exlnk_get_header_str_t * trg)
+{
+    return (trg->len - trg->datapt - 4);
+}

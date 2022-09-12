@@ -19,4 +19,6 @@ typedef struct exlnk_get_header_str{
 extern uint8_t exlnk_getHeader( uint8_t * trg, uint16_t len, exlnk_get_header_str_t * out);
 extern uint8_t exlnk_getHeaderPackData(exlnk_get_header_str_t * trg, uint8_t * value);
 
+extern uint16_t exlnk_isEmptyGetHeader(exlnk_get_header_str_t * trg);
+
 #endif
