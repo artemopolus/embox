@@ -1,2 +1,0 @@
-"help",
-"report_init"
