@@ -5,6 +5,15 @@
 
 #define EX_SPI_SERVICES_COUNT 2
 #define EX_SPI_PACK_SZ 32 
+typedef enum{
+    EXACTO_OK = 0,
+    EXACTO_INIT,
+    EXACTO_WAITING,
+    EXACTO_PROCESSING,
+    EXACTO_DENY,
+    EXACTO_ERROR
+}exacto_process_result_t;
+
 
 extern ex_subs_service_t ExSnsServices[EX_SPI_SERVICES_COUNT];
 extern ex_service_info_t ExSnsServicesInfo;

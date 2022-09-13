@@ -34,3 +34,27 @@ module apollon_lsmism {
 	
 	depends third_party.bsp.stmf1cube.cube
 }
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module ctrl
+{
+	source "ctrl.c"
+	@IncludeExport(path="sensors")
+	source "ctrl.h"
+	depends embox.kernel.lthread.lthread
+}
+module lsmism
+{
+	source "lsmism_apollon.c"
+	@IncludeExport(path="sensors")
+	source "lsmism.h"
+	
+	depends exacto.spi.sns_apollon
+	depends exacto.sensors.ism330dlc
+	depends exacto.sensors.lsm303ah
+	depends exacto.sensors.ctrl
+	depends exacto.apollon.tim.tim_3
+	depends exacto.exactolink.exactolink_base
+	
+	depends third_party.bsp.stmf1cube.cube
+
+}

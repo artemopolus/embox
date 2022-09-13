@@ -17,7 +17,7 @@
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/sync/mutex.h>
+// #include <kernel/lthread/sync/mutex.h>
 #include "spi_sns.h"
 #include "kernel/printk.h"
 
@@ -138,7 +138,7 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
 
 	ipl = ipl_save();
 
-    EDS_spidmairq_Marker = 0;
+    // EDS_spidmairq_Marker = 0; TODO: is irq marker need?
     const uint8_t address = output->cmd;
     uint8_t value = address | 0x80;
     static uint8_t result = 0;
@@ -165,7 +165,6 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
     for (uint8_t i = 0; i < output->datalen; i++)
     {
-	    // while(!LL_SPI_IsActiveFlag_RXNE(SPI1));
         for(SPI_APPOLON_INDEX_SZ_INT j = 0; (!result) && (!LL_SPI_IsActiveFlag_RXNE(SPI1)); j++)
             result = (j > SPI_APPOLON_INDEX_MAX)? 1 : 0; 
         if (result)
@@ -184,24 +183,11 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
         }
     }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
-    // if (LL_SPI_IsActiveFlag_RXNE(SPI1))
-    // {
         for(SPI_APPOLON_INDEX_SZ_INT j = 0; ((!LL_SPI_IsActiveFlag_RXNE(SPI1))&&(j < SPI_APPOLON_INDEX_MAX)); j++)
             ;
             output->data[output->datalen] = LL_SPI_ReceiveData8(SPI1);
-    // }
-    // i = 0;
-	// while(!LL_SPI_IsActiveFlag_RXNE(SPI1))
-    // {
-    //     if (i++ > SPI_APPOLON_INDEX_MAX)
-    //     {
-    //         result = 1;
-    //         break;
-    //     }
-    // }
-    // output->data[output->datalen - 1] = LL_SPI_ReceiveData8(SPI1);
-    if (EDS_spidmairq_Marker)
-        result = 1;
+    // if (EDS_spidmairq_Marker)
+        // result = 1;
 	ipl_restore(ipl);
     return result;
 }

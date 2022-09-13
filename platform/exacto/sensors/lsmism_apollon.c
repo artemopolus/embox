@@ -7,6 +7,7 @@
 #include "kernel/printk.h"
 #include "sensors/ism330dlc_reg.h"
 #include "sensors/lsm303ah_reg.h"
+#include "exactolink/exactolink_base.h"
 
 #include "sensors/ctrl.h"
 #include "spi/spi_sns.h"
@@ -15,6 +16,7 @@
 #define TRANSMIT_MESSAGE_SIZE EXACTOLINK_MESSAGE_SIZE
 #define TMP_BUFFER_DATA_SZ 40
 #define RX_DATA_SZ 40
+
 
 uint32_t Apollon_lsmism_MlineOverFlow = 0;
 uint32_t Apollon_lsmism_MlineReceive = 0;
@@ -32,7 +34,7 @@ volatile uint8_t Apollon_lsmism_Buffer_dtrd1 = 0;
 static exactolink_package_result_t Mode = EXACTOLINK_SNS_XL_0100_XLGR_0100;
 static uint8_t InitFlag = 0;
 
-static uint8_t Ender[] = {5,5,5,5};
+// static uint8_t Ender[] = {5,5,5,5};
 // #define SNS_SERVICE_TESTING
 static uint32_t PackRecvCounter = 0;
 static uint32_t Counter = 0;
@@ -47,7 +49,7 @@ static uint8_t TmpBufferData[TMP_BUFFER_DATA_SZ] = {0};
 static uint16_t TmpBufferPtr = 0;
 
 static uint8_t RxData[RX_DATA_SZ] = {0};
-static uint8_t RxPtr = 0;
+// static uint8_t RxPtr = 0;
 static uint8_t RxReadable = 0;
 
 static uint8_t Ticker_Enable = 0;
@@ -57,7 +59,7 @@ static uint32_t Ticker_Res = 0;
 static uint32_t Ticker_Cnt = 0;
 
 
-static uint16_t OverFlow = 0;
+// static uint16_t OverFlow = 0;
 
 static struct lthread Init_Lthread;
 static struct lthread CheckMline_Lthread;
@@ -140,22 +142,19 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 		return 0;
 	}
 	sns->cnt_cur = 0;
-	//uint8_t * buffer = &trg[*ptr];	
 	PackageToGett.result = EXACTO_WAITING;
 	PackageToGett.cmd = sns->address;//cmd;
 	PackageToGett.datalen = sns->datalen+1;
 	PackageToGett.type = EX_SPI_DT_TRANSMIT_RECEIVE;
 	uint8_t try_cnt = 1;
 	const uint8_t tmp_length = (sns->datalen - sns->shift);
-	//if ((*ptr + >tmp_length + 2) >= TMP_BUFFER_DATA_SZ)
-	//	return 0;
 	enableExactoSensor(sns->sns);
 	if (ex_gettSpiSns(&PackageToGett))
 		try_cnt = 0;
 	disableExactoSensor(sns->sns);
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && try_cnt)
 	{
-		exds_setSnsData((uint8_t)sns->sns, &PackageToGett.data[sns->shift] , tmp_length);
+		// exds_setSnsData((uint8_t)sns->sns, &PackageToGett.data[sns->shift] , tmp_length);	TODO: upload
 		if (Apollon_lsmism_Buffer_Readable != 2)
 		{
 			if ((Apollon_lsmism_Buffer_Readable==0)&&(sns->sns == LSM303AH))
@@ -298,12 +297,7 @@ static int runSnsContainerLthread(struct lthread * self)
 	}
 	else
 	{
-		// static int iiii = 0;
-		// if (iiii++ > 1000)
-		// {
-		// 	iiii = 0;
-		// 	printk("!\n");
-		// }
+
 		Ticker_Stop = dwt_cyccnt_stop();
 		Ticker_Res += Ticker_Stop - Ticker_Start;
 		Ticker_Cnt++;
@@ -316,12 +310,14 @@ static int runSnsContainerLthread(struct lthread * self)
 			Ticker_Res = 0;
 		}
 	}
-	exactolink_package_result_t res;
-	ex_getExactolinkType(&res);
+	exactolink_package_result_t res = EXACTOLINK_CMD_SEND;
+	// ex_getExactolinkType(&res); TODO: need?
 	if(res == EXACTOLINK_CMD_SEND)
 	{
 		if ((SnsContainer.sns[0].dtrd == 0) && (SnsContainer.sns[1].dtrd == 0))
-        	exds_setData(Ender, 0, EX_THR_CTRL_INIT); 
+		{
+        	// exds_setData(Ender, 0, EX_THR_CTRL_INIT);  TODO
+		}
 		getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
 		getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
 		SnsContainer.done = 1;
@@ -330,14 +326,14 @@ static int runSnsContainerLthread(struct lthread * self)
 		{
 			SnsContainer.sns[0].dtrd = 0;
 			SnsContainer.sns[1].dtrd = 0;
- 	       exds_setData(Ender, 0, EX_THR_CTRL_OK);
+ 	      //  exds_setData(Ender, 0, EX_THR_CTRL_OK); TODO
 		}
 	}
 	if (Mline_Counter < Mline_Max)
 		Mline_Counter++;
 	else{
 		Mline_Counter = 0;
-		transmitExactoDataStorage();
+		// transmitExactoDataStorage(); TODO: transmit
 		lthread_launch(&CheckMline_Lthread);
 		}
 	trg->done = 1;
@@ -347,13 +343,15 @@ static int run_CheckMline_Lthread(struct lthread * self)
 {
 	if (Apollon_lsmism_MlineRXTx_Readable == 0)
 	{
-		Apollon_lsmism_MlineReceive = ExDtStr_TransmitSPI_RxCounter;
+
+		// Apollon_lsmism_MlineReceive = ExDtStr_TransmitSPI_RxCounter;
 //		Apollon_lsmism_MlineTransmit = ExDtStr_TransmitSPI_TxCounter;
-		Apollon_lsmism_MlineOverFlow = ExDtStr_OutputSPI_OverFlw;
+		// Apollon_lsmism_MlineOverFlow = ExDtStr_OutputSPI_OverFlw;
 		Apollon_lsmism_MlineRXTx_Readable = 1;
 	}
 	exactolink_package_result_t exactolink_result;
-	exactolink_result = ex_checkData_ExDtStr();
+	// exactolink_result = ex_checkData_ExDtStr();	TODO: check 
+	exactolink_result = EXACTOLINK_CMD_SEND;
 	if (exactolink_result == EXACTOLINK_NO_DATA)
 	{
 		//error
@@ -361,7 +359,7 @@ static int run_CheckMline_Lthread(struct lthread * self)
 	}
 	if (exactolink_result == EXACTOLINK_CMD_SEND)
 	{
-		RxPtr = ex_getRawFromSD_ExDtStr(RxData, RX_DATA_SZ);
+		// RxPtr = ex_getRawFromSD_ExDtStr(RxData, RX_DATA_SZ); TODO: why?
 		uint16_t len, adr, cmd;
 		uint32_t ref, trg_num;
 		exlnk_cv_Uint8_Uint16(&RxData[2], &len);
@@ -380,15 +378,13 @@ static int run_CheckMline_Lthread(struct lthread * self)
 				Mode = res;
 				lthread_launch(&Init_Lthread);
 			}
-			ex_setExactolinkType(EXACTOLINK_CMD_SEND);
+			// ex_setExactolinkType(EXACTOLINK_CMD_SEND); TODO: set type
 		}
 		
 	}
 	if (RxReadable == 0)
 	{
-		//RxPtr = ex_getRawDataStr_ExDtStr(RxData, RX_DATA_SZ);
-		OverFlow = ExDtStr_OutputSPI_OverFlw;
-		RxPtr = ex_getRawFromSD_ExDtStr(RxData, RX_DATA_SZ);
+		// RxPtr = ex_getRawFromSD_ExDtStr(RxData, RX_DATA_SZ); TODO: why?
 		RxReadable = 1;
 	}	
 
@@ -412,11 +408,11 @@ static int run_GetRaw_Lthread(struct lthread * self)
 	TmpBufferPtr += 9;
 	getRawFromSns(&SnsContainer.sns[0], ISM330DLC_INT1_CTRL, 14, &TmpBufferData[TmpBufferPtr]);
 	TmpBufferPtr += 14;
-        exds_setData(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
+      //   exds_setData(TmpBufferData, TmpBufferPtr, EX_THR_CTRL_WAIT);
 	SnsContainer.sns[0].dtrd = 0;
 	SnsContainer.sns[1].dtrd = 0;
-        exds_setData(Ender, 0, EX_THR_CTRL_OK);
-	transmitExactoDataStorage();
+      //   exds_setData(Ender, 0, EX_THR_CTRL_OK);
+	// transmitExactoDataStorage(); TODO: transmit
 	return 0;
 }
 static int run_Init_Lthread(struct lthread * self)
@@ -450,12 +446,10 @@ static int run_Init_Lthread(struct lthread * self)
 
 	SnsContainer.done = 0;
     
-//    turnOffSPI2_FULL_DMA();
-//    setupSPI2_FULL_DMA();
-	setupSpiReceiveSlave();
+	// setupSpiReceiveSlave(); TODO: init mline spi
 
 	switchStage(Mode);
-	ex_setExactolinkType        (EXACTOLINK_SNS_XLXLGR);
+	// ex_setExactolinkType        (EXACTOLINK_SNS_XLXLGR); TODO: set default
 	ex_frcTimReload();
 	InitFlag = 1;
     return 0;
@@ -486,8 +480,8 @@ static int initApollon_lsmism()
 	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
 	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // BOOT BDU H_ACTIVE PP_OD SIM IF_INC BLE SW_RESET=0 1 0 0 1 1 0 0
 
-	resetExactoDataStorage();
-	ex_setExactolinkType(EXACTOLINK_NO_DATA);
+	// resetExactoDataStorage(); TODO: reset mline
+	// ex_setExactolinkType(EXACTOLINK_NO_DATA); TODO: set default
 	lthread_init(&Init_Lthread, run_Init_Lthread);
 	lthread_init(&CheckMline_Lthread, run_CheckMline_Lthread);
 	lthread_init(&GetRaw_Lthread, run_GetRaw_Lthread);
