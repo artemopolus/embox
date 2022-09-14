@@ -42,3 +42,12 @@ module read {
 	depends exacto.apollon.tim.tim3
     depends exacto.sensors.apollon_lsmism
 }
+@AutoCmd
+@Cmd(name="lsmism_reader", help="", man='''
+AUTHOR Kuznetcov
+''')
+module reader {
+	source "reader.c"
+	depends exacto.sensors.lsmism
+}
+

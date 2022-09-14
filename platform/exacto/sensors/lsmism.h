@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include "mliner/mliner_dev.h"
+#include "sensors/ctrl.h"
+#include "exactolink/exactolink_base.h"
 
 extern exmliner_dev_t LsmIsmDev;
 

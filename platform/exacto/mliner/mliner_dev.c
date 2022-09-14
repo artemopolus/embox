@@ -6,8 +6,8 @@ void exmliner_cr(exmliner_dev_t * trg)
 }
 void exmliner_init(exmliner_dev_t * trg, int (*onUpdate)(uint8_t * data, uint16_t datalen, uint8_t id))
 {
-	trg->is_enabled = 1;
 	trg->onUpdate = onUpdate;
+	trg->is_enabled = 1;
 }
 
 void exmliner_run(exmliner_dev_t * trg, uint8_t * data, uint16_t datalen, uint8_t id)

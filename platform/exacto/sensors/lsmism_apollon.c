@@ -7,9 +7,7 @@
 #include "kernel/printk.h"
 #include "sensors/ism330dlc_reg.h"
 #include "sensors/lsm303ah_reg.h"
-#include "exactolink/exactolink_base.h"
 
-#include "sensors/ctrl.h"
 #include "spi/spi_sns.h"
 
 
