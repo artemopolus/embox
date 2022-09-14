@@ -32,3 +32,16 @@ module dev
 	@IncludeExport(path="mliner")
 	source "mliner_dev.h"
 }
+module mod_sec
+{
+	source "mliner_sec.c"
+	@IncludeExport(path = "mliner")
+	source "mliner_sec.h"
+	depends exacto.spi.mline_sec
+
+	depends exacto.tim.base
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+	depends exacto.commander.buffer
+}
