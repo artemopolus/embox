@@ -33,6 +33,8 @@ int main(int argc, char *argv[])
 {
 	printf("Start sensor lsmism reader\n");
 	exmliner_init(&LsmIsmDev, onUpdateSensorData);
+
+	exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
 	while(1)
 	{
 		if(PrintMark)
