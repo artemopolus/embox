@@ -26,3 +26,9 @@ module main_mod_afina extends main_mod
 	depends exacto.cmds.perf_tests.ex_utils
 
 } 
+module dev
+{
+	source "mliner_dev.c"
+	@IncludeExport(path="mliner")
+	source "mliner_dev.h"
+}

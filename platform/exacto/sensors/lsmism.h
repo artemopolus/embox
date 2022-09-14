@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "mliner/mliner_dev.h"
+
+extern exmliner_dev_t LsmIsmDev;
+
 extern uint32_t Apollon_lsmism_MlineReceive;
 //extern uint32_t Apollon_lsmism_MlineTransmit;
 extern uint32_t Apollon_lsmism_MlineOverFlow;

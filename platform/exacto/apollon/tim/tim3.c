@@ -105,6 +105,10 @@ void ex_setFreqHz(const uint32_t target_freq)
   uint32_t value = 100;
   switch (target_freq)
   {
+    case 1:
+      value = 1;
+      ExTim_Freq_Current = EXACTO_TIM_1;
+      break;
     case 10:
       value = 10;
       ExTim_Freq_Current = EXACTO_TIM_10;

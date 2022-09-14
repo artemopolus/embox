@@ -6,6 +6,7 @@
 
 #define TIM_SERVICES_COUNT 3
 typedef enum{
+    EXACTO_TIM_1,
     EXACTO_TIM_10,
     EXACTO_TIM_50,
     EXACTO_TIM_100,

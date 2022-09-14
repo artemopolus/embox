@@ -12,11 +12,13 @@
 #include "sensors/ctrl.h"
 #include "spi/spi_sns.h"
 
+
 #define PRINT_TICKER_MAX 9 
 #define TRANSMIT_MESSAGE_SIZE EXACTOLINK_MESSAGE_SIZE
 #define TMP_BUFFER_DATA_SZ 40
 #define RX_DATA_SZ 40
 
+exmliner_dev_t LsmIsmDev;
 
 uint32_t Apollon_lsmism_MlineOverFlow = 0;
 uint32_t Apollon_lsmism_MlineReceive = 0;
@@ -147,26 +149,8 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	disableExactoSensor(sns->sns);
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && process_completed)
 	{
-		// exds_setSnsData((uint8_t)sns->sns, &PackageToGett.data[sns->shift] , tmp_length);	TODO: upload
-		if (Apollon_lsmism_Buffer_Readable != 2)
-		{
-			if ((Apollon_lsmism_Buffer_Readable==0)&&(sns->sns == LSM303AH))
-			{
-				for(int i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data0[i]);
-				Apollon_lsmism_Buffer_Readable = 1;
-				Apollon_lsmism_Buffer_dtrd0 = PackageToGett.data[0];
-			}
-			else if ((Apollon_lsmism_Buffer_Readable==1)&&(sns->sns == ISM330DLC))
-			{
-				for(int i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + i*2], (int16_t *)&Apollon_lsmism_Buffer_Data1[i]);
-				for(int i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&PackageToGett.data[sns->shift + (i+3)*2], (int16_t *)&Apollon_lsmism_Buffer_Data2[i]);
-				Apollon_lsmism_Buffer_Readable = 2;
-				Apollon_lsmism_Buffer_dtrd1 = PackageToGett.data[0];
-			}
-		}
+		exmliner_run(&LsmIsmDev, &PackageToGett.data[sns->shift], tmp_length, (uint8_t)sns->sns);
+		
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
 		return (tmp_length + 2);
@@ -367,6 +351,7 @@ uint8_t exSnsStop(void)
 EMBOX_UNIT_INIT(initApollon_lsmism);
 static int initApollon_lsmism()
 {
+	exmliner_cr(&LsmIsmDev);
 	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
 	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // BOOT BDU H_ACTIVE PP_OD SIM IF_INC BLE SW_RESET=0 1 0 0 1 1 0 0
 

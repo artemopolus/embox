@@ -54,6 +54,7 @@ module lsmism
 	depends exacto.sensors.ctrl
 	depends exacto.apollon.tim.tim_3
 	depends exacto.exactolink.exactolink_base
+	depends exacto.mliner.dev
 	
 	depends third_party.bsp.stmf1cube.cube
 
