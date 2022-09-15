@@ -35,6 +35,10 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 	SendCounter++;
 	return 0;
 }
+static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
+{
+	return 0;
+}
 static int onResetEventHandler()
 {
 	printf("Try reset Mline\n");
@@ -44,6 +48,7 @@ int main(int argc, char *argv[])
 {
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
+	exmliner_setCmdAckAction(onCmdAckEventHandler);
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);

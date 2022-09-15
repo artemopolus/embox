@@ -19,6 +19,16 @@ static uint8_t NeedToSend = 0;
 // static uint32_t ECTM_SendData_Counter = 0;
 // static uint8_t ECTM_TransmitBuffer[MLINER_SEC_MSG_SIZE] = {0};
 
+typedef struct mliner_cmd_info
+{
+	uint8_t id;
+	uint32_t mnum;
+	uint8_t ack;
+	uint8_t is_send;
+}mliner_cmd_info_t;
+
+static mliner_cmd_info_t SendCmd = {0};
+
 typedef struct mliner_sec_dev
 {
 	exlnk_set_header_str_t buffer;
@@ -36,6 +46,8 @@ typedef struct mliner_sec_in_dev
 	ExactoBufferUint8Type store;
 	uint8_t cmdaction_on;
 	int(*cmdaction)(exlnk_cmd_str_t * out);
+	uint8_t cmdackaction_on;
+	int(*cmdackaction)(exlnk_cmdack_str_t * out);
 	uint8_t onreset_on;
 	int(*onreset)();
 }mliner_sec_in_dev_t;
@@ -62,7 +74,16 @@ void exmliner_Init(uint16_t address)
 void exmliner_Upload(void * data, size_t len, uint8_t id)
 {
 	if (id == EXLNK_DATA_ID_CMD)
-		exlnk_CmdToArray((exlnk_cmd_str_t*)data, TmpBuffer, 100);
+	{
+		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
+		exlnk_CmdToArray(cmd, TmpBuffer, 100);
+		SendCmd.id = cmd->id;
+		SendCmd.mnum = cmd->mnum;
+		SendCmd.ack = 0;
+		SendCmd.is_send = 0;
+	}
+	else if (id == EXLNK_DATA_ID_CMDACK)
+		exlnk_CmdAckToArray((exlnk_cmdack_str_t*)data, TmpBuffer, 100);
 	else
 		return;
 	exlnk_uploadHeader(&Transmit.buffer, TmpBuffer, len);
@@ -107,6 +128,7 @@ void exmliner_Update()
 	while(len > 0)
 	{
 		exlnk_cmd_str_t in;
+		exlnk_cmdack_str_t ack;
 			
 		if(exlnk_getCmd(&in, &Receive.buffer.data[Receive.buffer.datapt], Receive.buffer.datalen))
 		{
@@ -122,7 +144,19 @@ void exmliner_Update()
 			// 	uploadToMline(&in, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
 			// 	NeedToSend = 1;
 			// }
+				exlnk_cmdack_str_t ack1;
+				exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
+				exmliner_Upload(&ack1, sizeof(exlnk_cmdack_str_t), EXLNK_DATA_ID_CMDACK);
 				NeedToSend = 1;
+			}
+		}
+		else if(exlnk_getCmdAck(&ack, &Receive.buffer.data[Receive.buffer.datapt], Receive.buffer.datalen))
+		{
+			Receive.buffer.datapt += sizeof( exlnk_cmdack_str_t);
+			if(Receive.buffer.adr == MLINER_SEC_MODULE_ADDRESS)
+			{
+				if(Receive.cmdackaction_on)
+					Receive.cmdackaction(&ack);
 			}
 		}
 		else
@@ -144,6 +178,11 @@ void exmliner_setCmdAction(int(*cmdaction)(exlnk_cmd_str_t * out))
 {
 	Receive.cmdaction = cmdaction;
 	Receive.cmdaction_on = 1;
+}
+void exmliner_setCmdAckAction(int(*cmdackaction)(exlnk_cmdack_str_t * out))
+{
+	Receive.cmdackaction = cmdackaction;
+	Receive.cmdackaction_on = 1;
 }
 void exmliner_setResetAction(int(*resetaction)())
 {
