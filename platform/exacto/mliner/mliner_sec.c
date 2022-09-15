@@ -12,9 +12,6 @@
 
 #include <string.h>
 
-#define MLINER_SEC_MSG_SIZE EXACTO_BUFFER_UINT8_SZ
-#define MLINER_SEC_MODULE_ADDRESS	7 
-
 
 static uint8_t NeedToSend = 0;
 
@@ -115,14 +112,18 @@ void exmliner_Update()
 		{
 			Receive.buffer.datapt += sizeof( exlnk_cmd_str_t);
 			//process
-			if(Receive.cmdaction_on)
-				Receive.cmdaction(&in);
+			if(Receive.buffer.adr == MLINER_SEC_MODULE_ADDRESS)//TODO: move to root
+			{
+				if(Receive.cmdaction_on)
+					Receive.cmdaction(&in);
 			// if(GettBuffer.adr == SEC_MODULE_ADDRESS)
 			// {
 			// 	in.value +=3;
 			// 	uploadToMline(&in, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
 			// 	NeedToSend = 1;
 			// }
+				NeedToSend = 1;
+			}
 		}
 		else
 			break;

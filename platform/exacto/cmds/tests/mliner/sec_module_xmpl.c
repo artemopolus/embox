@@ -1,8 +1,11 @@
 #include "mliner/mliner_sec.h"
 #include <kernel/lthread/lthread.h>
 #include "tim/tim.h"
+#include <stdio.h>
 
 static uint16_t TIM_Counter = 0;
+static uint16_t SendCounter = 0;
+
 static int PointToTim;
 static uint8_t EnableUpdate = 0;
 static uint8_t NeedToPrint = 0;
@@ -24,8 +27,24 @@ static int run_Tim_Lthread(struct  lthread * self)
 	EnableUpdate = 1;
 	return 0;
 }
+static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
+{
+	printf("in:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
+	cmd->value += 3;
+	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
+	SendCounter++;
+	return 0;
+}
+static int onResetEventHandler()
+{
+	printf("Try reset Mline\n");
+	return 0;
+}
 int main(int argc, char *argv[]) 
 {
+	exmliner_setCmdAction(onCmdEventHandler);
+	exmliner_setResetAction(onResetEventHandler);
+
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(0);
@@ -35,8 +54,10 @@ int main(int argc, char *argv[])
 		exmliner_Update();
 		if(NeedToPrint)
 		{
-
+			printf("tim[%5d]send[%5d]\n", TIM_Counter,SendCounter);
+			NeedToPrint = 0;
 		}
+		EnableUpdate = 0;
 		// sleep(1);
 	}
 	

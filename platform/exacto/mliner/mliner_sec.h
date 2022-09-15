@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include "exlnk_Cmd.h"
 
+#define MLINER_SEC_MSG_SIZE EXACTO_BUFFER_UINT8_SZ
+#define MLINER_SEC_MODULE_ADDRESS	7 
+
+
 extern void exmliner_Init(uint16_t address);
 extern void exmliner_Upload(void * data, size_t len, uint8_t id);
 extern void exmliner_Update();
