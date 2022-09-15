@@ -14,6 +14,7 @@ typedef struct exlnk_set_header_str{
     uint16_t pt_data;
     uint8_t * data;
     uint8_t packs;
+    uint8_t is_closed;
 }exlnk_set_header_str_t;
 
 
