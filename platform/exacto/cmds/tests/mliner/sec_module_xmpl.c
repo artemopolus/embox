@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 		exmliner_Update();
 		if(NeedToPrint)
 		{
-			printf("tim[%5d]send[%5d]\n", TIM_Counter,SendCounter);
+			printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
 			NeedToPrint = 0;
 		}
 		EnableUpdate = 0;

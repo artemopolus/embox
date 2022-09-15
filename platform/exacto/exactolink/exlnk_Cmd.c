@@ -16,7 +16,7 @@ uint8_t exlnk_CmdToArray(exlnk_cmd_str_t * src, uint8_t * data, uint16_t datalen
 }
 uint8_t exlnk_getCmd(exlnk_cmd_str_t * trg, uint8_t * data, uint16_t datalen)
 {
-	if(data[0] != EXLNK_DATA_ID_CMD && datalen < sizeof(exlnk_cmd_str_t))
+	if(data[0] != EXLNK_DATA_ID_CMD || datalen < sizeof(exlnk_cmd_str_t))
 		return 0;
 	memcpy(trg, data, sizeof( exlnk_cmd_str_t));
 	return sizeof(exlnk_cmd_str_t);
