@@ -37,6 +37,7 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 }
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
+	printf("ack:[mnum: %3d reg: %3d]\n", cmd->mnum, cmd->reg);
 	return 0;
 }
 static int onResetEventHandler()

@@ -15,7 +15,7 @@
 #include "exlnk_getHeader.h"
 #include "exlnk_Cmd.h"
 
-#define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
+#define ECTM_MESSAGE_SIZE 2*EXACTO_BUFFER_UINT8_SZ
 static uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint32_t ECTM_SendData_Counter = 0;
@@ -67,8 +67,11 @@ static void sending(uint8_t value)
 {
     for (int i = 0; i < ECTM_SEC_COUNT; i++)
     {
-        exlnk_initHeader(&SendBuffer[i], ECTM_TransmitBuffer);
-        exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+        if(SendBuffer[i].is_closed)
+        {
+            exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i*EXACTO_BUFFER_UINT8_SZ]);
+            exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+        }
     }
     
 
@@ -116,6 +119,11 @@ static void init()
 {
     ECTM_SendData_Counter = 0;
     ex_setExactolinkType(EXACTOLINK_CMD_COMMON);
+    for (int i = 0; i < ECTM_SEC_COUNT; i++)
+    {
+        exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i*EXACTO_BUFFER_UINT8_SZ]);
+        exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+    }
 }
 int main(int argc, char *argv[]) 
 {
