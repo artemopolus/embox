@@ -32,8 +32,6 @@ static uint8_t AddressCount = 6;
 
 static void prepareTransmit(uint8_t value)
 {
-    exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
-    exlnk_fillHeader(&SendBuffer, value, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
 
     exlnk_cmd_str_t out;
     if(value == 7)
@@ -56,9 +54,8 @@ static void prepareTransmit(uint8_t value)
 }
 static void sending(uint8_t value)
 {
-    prepareTransmit(value);
-
-    transmitExactoDataStorage();
+    exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
+    exlnk_fillHeader(&SendBuffer, value, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
 
     exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0); 
 
@@ -73,6 +70,12 @@ static void sending(uint8_t value)
         {
             printf("cmd [ adr: %3d val: %3d ]", in.reg, in.value);
 			GettBuffer.datapt += sizeof( exlnk_cmd_str_t);
+				exlnk_cmdack_str_t ack1;
+				exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
+            exlnk_CmdAckToArray(&ack1, TmpBuffer, 100);
+            exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmdack_str_t));
+
+
         }
         else if(exlnk_getCmdAck(&ack, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen))
         {
@@ -84,6 +87,11 @@ static void sending(uint8_t value)
         len = exlnk_isEmptyGetHeader(&GettBuffer);
     }
     printf("\n");
+
+
+    prepareTransmit(value);
+
+    transmitExactoDataStorage();
 }
 static void init()
 {
