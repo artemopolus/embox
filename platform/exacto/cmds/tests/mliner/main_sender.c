@@ -16,46 +16,61 @@
 #include "exlnk_Cmd.h"
 
 #define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
-uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
-uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
+static uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
+static uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint32_t ECTM_SendData_Counter = 0;
 
-exlnk_set_header_str_t SendBuffer;
-exlnk_get_header_str_t GettBuffer;
+#define ECTM_SEC_COUNT 2
 
-uint8_t TmpBuffer[100];
+static uint8_t Addresses[] = {7,16};
+static exlnk_set_header_str_t SendBuffer[ECTM_SEC_COUNT];
+static exlnk_get_header_str_t GettBuffer;
 
-// uint8_t AddressArray[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
-// uint8_t AddressArray[] = {7, 0,0, 16, 0,0};
-uint8_t AddressArray[] = {7, 16, 7, 16, 7, 16};
+static uint8_t TmpBuffer[100];
+
+// uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
+// uint8_t AddressSendOrder[] = {7, 0,0, 16, 0,0};
+static uint8_t AddressSendOrder[] = {7, 16, 7, 16, 7, 16};
 static uint8_t AddressCount = 6;
 
 static void prepareTransmit(uint8_t value)
 {
+    exlnk_set_header_str_t * trg = NULL;
 
+    for(int i = 0; i < ECTM_SEC_COUNT; i++)
+    {
+        if(SendBuffer[i].adr == value)
+            trg = &SendBuffer[i];
+    }
+    if(trg == NULL)
+        return;
     exlnk_cmd_str_t out;
     if(value == 7)
     {
         exlnk_setCmd(&out, 65, 112);
-        exlnk_uploadCmdHeader(&SendBuffer, &out);
+        exlnk_uploadCmdHeader(trg, &out);
     }
     else
     {
         exlnk_setCmd(&out, 55, 86);
         exlnk_CmdToArray(&out, TmpBuffer, 100);
-        exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmd_str_t));
+        exlnk_uploadHeader(trg, TmpBuffer, sizeof(exlnk_cmd_str_t));
     }
-    exlnk_closeHeader(&SendBuffer);
+    exlnk_closeHeader(trg);
 
-    exds_setData(SendBuffer.data, SendBuffer.pt_data, EX_THR_CTRL_OK);
+    exds_setData(trg->data, trg->pt_data, EX_THR_CTRL_OK);
     
     ECTM_SendData_Counter++;
 
 }
 static void sending(uint8_t value)
 {
-    exlnk_initHeader(&SendBuffer, ECTM_TransmitBuffer);
-    exlnk_fillHeader(&SendBuffer, value, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+    for (int i = 0; i < ECTM_SEC_COUNT; i++)
+    {
+        exlnk_initHeader(&SendBuffer[i], ECTM_TransmitBuffer);
+        exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+    }
+    
 
     exds_getData(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, 0); 
 
@@ -70,12 +85,16 @@ static void sending(uint8_t value)
         {
             printf("cmd [ adr: %3d val: %3d ]", in.reg, in.value);
 			GettBuffer.datapt += sizeof( exlnk_cmd_str_t);
-				exlnk_cmdack_str_t ack1;
-				exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
-            exlnk_CmdAckToArray(&ack1, TmpBuffer, 100);
-            exlnk_uploadHeader(&SendBuffer, TmpBuffer, sizeof(exlnk_cmdack_str_t));
-
-
+            for (int i = 0; i< ECTM_SEC_COUNT; i++)
+            {
+                if(SendBuffer[i].adr == GettBuffer.adr)
+                {
+                    exlnk_cmdack_str_t ack1;
+                    exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
+                    exlnk_CmdAckToArray(&ack1, TmpBuffer, 100);
+                    exlnk_uploadHeader(&SendBuffer[i], TmpBuffer, sizeof(exlnk_cmdack_str_t));
+                }
+            }
         }
         else if(exlnk_getCmdAck(&ack, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen))
         {
@@ -126,7 +145,7 @@ int main(int argc, char *argv[])
     printf("%d", var_cnt);
     while(index_max != 0)
     {
-        sending(AddressArray[i++]);
+        sending(AddressSendOrder[i++]);
         if(i >= AddressCount)
         {
             i = 0;
