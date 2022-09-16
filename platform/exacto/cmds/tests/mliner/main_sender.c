@@ -64,24 +64,26 @@ static void sending(uint8_t value)
 
     exlnk_getHeader(ECTM_ReceiveBuffer, ECTM_MESSAGE_SIZE, &GettBuffer);
 	uint16_t len = exlnk_isEmptyGetHeader(&GettBuffer);
+    printf("[%5d][%5d] => ", ECTM_SendData_Counter, value);
     while(len > 0)
     {
         exlnk_cmd_str_t in;
         exlnk_cmdack_str_t ack;
         if(exlnk_getCmd(&in, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen))
         {
-            printf("[%5d][%5d] => cmd [ adr: %3d val: %3d ]\n", ECTM_SendData_Counter, value, in.reg, in.value);
+            printf("cmd [ adr: %3d val: %3d ]", in.reg, in.value);
 			GettBuffer.datapt += sizeof( exlnk_cmd_str_t);
         }
         else if(exlnk_getCmdAck(&ack, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen))
         {
-            printf("[%5d][%5d] => ACK [ adr: %3d val: %3d ]\n", ECTM_SendData_Counter, value, ack.reg, ack.mnum);
+            printf("ACK [ adr: %3d val: %3d ]", ack.reg, ack.mnum);
 			GettBuffer.datapt += sizeof( exlnk_cmdack_str_t);
         }
         else
             break;
         len = exlnk_isEmptyGetHeader(&GettBuffer);
     }
+    printf("\n");
 }
 static void init()
 {

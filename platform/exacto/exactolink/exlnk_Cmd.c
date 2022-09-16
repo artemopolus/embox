@@ -24,7 +24,6 @@ uint8_t exlnk_getCmd(exlnk_cmd_str_t * trg, uint8_t * data, uint16_t datalen)
 void exlnk_setCmdAck(exlnk_cmdack_str_t * trg, uint8_t id, uint32_t mnum, uint8_t reg)
 {
 	trg->id = EXLNK_DATA_ID_CMDACK;
-	trg->id = id;
 	trg->mnum = mnum;
 	trg->reg = reg;
 }
@@ -37,7 +36,7 @@ uint8_t exlnk_CmdAckToArray(exlnk_cmdack_str_t * src, uint8_t * data, uint16_t d
 }
 uint8_t exlnk_getCmdAck(exlnk_cmdack_str_t * trg, uint8_t * data, uint16_t datalen)
 {
-	if(data[0] != EXLNK_DATA_ID_CMDACK && datalen < sizeof(exlnk_cmdack_str_t))
+	if(data[0] != EXLNK_DATA_ID_CMDACK || datalen < sizeof(exlnk_cmdack_str_t))
 		return 0;
 	memcpy(trg, data, sizeof( exlnk_cmdack_str_t));
 	return 1;

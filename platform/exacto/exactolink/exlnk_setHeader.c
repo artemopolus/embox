@@ -90,11 +90,12 @@ void exlnk_clearSetHeader(exlnk_set_header_str_t * trg)
 }
 void exlnk_uploadCmdHeader(exlnk_set_header_str_t * trg, exlnk_cmd_str_t * cmd)
 {
-   cmd->mnum +=  trg->cnt >> 8;
+    cmd->mnum = trg->adr;
+   cmd->mnum +=  trg->cnt << 8;
    cmd->mnum &= 0x00FFFFFF;
    cmd->mnum += trg->packs >> 24;
-   uint8_t tmp[7];
-   exlnk_CmdToArray(cmd, tmp, 7);
-    exlnk_uploadHeader(trg, tmp, 7);
+   uint8_t tmp[12];
+   exlnk_CmdToArray(cmd, tmp, 12);
+    exlnk_uploadHeader(trg, tmp, 12);
 }
 
