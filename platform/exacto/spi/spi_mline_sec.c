@@ -127,6 +127,15 @@ void receiveSpiDevSec()
 		if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
 	receiveBoardSpi(&ReceiveSpiDev);
 }
+uint8_t repeatTransmitSpiDevSec()
+{
+	if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
+	{
+		resetBoardSpiRxTx(&ReceiveSpiDev, &TransmitSpiDev);
+		return 1;
+	}
+	return 0;
+}
 uint8_t transmitSpiDevSec()
 {
 	if(!ReceiveSpiDev.isready)

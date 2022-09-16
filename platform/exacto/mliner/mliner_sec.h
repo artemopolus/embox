@@ -15,4 +15,6 @@ extern void exmliner_Update();
 extern void exmliner_setCmdAction(int(*cmdaction)(exlnk_cmd_str_t * out));
 extern void exmliner_setCmdAckAction(int(*cmdackaction)(exlnk_cmdack_str_t * out));
 extern void exmliner_setResetAction(int(*resetaction)());
+extern void exmliner_setRepeatAction(int(*repeataction)(uint8_t id, uint32_t mnum));
+
 #endif //EXACTO_MLINER_MLINER_DEV_H_

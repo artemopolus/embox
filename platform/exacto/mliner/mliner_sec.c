@@ -28,6 +28,7 @@ typedef struct mliner_cmd_info
 }mliner_cmd_info_t;
 
 static mliner_cmd_info_t SendCmd = {0};
+static mliner_cmd_info_t SendCmdBuff = {0};
 
 typedef struct mliner_sec_dev
 {
@@ -50,6 +51,8 @@ typedef struct mliner_sec_in_dev
 	int(*cmdackaction)(exlnk_cmdack_str_t * out);
 	uint8_t onreset_on;
 	int(*onreset)();
+	uint8_t repeataction_on;
+	int(*repeataction)(uint8_t id, uint32_t mnum);
 }mliner_sec_in_dev_t;
 
 
@@ -77,10 +80,20 @@ void exmliner_Upload(void * data, size_t len, uint8_t id)
 	{
 		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
 		exlnk_CmdToArray(cmd, TmpBuffer, 100);
-		SendCmd.id = cmd->id;
-		SendCmd.mnum = cmd->mnum;
-		SendCmd.ack = 0;
-		SendCmd.is_send = 0;
+		if((SendCmd.id && SendCmd.ack )||!SendCmd.id)
+		{
+			SendCmd.id = cmd->id;
+			SendCmd.mnum = cmd->mnum;
+			SendCmd.ack = 0;
+			SendCmd.is_send = 0;
+		}
+		else if(SendCmd.id && !SendCmd.ack && !SendCmdBuff.id)
+		{
+			SendCmdBuff.id = cmd->id;
+			SendCmdBuff.mnum = cmd->mnum;
+			SendCmdBuff.ack = 0;
+			SendCmdBuff.is_send = 0;
+		}
 	}
 	else if (id == EXLNK_DATA_ID_CMDACK)
 		exlnk_CmdAckToArray((exlnk_cmdack_str_t*)data, TmpBuffer, 100);
@@ -92,19 +105,31 @@ void exmliner_Update()
 {
 	if(NeedToSend)
 	{
-		//transmit
-		exlnk_closeHeader(&Transmit.buffer);
+		if((SendCmd.id && SendCmd.ack) //success
+			|| !SendCmd.id  //begin
+			||(SendCmd.id && !SendCmd.ack && !SendCmd.is_send))//not send
+		{
+			//transmit
+			exlnk_closeHeader(&Transmit.buffer);
 
-		setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
+			setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
 
-		if(transmitSpiDevSec())
+			transmitSpiDevSec();
 			NeedToSend = 0;
-		Transmit.counter++;
-		exlnk_clearSetHeader(&Transmit.buffer);
-		//new
-		exlnk_initHeader(&Transmit.buffer, Transmit.dma);
-		exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
-
+			Transmit.counter++;
+			exlnk_clearSetHeader(&Transmit.buffer);
+			//new
+			exlnk_initHeader(&Transmit.buffer, Transmit.dma);
+			exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
+			SendCmd.is_send = 1;
+		}
+		else
+		{
+			repeatTransmitSpiDevSec();
+			NeedToSend = 0;
+			if(Receive.repeataction_on)
+				Receive.repeataction(SendCmd.id, SendCmd.mnum);
+		}
 	}
 	else
 	{
@@ -138,12 +163,6 @@ void exmliner_Update()
 			{
 				if(Receive.cmdaction_on)
 					Receive.cmdaction(&in);
-			// if(GettBuffer.adr == SEC_MODULE_ADDRESS)
-			// {
-			// 	in.value +=3;
-			// 	uploadToMline(&in, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
-			// 	NeedToSend = 1;
-			// }
 				exlnk_cmdack_str_t ack1;
 				exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
 				exmliner_Upload(&ack1, sizeof(exlnk_cmdack_str_t), EXLNK_DATA_ID_CMDACK);
@@ -157,6 +176,16 @@ void exmliner_Update()
 			{
 				if(Receive.cmdackaction_on)
 					Receive.cmdackaction(&ack);
+
+				if (SendCmd.id && ack.mnum == SendCmd.mnum)
+				{
+					SendCmd.ack = 1;
+					if(SendCmdBuff.id)
+					{
+						SendCmd = SendCmdBuff;
+						SendCmdBuff.id = 0;
+					}
+				}
 			}
 		}
 		else
@@ -190,3 +219,8 @@ void exmliner_setResetAction(int(*resetaction)())
 	Receive.onreset_on = 1;
 }
 
+void exmliner_setRepeatAction(int(*repeataction)(uint8_t id, uint32_t mnum))
+{
+	Receive.repeataction = repeataction;
+	Receive.repeataction_on = 1;
+}

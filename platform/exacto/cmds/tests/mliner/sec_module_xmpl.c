@@ -37,7 +37,7 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 }
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
-	printf("ack:[mnum: %3d reg: %3d]\n", cmd->mnum, cmd->reg);
+	printf("ack:[mnum: %5d reg: %5d]\n", cmd->mnum, cmd->reg);
 	return 0;
 }
 static int onResetEventHandler()
@@ -45,11 +45,17 @@ static int onResetEventHandler()
 	printf("Try reset Mline\n");
 	return 0;
 }
+static int onRepeatEventHandler(uint8_t id, uint32_t mnum)
+{
+	printf("repeat: [%d %d ]\n", id, mnum);
+	return 0;
+}
 int main(int argc, char *argv[]) 
 {
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
+	exmliner_setRepeatAction(onRepeatEventHandler);
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);

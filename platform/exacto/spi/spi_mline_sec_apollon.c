@@ -169,6 +169,15 @@ void resetBoardSpiRx(spi_mline_dev_t * receiver)
 	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
 }
+void resetBoardSpiRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+{
+	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
+	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, transmit->dmabufferlen);
+	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
+	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
+	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
+}
 void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 {
 	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive

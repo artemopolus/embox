@@ -19,6 +19,7 @@ extern void disableBoardSpi(void);
 extern void receiveBoardSpi(spi_mline_dev_t * receiver);
 
 extern void resetBoardSpiRx(spi_mline_dev_t * receiver);
+extern void resetBoardSpiRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit);
 
 extern void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit);
 
