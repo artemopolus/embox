@@ -103,50 +103,17 @@ void exmliner_Upload(void * data, size_t len, uint8_t id)
 }
 void exmliner_Update()
 {
-	if(NeedToSend)
+	if(getReceivedDataSpiDevSec(Receive.dma, MLINER_SEC_MSG_SIZE))
 	{
-		if((SendCmd.id && SendCmd.ack) //success
-			|| !SendCmd.id  //begin
-			||(SendCmd.id && !SendCmd.ack && !SendCmd.is_send))//not send
+		memset(&Receive.buffer, 0, sizeof(Receive.buffer));
+		if(exlnk_getHeader(Receive.dma, MLINER_SEC_MSG_SIZE, &Receive.buffer))
 		{
-			//transmit
-			exlnk_closeHeader(&Transmit.buffer);
-
-			setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
-
-			transmitSpiDevSec();
-			NeedToSend = 0;
-			Transmit.counter++;
-			exlnk_clearSetHeader(&Transmit.buffer);
-			//new
-			exlnk_initHeader(&Transmit.buffer, Transmit.dma);
-			exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
-			SendCmd.is_send = 1;
+			Receive.counter = 0;
 		}
 		else
 		{
-			repeatTransmitSpiDevSec();
-			NeedToSend = 0;
-			if(Receive.repeataction_on)
-				Receive.repeataction(SendCmd.id, SendCmd.mnum);
+			Receive.counter++;
 		}
-	}
-	else
-	{
-		//receive
-		if(getReceivedDataSpiDevSec(Receive.dma, MLINER_SEC_MSG_SIZE))
-		{
-			memset(&Receive.buffer, 0, sizeof(Receive.buffer));
-			if(exlnk_getHeader(Receive.dma, MLINER_SEC_MSG_SIZE, &Receive.buffer))
-			{
-				Receive.counter = 0;
-			}
-			else
-			{
-				Receive.counter++;
-			}
-		}
-		receiveSpiDevSec();
 	}
 	//process
 	uint16_t len = exlnk_isEmptyGetHeader(&Receive.buffer);
@@ -192,6 +159,41 @@ void exmliner_Update()
 			break;
 		len = exlnk_isEmptyGetHeader(&Receive.buffer);
 	}
+	//switch
+	if(NeedToSend)
+	{
+		if((SendCmd.id && SendCmd.ack) //success
+			|| !SendCmd.id  //begin
+			||(SendCmd.id && !SendCmd.ack && !SendCmd.is_send))//not send
+		{
+			//transmit
+			exlnk_closeHeader(&Transmit.buffer);
+
+			setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
+
+			transmitSpiDevSec();
+			NeedToSend = 0;
+			Transmit.counter++;
+			exlnk_clearSetHeader(&Transmit.buffer);
+			//new
+			exlnk_initHeader(&Transmit.buffer, Transmit.dma);
+			exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
+			SendCmd.is_send = 1;
+		}
+		else
+		{
+			repeatTransmitSpiDevSec();
+			NeedToSend = 0;
+			if(Receive.repeataction_on)
+				Receive.repeataction(SendCmd.id, SendCmd.mnum);
+		}
+	}
+	else
+	{
+		//receive
+		receiveSpiDevSec();
+	}
+
 	//check
 	if(Receive.counter >= 999)
 	{
