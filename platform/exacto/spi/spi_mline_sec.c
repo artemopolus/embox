@@ -59,7 +59,8 @@ void disableSpiDevSec()
 }
 int downloadSpiDevSecData(uint32_t len)
 {
-
+	if(!ReceiveSpiDev.isready)
+		return 0;
    pshsftPack_exbu8(ReceiveSpiDev.storage, ReceiveSpiDev.dmabufferdata, ReceiveSpiDev.dmabufferlen);
 	
    for (int i = 0; i < ReceiveSpiDev.dmabufferlen; i++)
@@ -75,7 +76,7 @@ int downloadSpiDevSecData(uint32_t len)
 	// 		break;
 	// 	}
 	// }
-	return 0;
+	return 1;
 }
 int uploadSpiDevSecData(uint32_t len)
 {
@@ -161,7 +162,7 @@ uint8_t transmitSpiDevSec()
 }
 uint16_t getReceivedDataSpiDevSec(uint8_t * trg, uint16_t trglen)
 {
-	if(ReceiveSpiDev.isready)
+	if(downloadSpiDevSecData(ReceiveSpiDev.dmabufferlen))
 		return grball_exbu8(ReceiveSpiDev.storage, trg);
 	return 0;
 }

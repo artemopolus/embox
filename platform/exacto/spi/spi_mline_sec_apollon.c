@@ -158,7 +158,7 @@ void receiveBoardSpi(spi_mline_dev_t * receiver)
    //  }
    //  SPI2_FULL_DMA_rx_buffer.is_full = 0;
    //  _trg_thread->isready = 0;
-	receiver->processData(receiver->dmabufferlen);
+	// receiver->processData(receiver->dmabufferlen);
     LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
 }
@@ -183,7 +183,7 @@ void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * trans
 	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
 
-	receiver->processData(receiver->dmabufferlen);
+	// receiver->processData(receiver->dmabufferlen);
 	transmit->processData(transmit->dmabufferlen);
 
 	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, transmit->dmabufferlen);
