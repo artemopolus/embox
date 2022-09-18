@@ -96,12 +96,13 @@ static void sending(uint8_t value)
                     exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
                     exlnk_CmdAckToArray(&ack1, TmpBuffer, 100);
                     exlnk_uploadHeader(&SendBuffer[i], TmpBuffer, sizeof(exlnk_cmdack_str_t));
+                    printf("ACK [ adr: %3d val: %3d ]", ack1.reg, ack1.mnum);
                 }
             }
         }
         else if(exlnk_getCmdAck(&ack, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen))
         {
-            printf("ACK [ adr: %3d val: %3d ]", ack.reg, ack.mnum);
+            // printf("ACK [ adr: %3d val: %3d ]", ack.reg, ack.mnum);
 			GettBuffer.datapt += sizeof( exlnk_cmdack_str_t);
         }
         else
