@@ -30,13 +30,15 @@ typedef struct mliner_cmd_info
 static mliner_cmd_info_t SendCmd = {0};
 static mliner_cmd_info_t SendCmdBuff = {0};
 
-typedef struct mliner_sec_dev
+typedef struct mliner_sec_out_dev
 {
 	exlnk_set_header_str_t buffer;
 	uint32_t counter;
 	uint8_t dma[MLINER_SEC_MSG_SIZE];
 	ExactoBufferUint8Type store;
-}mliner_sec_dev_t;
+	uint8_t packs[10];
+	uint8_t packs_cnt;
+}mliner_sec_out_dev_t;
 
 
 typedef struct mliner_sec_in_dev
@@ -53,10 +55,12 @@ typedef struct mliner_sec_in_dev
 	int(*onreset)();
 	uint8_t repeataction_on;
 	int(*repeataction)(uint8_t id, uint32_t mnum);
+	uint8_t erroraction_on;
+	int(*erroraction)(int error);
 }mliner_sec_in_dev_t;
 
 
-static mliner_sec_dev_t Transmit ={0};
+static mliner_sec_out_dev_t Transmit ={0};
 static mliner_sec_in_dev_t Receive = {0};
 static uint8_t TmpBuffer[100] = {0};
 
@@ -99,6 +103,7 @@ void exmliner_Upload(void * data, size_t len, uint8_t id)
 		exlnk_CmdAckToArray((exlnk_cmdack_str_t*)data, TmpBuffer, 100);
 	else
 		return;
+	Transmit.packs[Transmit.packs_cnt++] = id;
 	exlnk_uploadHeader(&Transmit.buffer, TmpBuffer, len);
 }
 void exmliner_Update()
@@ -171,10 +176,12 @@ void exmliner_Update()
 
 			setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
 
-			transmitSpiDevSec();
+			if(!transmitSpiDevSec()&& Receive.erroraction_on)
+				Receive.erroraction(1);
 			NeedToSend = 0;
 			Transmit.counter++;
 			exlnk_clearSetHeader(&Transmit.buffer);
+			Transmit.packs_cnt = 0;
 			//new
 			exlnk_initHeader(&Transmit.buffer, Transmit.dma);
 			exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
@@ -182,7 +189,8 @@ void exmliner_Update()
 		}
 		else
 		{
-			repeatTransmitSpiDevSec();
+			if(!repeatTransmitSpiDevSec()&&Receive.erroraction_on)
+				Receive.erroraction(2);
 			NeedToSend = 0;
 			if(Receive.repeataction_on)
 				Receive.repeataction(SendCmd.id, SendCmd.mnum);
@@ -225,4 +233,9 @@ void exmliner_setRepeatAction(int(*repeataction)(uint8_t id, uint32_t mnum))
 {
 	Receive.repeataction = repeataction;
 	Receive.repeataction_on = 1;
+}
+void exmliner_setErrorAction(int(*erroraction)(int id))
+{
+	Receive.erroraction = erroraction;
+	Receive.erroraction_on = 1;
 }
