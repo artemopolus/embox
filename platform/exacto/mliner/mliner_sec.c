@@ -12,21 +12,13 @@
 
 #include <string.h>
 
+#include "mliner/mliner.h"
 
 static uint8_t NeedToSend = 0;
 
-// static exlnk_set_header_str_t SendBuffer;
-// static uint32_t ECTM_SendData_Counter = 0;
-// static uint8_t ECTM_TransmitBuffer[MLINER_SEC_MSG_SIZE] = {0};
 
-typedef struct mliner_cmd_info
-{
-	uint8_t id;
-	uint32_t mnum;
-	uint8_t ack;
-	uint8_t is_send;
-}mliner_cmd_info_t;
 
+#define MLINER_SEC_PACKCNT_MAX 10
 
 typedef struct mliner_sec_out_dev
 {
@@ -34,9 +26,9 @@ typedef struct mliner_sec_out_dev
 	uint32_t counter;
 	uint8_t dma[MLINER_SEC_MSG_SIZE];
 	ExactoBufferUint8Type store;
-	mliner_cmd_info_t uplpacks[10];
+	mliner_cmd_info_t uplpacks[MLINER_SEC_PACKCNT_MAX];
 	uint8_t uplpacks_cnt;
-	mliner_cmd_info_t outpacks[10];
+	mliner_cmd_info_t outpacks[MLINER_SEC_PACKCNT_MAX];
 	uint8_t outpacks_cnt;
 }mliner_sec_out_dev_t;
 
@@ -84,9 +76,12 @@ void exmliner_Upload(void * data, size_t len, uint8_t id)
 	{
 		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
 		exlnk_CmdToArray(cmd, TmpBuffer, 100);
-		Transmit.uplpacks[Transmit.uplpacks_cnt].id = cmd->id;
-		Transmit.uplpacks[Transmit.uplpacks_cnt].mnum = cmd->mnum;
-		Transmit.uplpacks[Transmit.uplpacks_cnt++].ack = 0;
+		if(Transmit.uplpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
+		{
+			Transmit.uplpacks[Transmit.uplpacks_cnt].id = cmd->id;
+			Transmit.uplpacks[Transmit.uplpacks_cnt].mnum = cmd->mnum;
+			Transmit.uplpacks[Transmit.uplpacks_cnt++].ack = 0;
+		}
 	}
 	else if (id == EXLNK_DATA_ID_CMDACK)
 		exlnk_CmdAckToArray((exlnk_cmdack_str_t*)data, TmpBuffer, 100);
@@ -119,7 +114,7 @@ void exmliner_Update()
 		{
 			Receive.buffer.datapt += sizeof( exlnk_cmd_str_t);
 			//process
-			if(Receive.buffer.adr == MLINER_SEC_MODULE_ADDRESS)//TODO: move to root
+			if(Receive.buffer.adr == MLINER_SEC_MODULE_ADDRESS)
 			{
 				if(Receive.cmdaction_on)
 					Receive.cmdaction(&in);
