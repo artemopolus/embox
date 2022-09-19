@@ -12,6 +12,8 @@ module main_sender{
 	depends exacto.exactolink.exlnk_set_header
 	depends exacto.exactolink.exlnk_get_header
 	depends exacto.exactolink.exlnk_cmd
+
+	depends exacto.mliner.mliner
 }
 @AutoCmd
 @Cmd(name="test_mliner_getter", help=" Test reaction on address via mline ", man='''

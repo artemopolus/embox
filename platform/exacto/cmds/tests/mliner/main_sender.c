@@ -15,7 +15,19 @@
 #include "exlnk_getHeader.h"
 #include "exlnk_Cmd.h"
 
-#define ECTM_MESSAGE_SIZE 2*EXACTO_BUFFER_UINT8_SZ
+#include "mliner/mliner.h"
+
+#define MLINER_MAIN_SENDER_BUFFER_PACKSCNT_MAX 10
+
+typedef struct mliner_main_sender_buffer{
+    mliner_cmd_info_t packs[MLINER_MAIN_SENDER_BUFFER_PACKSCNT_MAX];
+    uint8_t cnt;
+}mliner_main_sender_buffer_t;
+
+static mliner_main_sender_buffer_t UploadBuffer = {0};
+static mliner_main_sender_buffer_t TransmitBuffer = {0};
+
+#define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
 static uint8_t ECTM_TransmitBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint8_t ECTM_ReceiveBuffer[ECTM_MESSAGE_SIZE] = {0};
 static uint32_t ECTM_SendData_Counter = 0;
@@ -56,6 +68,9 @@ static void prepareTransmit(uint8_t value)
         exlnk_CmdToArray(&out, TmpBuffer, 100);
         exlnk_uploadHeader(trg, TmpBuffer, sizeof(exlnk_cmd_str_t));
     }
+    
+    exmliner_CmdInfoInit(&UploadBuffer.packs[UploadBuffer.cnt++], out.id, out.mnum);
+
     exlnk_closeHeader(trg);
 
     exds_setData(trg->data, trg->pt_data, EX_THR_CTRL_OK);
@@ -69,7 +84,7 @@ static void sending(uint8_t value)
     {
         if(SendBuffer[i].is_closed)
         {
-            exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i*EXACTO_BUFFER_UINT8_SZ]);
+            exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i/2*EXACTO_BUFFER_UINT8_SZ]);
             exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
         }
     }
@@ -103,6 +118,11 @@ static void sending(uint8_t value)
         else if(exlnk_getCmdAck(&ack, &GettBuffer.data[GettBuffer.datapt], GettBuffer.datalen))
         {
             // printf("ACK [ adr: %3d val: %3d ]", ack.reg, ack.mnum);
+            for(int i =0 ; i < TransmitBuffer.cnt; i++)
+            {
+                if(TransmitBuffer.packs[i].mnum == ack.mnum)
+                    TransmitBuffer.packs[i].ack = 1;
+            }
 			GettBuffer.datapt += sizeof( exlnk_cmdack_str_t);
         }
         else
@@ -122,7 +142,7 @@ static void init()
     ex_setExactolinkType(EXACTOLINK_CMD_COMMON);
     for (int i = 0; i < ECTM_SEC_COUNT; i++)
     {
-        exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i*EXACTO_BUFFER_UINT8_SZ]);
+        exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i/2*EXACTO_BUFFER_UINT8_SZ]);
         exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
     }
 }
