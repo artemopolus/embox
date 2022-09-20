@@ -7,6 +7,7 @@
 #include <kernel/lthread/lthread.h>
 
 
+#include "gpio_config.h"
 #include "gpio/gpio_spi.h"
 
 uint8_t ReceiveBuffer[SPI_MLINE_RXTX_BUFFER_SIZE];

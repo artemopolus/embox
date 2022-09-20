@@ -6,7 +6,6 @@
 #include "exlnk_setHeader.h"
 #include "exlnk_getHeader.h"
 
-#include "tim/tim.h"
 
 #include "spi/spi_mline_sec.h"
 

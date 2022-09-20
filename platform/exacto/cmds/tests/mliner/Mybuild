@@ -64,3 +64,21 @@ module sec_module_xmpl{
 
 	depends exacto.tim.base
 }
+@AutoCmd
+@Cmd(name="test_mline_main_xmpl", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module main_module_xmpl{
+
+	source "main_module_xmpl.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+
+	depends exacto.mliner.mod_base
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+
+	depends exacto.cmds.tests.timbase
+}

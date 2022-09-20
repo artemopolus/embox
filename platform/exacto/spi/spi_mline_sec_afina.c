@@ -1,7 +1,6 @@
 #include "spi_mline_sec_impl.h"
 
 #include "gpio_config.h"
-#include "gpio/gpio_spi.h"
 
 int initBoardSpi(void)
 {
@@ -159,9 +158,25 @@ void resetBoardSpiRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
 
+
+    LL_DMA_SetDataLength(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX, transmit->dmabufferlen);
+    LL_DMA_SetDataLength    (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX, receiver->dmabufferlen); //устанавливаем сколько символов передачть
+
+    LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
+    LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
+
+}
+
+void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+{
+    LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
+    LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
+
     receiver->processData(receiver->dmabufferlen);
 	transmit->processData(transmit->dmabufferlen);
 
+    LL_DMA_SetDataLength(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX, transmit->dmabufferlen);
+    LL_DMA_SetDataLength    (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX, receiver->dmabufferlen); //устанавливаем сколько символов передачть
 
     LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
