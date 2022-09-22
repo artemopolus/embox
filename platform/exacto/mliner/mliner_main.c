@@ -1,4 +1,4 @@
-#include "mliner_sec.h"
+#include "mliner_main.h"
 
 #include "commander/exacto_buffer.h"
 #include "commander/exacto_services.h"
@@ -20,16 +20,23 @@ static uint8_t NeedToSend = 0;
 
 #define MLINER_SEC_PACKCNT_MAX 10
 
-typedef struct mliner_sec_out_dev
+#define MLINER_SEC_ADRCNT_MAX 2
+
+typedef struct mliner_pack_buffer
 {
-	exlnk_set_header_str_t buffer;
-	uint32_t counter;
-	uint8_t dma[MLINER_SEC_MSG_SIZE];
-	ExactoBufferUint8Type store;
+	exlnk_set_header_str_t header;
 	mliner_cmd_info_t uplpacks[MLINER_SEC_PACKCNT_MAX];
 	uint8_t uplpacks_cnt;
 	mliner_cmd_info_t outpacks[MLINER_SEC_PACKCNT_MAX];
 	uint8_t outpacks_cnt;
+}mliner_pack_buffer_t;
+
+typedef struct mliner_sec_out_dev
+{
+	uint32_t counter;
+	uint8_t dma[MLINER_SEC_MSG_SIZE];
+	ExactoBufferUint8Type store;
+	mliner_pack_buffer_t buffer[MLINER_SEC_ADRCNT_MAX];
 }mliner_sec_out_dev_t;
 
 
@@ -52,6 +59,8 @@ typedef struct mliner_sec_in_dev
 }mliner_sec_in_dev_t;
 
 
+static uint8_t Addresses[] = {7,16};
+
 static mliner_sec_out_dev_t Transmit ={0};
 static mliner_sec_in_dev_t Receive = {0};
 static uint8_t TmpBuffer[100] = {0};
@@ -70,7 +79,7 @@ void exmliner_Init(uint16_t address)
 	exlnk_initHeader(&Transmit.buffer, Transmit.dma);
 	exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
 }
-void exmliner_Upload(void * data, size_t len, uint8_t id)
+void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 {
 	if (id == EXLNK_DATA_ID_CMD)
 	{
@@ -89,7 +98,7 @@ void exmliner_Upload(void * data, size_t len, uint8_t id)
 		return;
 	exlnk_uploadHeader(&Transmit.buffer, TmpBuffer, len);
 }
-void exmliner_Update()
+void exmliner_Update(uint16_t adr)
 {
 	if(getReceivedDataSpiDevSec(Receive.dma, MLINER_SEC_MSG_SIZE))
 	{
