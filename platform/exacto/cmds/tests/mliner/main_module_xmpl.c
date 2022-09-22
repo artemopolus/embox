@@ -64,7 +64,8 @@ static int run_Tim_Lthread(struct  lthread * self)
 		if(! (TIM_Counter % 200))
 			NeedToPrint = 1;
 	}
-	EnableUpdate = 1;
+	if(! (TIM_Counter % 200))
+		EnableUpdate = 1;
 	return 0;
 }
 static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
@@ -118,8 +119,10 @@ static void prepareTransmit(uint8_t value)
     if(value == 7)
     {
         exlnk_setCmd(&out, 65, 112);
-        exlnk_uploadCmdHeader(trg, &out);
-    }
+        // exlnk_uploadCmdHeader(trg, &out);
+    	exlnk_CmdToArray(&out, TmpBuffer, 100);
+        exlnk_uploadHeader(trg, TmpBuffer, sizeof(exlnk_cmd_str_t));
+	}
     else
     {
         exlnk_setCmd(&out, 55, 86);
@@ -133,6 +136,7 @@ static void prepareTransmit(uint8_t value)
 
     
     ECTM_SendData_Counter++;
+
 
 }
 
@@ -201,15 +205,21 @@ int main(int argc, char *argv[])
 	exmliner_Init(0);
    
 	
-	uint8_t i = 0;
+    ECTM_SendData_Counter = 0;
+    for (int i = 0; i < ECTM_SEC_COUNT; i++)
+    {
+        exlnk_initHeader(&SendBuffer[i], &ECTM_TransmitBuffer[i/2*EXACTO_BUFFER_UINT8_SZ]);
+        exlnk_fillHeader(&SendBuffer[i], Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, ECTM_SendData_Counter, 0);
+    }
 
+	uint8_t index = 0;
 	while (1)
 	{
 		while(!EnableUpdate);
 
-		sending(AddressSendOrder[i++]);
-		if(i >= AddressCount)
-			i = 0;
+		sending(AddressSendOrder[index++]);
+		if(index >= AddressCount)
+			index = 0;
 		
 		exmliner_Update();
 		if(NeedToPrint)

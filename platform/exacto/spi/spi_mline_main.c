@@ -124,6 +124,11 @@ uint8_t repeatTransmitSpiDevSec()
 }
 uint8_t transmitSpiDevSec()
 {
+	if(SpiIsEnabled == 0)
+	{
+		initSpiDevSec();
+		enableSpiDevSec();
+	}
 
     if(TransmitSpiDev.isready )
     {
