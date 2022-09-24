@@ -55,9 +55,9 @@ module mod_sec
 }
 module mod_base
 {
-	source "mliner_base.c"
+	source "mliner_main.c"
 	@IncludeExport(path = "mliner")
-	source "mliner_sec.h"
+	source "mliner_main.h"
 	depends exacto.spi.mline
 
 	depends exacto.exactolink.exlnk_set_header

@@ -24,17 +24,18 @@ static uint8_t NeedToSend = 0;
 
 typedef struct mliner_pack_buffer
 {
+	uint16_t address;
 	exlnk_set_header_str_t header;
 	mliner_cmd_info_t uplpacks[MLINER_SEC_PACKCNT_MAX];
 	uint8_t uplpacks_cnt;
 	mliner_cmd_info_t outpacks[MLINER_SEC_PACKCNT_MAX];
 	uint8_t outpacks_cnt;
+	uint32_t counter;
+	uint8_t dma[MLINER_SEC_MSG_SIZE];
 }mliner_pack_buffer_t;
 
 typedef struct mliner_sec_out_dev
 {
-	uint32_t counter;
-	uint8_t dma[MLINER_SEC_MSG_SIZE];
 	ExactoBufferUint8Type store;
 	mliner_pack_buffer_t buffer[MLINER_SEC_ADRCNT_MAX];
 }mliner_sec_out_dev_t;
@@ -59,7 +60,7 @@ typedef struct mliner_sec_in_dev
 }mliner_sec_in_dev_t;
 
 
-static uint8_t Addresses[] = {7,16};
+static uint16_t Addresses[] = {7,16};
 
 static mliner_sec_out_dev_t Transmit ={0};
 static mliner_sec_in_dev_t Receive = {0};
@@ -71,41 +72,59 @@ void exmliner_Init(uint16_t address)
 	setini_exbu8(&Transmit.store);
 	setRxBuffSpiDevSec(&Receive.store);
 	setTxBuffSpiDevSec(&Transmit.store);
-	Transmit.counter = 0;
 	Receive.counter = 0;
 	NeedToSend = 0;
 
+	for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+	{
+		Transmit.buffer[i].counter = 0;
+		Transmit.buffer[i].address = Addresses[i];
+		exlnk_initHeader(&Transmit.buffer[i].header, Transmit.buffer[i].dma);
+		exlnk_fillHeader(&Transmit.buffer[i].header, Addresses[i], EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.buffer[i].counter, 0);
+	}
 
-	exlnk_initHeader(&Transmit.buffer, Transmit.dma);
-	exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
 }
 void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 {
+	mliner_pack_buffer_t * trg = NULL;
+	for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+	{
+		if(adr == Transmit.buffer[i].address)
+			trg = &Transmit.buffer[i];
+	}
+	if(trg==NULL)
+		return;
 	if (id == EXLNK_DATA_ID_CMD)
 	{
 		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
 		exlnk_CmdToArray(cmd, TmpBuffer, 100);
-		if(Transmit.uplpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
+		if(trg->uplpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
 		{
-			Transmit.uplpacks[Transmit.uplpacks_cnt].id = cmd->id;
-			Transmit.uplpacks[Transmit.uplpacks_cnt].mnum = cmd->mnum;
-			Transmit.uplpacks[Transmit.uplpacks_cnt++].ack = 0;
+			trg->uplpacks[trg->uplpacks_cnt].id = cmd->id;
+			trg->uplpacks[trg->uplpacks_cnt].mnum = cmd->mnum;
+			trg->uplpacks[trg->uplpacks_cnt++].ack = 0;
 		}
 	}
 	else if (id == EXLNK_DATA_ID_CMDACK)
 		exlnk_CmdAckToArray((exlnk_cmdack_str_t*)data, TmpBuffer, 100);
 	else
 		return;
-	exlnk_uploadHeader(&Transmit.buffer, TmpBuffer, len);
+	exlnk_uploadHeader(&trg->header, TmpBuffer, len);
 }
 void exmliner_Update(uint16_t adr)
 {
+	mliner_pack_buffer_t * trg = NULL;
 	if(getReceivedDataSpiDevSec(Receive.dma, MLINER_SEC_MSG_SIZE))
 	{
 		memset(&Receive.buffer, 0, sizeof(Receive.buffer));
 		if(exlnk_getHeader(Receive.dma, MLINER_SEC_MSG_SIZE, &Receive.buffer))
 		{
 			Receive.counter = 0;
+			for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+			{
+				if(adr == Transmit.buffer[i].address)
+					trg = &Transmit.buffer[i];
+			}
 		}
 		else
 		{
@@ -123,31 +142,27 @@ void exmliner_Update(uint16_t adr)
 		{
 			Receive.buffer.datapt += sizeof( exlnk_cmd_str_t);
 			//process
-			if(Receive.buffer.adr == MLINER_SEC_MODULE_ADDRESS)
+			if(trg != NULL)
 			{
-				if(Receive.cmdaction_on)
-					Receive.cmdaction(&in);
 				exlnk_cmdack_str_t ack1;
 				exlnk_setCmdAck(&ack1, in.id, in.mnum, in.reg);
-				exmliner_Upload(&ack1, sizeof(exlnk_cmdack_str_t), EXLNK_DATA_ID_CMDACK);
-				NeedToSend = 1;
+				exmliner_Upload(&ack1, sizeof(exlnk_cmdack_str_t), EXLNK_DATA_ID_CMDACK, trg->address);
+				if(Receive.cmdaction_on)
+					Receive.cmdaction(&in);
 			}
 		}
 		else if(exlnk_getCmdAck(&ack, &Receive.buffer.data[Receive.buffer.datapt], Receive.buffer.datalen))
 		{
 			Receive.buffer.datapt += sizeof( exlnk_cmdack_str_t);
-			if(Receive.buffer.adr == MLINER_SEC_MODULE_ADDRESS)
+			if(trg != NULL)
 			{
 				if(Receive.cmdackaction_on)
 					Receive.cmdackaction(&ack);
-
-
-				for(int i = 0; i < Transmit.outpacks_cnt; i++)
+				for(int i = 0; i < trg->outpacks_cnt; i++)
 				{
-					if(Transmit.outpacks[i].mnum == ack.mnum)
-						Transmit.outpacks[i].ack = 1;
+					if(trg->outpacks[i].mnum == ack.mnum)
+						trg->outpacks[i].ack = 1;
 				}
-
 			}
 		}
 		else
@@ -155,19 +170,15 @@ void exmliner_Update(uint16_t adr)
 		len = exlnk_isEmptyGetHeader(&Receive.buffer);
 	}
 	//switch
-#ifdef MLINER_MAIN
-	if(1)
-#elif
-	if(NeedToSend)
-#endif
+	if(trg != NULL)
 	{
 		uint8_t to_repeat = 1;
 
-		if(Transmit.outpacks_cnt)
+		if(trg->outpacks_cnt)
 		{
-			for(int i = 0; i < Transmit.outpacks_cnt; i++)
+			for(int i = 0; i < trg->outpacks_cnt; i++)
 			{
-				if(Transmit.outpacks[i].ack)
+				if(trg->outpacks[i].ack)
 				{
 					to_repeat = 0;
 					break;
@@ -181,58 +192,38 @@ void exmliner_Update(uint16_t adr)
 		if(!to_repeat)//not send
 		{
 			//transmit
-			exlnk_closeHeader(&Transmit.buffer);
-			for (int i = 0; i < Transmit.uplpacks_cnt; i++)
+			exlnk_closeHeader(&trg->header);
+			for (int i = 0; i < trg->uplpacks_cnt; i++)
 			{
-				Transmit.outpacks[i] = Transmit.uplpacks[i];
-				Transmit.outpacks_cnt++;
+				trg->outpacks[i] = trg->uplpacks[i];
+				trg->outpacks_cnt++;
 			}
-			Transmit.uplpacks_cnt = 0;
+			trg->uplpacks_cnt = 0;
 			
 
-			setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
+			// setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
+			setTransmitDataSpiDevSec(trg->header.data, trg->header.pt_data);
 
 			if(!transmitSpiDevSec()&& Receive.erroraction_on)
 				Receive.erroraction(1);
 			NeedToSend = 0;
-			Transmit.counter++;
-			exlnk_clearSetHeader(&Transmit.buffer);
-			//new
-			exlnk_initHeader(&Transmit.buffer, Transmit.dma);
-			exlnk_fillHeader(&Transmit.buffer, MLINER_SEC_MODULE_ADDRESS, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, Transmit.counter, 0);
+			trg->counter++;
 		}
 		else
 		{
 			if(!repeatTransmitSpiDevSec()&&Receive.erroraction_on)
 				Receive.erroraction(2);
 			NeedToSend = 0;
-			for(int i = 0; i < Transmit.outpacks_cnt; i++)
-				Transmit.outpacks[i].ack = 0;
+			for(int i = 0; i < trg->outpacks_cnt; i++)
+				trg->outpacks[i].ack = 0;
 			if(Receive.repeataction_on)
 			{
-				for(int i = 0; i < Transmit.outpacks_cnt; i++)
-					Receive.repeataction(Transmit.outpacks[i].id, Transmit.outpacks[i].mnum);
+				for(int i = 0; i < trg->outpacks_cnt; i++)
+					Receive.repeataction(trg->outpacks[i].id, trg->outpacks[i].mnum);
 			}
 		}
 	}
-	else
-	{
-		//receive
-		receiveSpiDevSec();
-	}
 
-	//check
-#ifndef MLINER_MAIN
-	if(Receive.counter >= 999)
-	{
-		if(Receive.onreset_on)
-			Receive.onreset();
-		ipl_disable();
-		Receive.counter = 0;
-		ipl_enable();
-		disableSpiDevSec();
-	}
-#endif
 }
 void exmliner_setCmdAction(int(*cmdaction)(exlnk_cmd_str_t * out))
 {
