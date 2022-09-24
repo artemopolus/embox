@@ -122,7 +122,7 @@ void exmliner_Update(uint16_t adr)
 			Receive.counter = 0;
 			for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
 			{
-				if(adr == Transmit.buffer[i].address)
+				if(Receive.buffer.adr == Transmit.buffer[i].address)
 					trg = &Transmit.buffer[i];
 			}
 		}
