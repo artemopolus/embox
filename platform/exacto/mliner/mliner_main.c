@@ -170,6 +170,12 @@ void exmliner_Update(uint16_t adr)
 		len = exlnk_isEmptyGetHeader(&Receive.buffer);
 	}
 	//switch
+	trg = NULL;
+	for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+	{
+		if(Transmit.buffer[i].address == adr)
+			trg = &Transmit.buffer[i];
+	}
 	if(trg != NULL)
 	{
 		uint8_t to_repeat = 1;
