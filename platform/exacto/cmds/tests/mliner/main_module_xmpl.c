@@ -121,15 +121,17 @@ int main(int argc, char *argv[])
 	{
 		while(!EnableUpdate);
 
-		sending(AddressSendOrder[index++]);
-		exmliner_Update(AddressSendOrder[index++]);
+		uint16_t trg_adr = AddressSendOrder[index++];
+
+		sending(trg_adr);
+		exmliner_Update(trg_adr);
 
 		if(index >= AddressCount)
 			index = 0;
 		
 		if(NeedToPrint)
 		{
-			printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
+			printf("tim[%8d]send[%5d][%3d]\n", TIM_Counter,SendCounter, trg_adr);
 			NeedToPrint = 0;
 		}
 		EnableUpdate = 0;

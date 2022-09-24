@@ -180,18 +180,18 @@ void exmliner_Update(uint16_t adr)
 	{
 		uint8_t to_repeat = 1;
 
-		if(trg->outpacks_cnt)
-		{
-			for(int i = 0; i < trg->outpacks_cnt; i++)
-			{
-				if(trg->outpacks[i].ack)
-				{
-					to_repeat = 0;
-					break;
-				}
-			}
-		}
-		else
+		// if(trg->outpacks_cnt)
+		// {
+		// 	for(int i = 0; i < trg->outpacks_cnt; i++)
+		// 	{
+		// 		if(trg->outpacks[i].ack)
+		// 		{
+		// 			to_repeat = 0;
+		// 			break;
+		// 		}
+		// 	}
+		// }
+		// else
 			to_repeat = 0;
 		
 
