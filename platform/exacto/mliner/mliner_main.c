@@ -66,12 +66,21 @@ static mliner_sec_out_dev_t Transmit ={0};
 static mliner_sec_in_dev_t Receive = {0};
 static uint8_t TmpBuffer[100] = {0};
 
+int exmliner_ReceiveProcess(uint8_t * data, uint16_t datalen)
+{
+	if(exlnk_getHeader(data, datalen, &Receive.buffer))
+	{
+
+	}
+	return 0;
+}
 void exmliner_Init(uint16_t address)
 {
 	setini_exbu8(&Receive.store);
 	setini_exbu8(&Transmit.store);
 	setRxBuffSpiDevSec(&Receive.store);
 	setTxBuffSpiDevSec(&Transmit.store);
+	setReceiverSpiDevSec(exmliner_ReceiveProcess);
 	Receive.counter = 0;
 	NeedToSend = 0;
 

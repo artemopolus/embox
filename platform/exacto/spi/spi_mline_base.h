@@ -13,6 +13,8 @@ typedef struct spi_mline_dev
 	uint8_t * 	dmabufferdata;
 	ExactoBufferUint8Type * storage;
 	int ( *processData )(uint32_t len);
+	uint8_t collect_on;
+	int ( *collect )(uint8_t * data, uint16_t datalen);
 }spi_mline_dev_t;
 
 #endif

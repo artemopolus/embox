@@ -155,3 +155,8 @@ uint16_t setTransmitDataSpiDevSec(uint8_t * src, uint16_t srclen)
 	}
 	return i;
 }
+void setReceiverSpiDevSec(int(*receiveProcess)(uint8_t * data, uint16_t datalen))
+{
+	ReceiveSpiDev.collect = receiveProcess;
+	ReceiveSpiDev.collect_on = 1;
+}

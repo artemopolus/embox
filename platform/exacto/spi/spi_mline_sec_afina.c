@@ -172,7 +172,8 @@ void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * trans
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
 
-    receiver->processData(receiver->dmabufferlen);
+    if(receiver->collect_on)
+        receiver->collect(receiver->dmabufferdata, receiver->dmabufferlen);
 	transmit->processData(transmit->dmabufferlen);
 
     LL_DMA_SetDataLength(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX, transmit->dmabufferlen);
