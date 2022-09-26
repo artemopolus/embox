@@ -70,13 +70,17 @@ static uint8_t TmpBuffer[100] = {0};
 int exmliner_ReceiveProcess(uint8_t * data, uint16_t datalen)
 {
 	memset(&Receive.buffer, 0, sizeof(Receive.buffer));
-	if(exlnk_getHeader(data, datalen, &Receive.buffer))
+	for(int k =0; k < 10; k++)
 	{
-		for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+		if(exlnk_getHeader(&data[k], datalen - k, &Receive.buffer))
 		{
-			if(Receive.buffer.adr == Transmit.buffer[i].address)
-				Transmit.buffer[i].inpack = Receive.buffer;
-		}	
+			for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+			{
+				if(Receive.buffer.adr == Transmit.buffer[i].address)
+					Transmit.buffer[i].inpack = Receive.buffer;
+			}
+			break;	
+		}
 	}
 	return 0;
 }
