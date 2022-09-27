@@ -103,6 +103,8 @@ int exmliner_TransmitProcess(uint8_t * trg, uint16_t trglen)
 	{
 		trg[i] = TargetPack->header.data[i];
 	}
+	exlnk_initHeader(&TargetPack->header, TargetPack->dma);
+	exlnk_fillHeader(&TargetPack->header, TargetPack->address, EXLNK_MSG_SIMPLE, EXLNK_PACK_SIMPLE, 0, TargetPack->counter++, 0);
 	return 0;
 }
 
@@ -140,7 +142,8 @@ void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 	if (id == EXLNK_DATA_ID_CMD)
 	{
 		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
-		exlnk_CmdToArray(cmd, TmpBuffer, 100);
+		// exlnk_CmdToArray(cmd, TmpBuffer, 100);
+		exlnk_uploadCmdHeader(&trg->header, cmd);
 		if(trg->uplpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
 		{
 			trg->uplpacks[trg->uplpacks_cnt].id = cmd->id;
@@ -149,10 +152,12 @@ void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 		}
 	}
 	else if (id == EXLNK_DATA_ID_CMDACK)
+	{
 		exlnk_CmdAckToArray((exlnk_cmdack_str_t*)data, TmpBuffer, 100);
+		exlnk_uploadHeader(&trg->header, TmpBuffer, len);
+	}
 	else
 		return;
-	exlnk_uploadHeader(&trg->header, TmpBuffer, len);
 }
 void exmliner_Update(uint16_t adr)
 {
@@ -208,49 +213,13 @@ void exmliner_Update(uint16_t adr)
 	if(trg != NULL)
 	{
 		TargetPack = trg;
-		uint8_t to_repeat = 1;
-
-		// if(trg->outpacks_cnt)
-		// {
-		// 	for(int i = 0; i < trg->outpacks_cnt; i++)
-		// 	{
-		// 		if(trg->outpacks[i].ack)
-		// 		{
-		// 			to_repeat = 0;
-		// 			break;
-		// 		}
-		// 	}
-		// }
-		// else
-			to_repeat = 0;
-		
-
-		if(!to_repeat)//not send
-		{
 			//transmit
-			
 
-			// setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
-			// setTransmitDataSpiDevSec(trg->header.data, trg->header.pt_data);
+		if(!transmitSpiDevSec()&& Receive.erroraction_on)
+			Receive.erroraction(1);
+		NeedToSend = 0;
+		trg->counter++;
 
-			if(!transmitSpiDevSec()&& Receive.erroraction_on)
-				Receive.erroraction(1);
-			NeedToSend = 0;
-			trg->counter++;
-		}
-		else
-		{
-			if(!repeatTransmitSpiDevSec()&&Receive.erroraction_on)
-				Receive.erroraction(2);
-			NeedToSend = 0;
-			for(int i = 0; i < trg->outpacks_cnt; i++)
-				trg->outpacks[i].ack = 0;
-			if(Receive.repeataction_on)
-			{
-				for(int i = 0; i < trg->outpacks_cnt; i++)
-					Receive.repeataction(trg->outpacks[i].id, trg->outpacks[i].mnum);
-			}
-		}
 		TargetPack = NULL;
 	}
 

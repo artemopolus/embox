@@ -129,6 +129,8 @@ void receiveSpiDevSec()
 uint8_t repeatTransmitSpiDevSec()
 {
 	resetBoardSpiRxTx(&ReceiveSpiDev, &TransmitSpiDev);
+    TransmitSpiDev.isready = 0;
+    ReceiveSpiDev.isready = 0;	
 	return 1;
 }
 uint8_t transmitSpiDevSec()
