@@ -57,23 +57,32 @@ int downloadSpiDevSecData(uint32_t len)
 {
     if(!ReceiveSpiDev.isready)
         return 0;
-    pshsftPack_exbu8(ReceiveSpiDev.storage, ReceiveSpiDev.dmabufferdata, ReceiveSpiDev.dmabufferlen);
+   //  pshsftPack_exbu8(ReceiveSpiDev.storage, ReceiveSpiDev.dmabufferdata, ReceiveSpiDev.dmabufferlen);
 
-    for (int i = 0; i < ReceiveSpiDev.dmabufferlen; i++)
-    {
-        ReceiveSpiDev.dmabufferdata[i] = 0;
-    }
+	if(ReceiveSpiDev.collect_on)
+		ReceiveSpiDev.collect(ReceiveSpiDev.dmabufferdata, len);
+
+	for (int i = 0; i < ReceiveSpiDev.dmabufferlen; i++)
+	{
+		ReceiveSpiDev.dmabufferdata[i] = 0;
+	}
+	
 	return 1;
 }
 int uploadSpiDevSecData(uint32_t len)
 {
-	for(uint32_t i = 0; i < TransmitSpiDev.dmabufferlen; i++)
+	// for(uint32_t i = 0; i < TransmitSpiDev.dmabufferlen; i++)
+	// {
+	// 	if(!grbfst_exbu8(TransmitSpiDev.storage, &TransmitSpiDev.dmabufferdata[i]))
+	// 		break;
+	// }
+
+	if(TransmitSpiDev.collect_on)
 	{
-		if(!grbfst_exbu8(TransmitSpiDev.storage, &TransmitSpiDev.dmabufferdata[i]))
-			break;
+		TransmitSpiDev.collect(TransmitSpiDev.dmabufferdata, len);
 	}
 
-    ex_enableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
+   ex_enableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
 
 	return 0;
 }
@@ -159,4 +168,9 @@ void setReceiverSpiDevSec(int(*receiveProcess)(uint8_t * data, uint16_t datalen)
 {
 	ReceiveSpiDev.collect = receiveProcess;
 	ReceiveSpiDev.collect_on = 1;
+}
+void setTransmitSpiDevSec(int(*transmitProcess)(uint8_t * data, uint16_t datalen))
+{
+	TransmitSpiDev.collect = transmitProcess;
+	TransmitSpiDev.collect_on = 1;
 }

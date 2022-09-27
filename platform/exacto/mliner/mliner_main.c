@@ -67,6 +67,8 @@ static mliner_sec_out_dev_t Transmit ={0};
 static mliner_sec_in_dev_t Receive = {0};
 static uint8_t TmpBuffer[100] = {0};
 
+static mliner_pack_buffer_t * TargetPack = NULL;
+
 int exmliner_ReceiveProcess(uint8_t * data, uint16_t datalen)
 {
 	memset(&Receive.buffer, 0, sizeof(Receive.buffer));
@@ -84,6 +86,27 @@ int exmliner_ReceiveProcess(uint8_t * data, uint16_t datalen)
 	}
 	return 0;
 }
+int exmliner_TransmitProcess(uint8_t * trg, uint16_t trglen)
+{
+	if(TargetPack == NULL)
+		return 1;
+	
+	exlnk_closeHeader(&TargetPack->header);
+	for (int i = 0; i < TargetPack->uplpacks_cnt; i++)
+	{
+		TargetPack->outpacks[i] = TargetPack->uplpacks[i];
+		TargetPack->outpacks_cnt++;
+	}
+	TargetPack->uplpacks_cnt = 0;
+
+	for(int i = 0; i < trglen && i < TargetPack->header.pt_data; i++)
+	{
+		trg[i] = TargetPack->header.data[i];
+	}
+	return 0;
+}
+
+
 void exmliner_Init(uint16_t address)
 {
 	setini_exbu8(&Receive.store);
@@ -91,6 +114,7 @@ void exmliner_Init(uint16_t address)
 	setRxBuffSpiDevSec(&Receive.store);
 	setTxBuffSpiDevSec(&Transmit.store);
 	setReceiverSpiDevSec(exmliner_ReceiveProcess);
+	setTransmitSpiDevSec(exmliner_TransmitProcess);
 	Receive.counter = 0;
 	NeedToSend = 0;
 
@@ -133,23 +157,12 @@ void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 void exmliner_Update(uint16_t adr)
 {
 	mliner_pack_buffer_t * trg = NULL;
-	// if(getReceivedDataSpiDevSec(Receive.dma, MLINER_SEC_MSG_SIZE))
-	// {
-	// 	memset(&Receive.buffer, 0, sizeof(Receive.buffer));
-	// 	if(exlnk_getHeader(Receive.dma, MLINER_SEC_MSG_SIZE, &Receive.buffer))
-	// 	{
-	// 		Receive.counter = 0;
-			for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
-			{
-				if(adr == Transmit.buffer[i].address)
-					trg = &Transmit.buffer[i];
-			}
-	// 	}
-	// 	else
-	// 	{
-	// 		Receive.counter++;
-	// 	}
-	// }
+	for (int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+	{
+		if(adr == Transmit.buffer[i].address)
+			trg = &Transmit.buffer[i];
+	}
+
 	//process
 	exlnk_get_header_str_t * src = NULL;
 	src = &trg->inpack;
@@ -194,6 +207,7 @@ void exmliner_Update(uint16_t adr)
 
 	if(trg != NULL)
 	{
+		TargetPack = trg;
 		uint8_t to_repeat = 1;
 
 		// if(trg->outpacks_cnt)
@@ -214,17 +228,10 @@ void exmliner_Update(uint16_t adr)
 		if(!to_repeat)//not send
 		{
 			//transmit
-			exlnk_closeHeader(&trg->header);
-			for (int i = 0; i < trg->uplpacks_cnt; i++)
-			{
-				trg->outpacks[i] = trg->uplpacks[i];
-				trg->outpacks_cnt++;
-			}
-			trg->uplpacks_cnt = 0;
 			
 
 			// setTransmitDataSpiDevSec(Transmit.buffer.data, Transmit.buffer.pt_data);
-			setTransmitDataSpiDevSec(trg->header.data, trg->header.pt_data);
+			// setTransmitDataSpiDevSec(trg->header.data, trg->header.pt_data);
 
 			if(!transmitSpiDevSec()&& Receive.erroraction_on)
 				Receive.erroraction(1);
@@ -244,6 +251,7 @@ void exmliner_Update(uint16_t adr)
 					Receive.repeataction(trg->outpacks[i].id, trg->outpacks[i].mnum);
 			}
 		}
+		TargetPack = NULL;
 	}
 
 }

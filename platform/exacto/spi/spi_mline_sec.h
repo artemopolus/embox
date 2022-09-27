@@ -8,6 +8,7 @@ extern void setTxBuffSpiDevSec(ExactoBufferUint8Type * buffer);
 extern void setRxBuffSpiDevSec(ExactoBufferUint8Type * buffer);
 
 extern void setReceiverSpiDevSec(int(*receiveProcess)(uint8_t * data, uint16_t datalen));
+extern void setTransmitSpiDevSec(int(*transmitProcess)(uint8_t * data, uint16_t datalen));
 
 extern void receiveSpiDevSec();
 extern uint8_t repeatTransmitSpiDevSec();
