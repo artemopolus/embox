@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "exlnk_Cmd.h"
 
+#include "mliner/mliner.h"
 
 #define MLINER_SEC_MSG_SIZE EXACTO_BUFFER_UINT8_SZ
 
@@ -16,5 +17,7 @@ extern void exmliner_setCmdAckAction(int(*cmdackaction)(exlnk_cmdack_str_t * out
 extern void exmliner_setResetAction(int(*resetaction)());
 extern void exmliner_setRepeatAction(int(*repeataction)(uint8_t id, uint32_t mnum));
 extern void exmliner_setErrorAction(int(*erroraction)(int id));
+
+extern uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t packlen, uint16_t address);
 
 #endif //EXACTO_MLINER_MLINER_MAIN_H_

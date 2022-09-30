@@ -11,7 +11,6 @@
 
 #include <string.h>
 
-#include "mliner/mliner.h"
 
 static uint8_t NeedToSend = 0;
 
@@ -27,10 +26,8 @@ typedef struct mliner_pack_buffer
 	uint16_t address;
 	exlnk_set_header_str_t header;
 	exlnk_get_header_str_t inpack;
-	mliner_cmd_info_t uplpacks[MLINER_SEC_PACKCNT_MAX];
-	uint8_t uplpacks_cnt;
-	mliner_cmd_info_t outpacks[MLINER_SEC_PACKCNT_MAX];
-	uint8_t outpacks_cnt;
+	mliner_cmd_info_t sendpacks[MLINER_SEC_PACKCNT_MAX];
+	uint8_t sendpacks_cnt;
 	uint32_t counter;
 	uint8_t dma[MLINER_SEC_MSG_SIZE];
 }mliner_pack_buffer_t;
@@ -69,6 +66,18 @@ static uint8_t TmpBuffer[100] = {0};
 
 static mliner_pack_buffer_t * TargetPack = NULL;
 
+uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t packlen, uint16_t address)
+{
+	for(int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
+	{
+		if(Transmit.buffer[i].address == address)
+		{
+			pack = Transmit.buffer[i].sendpacks;
+			packlen = Transmit.buffer[i].sendpacks_cnt;
+		}
+	}
+	return 0;
+}
 int exmliner_ReceiveProcess(uint8_t * data, uint16_t datalen)
 {
 	memset(&Receive.buffer, 0, sizeof(Receive.buffer));
@@ -92,12 +101,6 @@ int exmliner_TransmitProcess(uint8_t * trg, uint16_t trglen)
 		return 1;
 	
 	exlnk_closeHeader(&TargetPack->header);
-	for (int i = 0; i < TargetPack->uplpacks_cnt; i++)
-	{
-		TargetPack->outpacks[i] = TargetPack->uplpacks[i];
-		TargetPack->outpacks_cnt++;
-	}
-	TargetPack->uplpacks_cnt = 0;
 
 	for(int i = 0; i < trglen && i < TargetPack->header.pt_data; i++)
 	{
@@ -144,11 +147,11 @@ void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
 		// exlnk_CmdToArray(cmd, TmpBuffer, 100);
 		exlnk_uploadCmdHeader(&trg->header, cmd);
-		if(trg->uplpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
+		if(trg->sendpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
 		{
-			trg->uplpacks[trg->uplpacks_cnt].id = cmd->id;
-			trg->uplpacks[trg->uplpacks_cnt].mnum = cmd->mnum;
-			trg->uplpacks[trg->uplpacks_cnt++].ack = 0;
+			trg->sendpacks[trg->sendpacks_cnt].id = cmd->id;
+			trg->sendpacks[trg->sendpacks_cnt].mnum = cmd->mnum;
+			trg->sendpacks[trg->sendpacks_cnt++].ack = 0;
 		}
 	}
 	else if (id == EXLNK_DATA_ID_CMDACK)
@@ -195,13 +198,13 @@ void exmliner_Update(uint16_t adr)
 			src->datapt += sizeof( exlnk_cmdack_str_t);
 			if(trg != NULL)
 			{
+				for(int i = 0; i < trg->sendpacks_cnt; i++)
+				{
+					if(trg->sendpacks[i].mnum == ack.mnum)
+						trg->sendpacks[i].ack = 1;
+				}
 				if(Receive.cmdackaction_on)
 					Receive.cmdackaction(&ack);
-				for(int i = 0; i < trg->outpacks_cnt; i++)
-				{
-					if(trg->outpacks[i].mnum == ack.mnum)
-						trg->outpacks[i].ack = 1;
-				}
 			}
 		}
 		else
