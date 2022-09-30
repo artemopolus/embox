@@ -66,14 +66,14 @@ static uint8_t TmpBuffer[100] = {0};
 
 static mliner_pack_buffer_t * TargetPack = NULL;
 
-uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t packlen, uint16_t address)
+uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t * packlen, uint16_t address)
 {
 	for(int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
 	{
 		if(Transmit.buffer[i].address == address)
 		{
-			pack = Transmit.buffer[i].sendpacks;
-			packlen = Transmit.buffer[i].sendpacks_cnt;
+			pack = &Transmit.buffer[i].sendpacks[0];
+			packlen = &Transmit.buffer[i].sendpacks_cnt;
 		}
 	}
 	return 0;

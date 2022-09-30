@@ -22,6 +22,7 @@ static uint8_t AddressSendOrder[] = {7, 16, 7, 16, 7, 16};
 static uint8_t AddressCount = 6;
 
 
+static uint8_t index = 0;
 
 
 
@@ -62,6 +63,16 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
 	printf("inAck:[mnum: %5d reg: %5d]", cmd->mnum, cmd->reg);
+	mliner_cmd_info_t * trg = NULL;
+	uint8_t *trgcnt = NULL;
+	exmliner_getSendPacks(trg, trgcnt, AddressSendOrder[index]);
+	for(int i = 0;trg && trgcnt && i < *trgcnt; i++)
+	{
+		if(trg[i].mnum == cmd->mnum)
+		{
+
+		}
+	}
 	return 0;
 }
 static int onResetEventHandler()
@@ -116,7 +127,6 @@ int main(int argc, char *argv[])
 	exmliner_Init(0);
    
 	
- 	uint8_t index = 0;
 	while (1)
 	{
 		while(!EnableUpdate);

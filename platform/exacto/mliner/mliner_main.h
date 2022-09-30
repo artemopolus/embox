@@ -18,6 +18,6 @@ extern void exmliner_setResetAction(int(*resetaction)());
 extern void exmliner_setRepeatAction(int(*repeataction)(uint8_t id, uint32_t mnum));
 extern void exmliner_setErrorAction(int(*erroraction)(int id));
 
-extern uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t packlen, uint16_t address);
+extern uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t * packlen, uint16_t address);
 
 #endif //EXACTO_MLINER_MLINER_MAIN_H_
