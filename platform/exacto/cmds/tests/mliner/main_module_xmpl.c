@@ -9,11 +9,12 @@
 #include "exlnk_Cmd.h"
 #include "mliner/mliner.h"
 
+#include "ex_utils.h"
 
 #define MLINER_MAIN_SENDER_BUFFER_PACKSCNT_MAX 10
 #define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
 #define ECTM_SEC_COUNT 2
-
+#define TIM_1SEC_DIVEDER 200
 
 
 // uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
@@ -31,8 +32,24 @@ static uint16_t TIM_Counter = 0;
 static uint16_t SendCounter = 0;
 
 static int PointToTim;
-static uint8_t EnableUpdate = 0;
-static uint8_t NeedToPrint = 0;
+static uint8_t 
+					EnableUpdate = 0,
+					NeedToPrint = 0,
+					ReceiveDone = 0
+					;
+
+static exutils_data_t TagLoadData;
+
+
+
+static uint32_t 	
+						LoadInMlineDuration = 0,
+						LoadInMlineDurationAVR = 0,
+						UpdateMlineDuration = 0,
+						UpdateMlineDurationAVR = 0,
+						TransmitMlineDuration = 0,
+						TransmitMlineDurationAVR = 0
+						;
 
 
 static int run_Tim_Lthread(struct  lthread * self)
@@ -45,10 +62,10 @@ static int run_Tim_Lthread(struct  lthread * self)
 
 	if(NeedToPrint == 0)
 	{
-		if(! (TIM_Counter % 200))
+		if(! (TIM_Counter % TIM_1SEC_DIVEDER))
 			NeedToPrint = 1;
 	}
-	if(! (TIM_Counter % 200))
+	if(! (TIM_Counter % TIM_1SEC_DIVEDER))
 		EnableUpdate = 1;
 	return 0;
 }
@@ -101,6 +118,7 @@ static int onErrorEventHandler(int id)
 
 static void sending(uint8_t value)
 {
+	exutils_updt(&TagLoadData);
 	exlnk_cmd_str_t cmd;
    if(value == 7)
 	{
@@ -112,7 +130,11 @@ static void sending(uint8_t value)
 
 	}
 	exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, value);
+	exutils_updt(&TagLoadData);
+	LoadInMlineDuration = TagLoadData.result;
+	printf("TagUpl[%8d]", LoadInMlineDuration);
 	printf("outCmd[%5d %3d %3d]", cmd.mnum, cmd.reg, cmd.value);
+	exutils_updt(&TagLoadData);
 }
 int main(int argc, char *argv[]) 
 {
@@ -121,6 +143,10 @@ int main(int argc, char *argv[])
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
 	exmliner_setRepeatAction(onRepeatEventHandler);
 	exmliner_setErrorAction(onErrorEventHandler);
+
+	ex_dwt_cyccnt_reset();
+	exutils_init(&TagLoadData);
+
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
@@ -135,6 +161,19 @@ int main(int argc, char *argv[])
 
 		sending(trg_adr);
 		exmliner_Update(trg_adr);
+		exutils_updt(&TagLoadData);
+		UpdateMlineDuration = TagLoadData.result;
+		while (!ReceiveDone)
+		{
+			if(exmliner_getRxIRQ())
+				ReceiveDone = 1;
+		}
+		exutils_updt(&TagLoadData);
+		TransmitMlineDuration = TagLoadData.result;
+
+		LoadInMlineDurationAVR += LoadInMlineDuration;
+		UpdateMlineDurationAVR += UpdateMlineDuration;
+		TransmitMlineDurationAVR += TransmitMlineDuration;
 
 		if(index >= AddressCount)
 			index = 0;
@@ -142,9 +181,20 @@ int main(int argc, char *argv[])
 		if(NeedToPrint)
 		{
 			printf("tim[%8d]send[%5d][%3d]\n", TIM_Counter,SendCounter, trg_adr);
+			LoadInMlineDurationAVR = LoadInMlineDurationAVR / TIM_1SEC_DIVEDER;
+			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVEDER;
+			TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVEDER;
+			printf("Load | Update | Transmit \n %8d %8d %8d", LoadInMlineDurationAVR, UpdateMlineDurationAVR, TransmitMlineDurationAVR);
+
+			LoadInMlineDurationAVR = 0;
+			UpdateMlineDurationAVR = 0;
+			TransmitMlineDurationAVR = 0;
 			NeedToPrint = 0;
 		}
 		EnableUpdate = 0;
+		ReceiveDone = 0;
+
+		
 		// sleep(1);
 	}
 	

@@ -19,4 +19,7 @@ extern void disableSpiDevSec();
 extern uint16_t getReceivedDataSpiDevSec(uint8_t * trg, uint16_t trglen);
 extern uint16_t setTransmitDataSpiDevSec(uint8_t * src, uint16_t srclen);
 
+extern uint8_t getTransmitResultSpiDevSec();
+extern uint8_t getReceiveResultSpiDevSec();
+
 #endif

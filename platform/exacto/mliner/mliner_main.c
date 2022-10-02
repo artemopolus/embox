@@ -253,3 +253,11 @@ void exmliner_setErrorAction(int(*erroraction)(int id))
 	Receive.erroraction = erroraction;
 	Receive.erroraction_on = 1;
 }
+uint8_t exmliner_getRxIRQ()
+{
+	return getReceiveResultSpiDevSec();
+}
+uint8_t exmliner_getTxIRQ()
+{
+	return getTransmitResultSpiDevSec();
+}

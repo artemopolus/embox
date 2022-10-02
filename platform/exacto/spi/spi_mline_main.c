@@ -176,3 +176,12 @@ void setTransmitSpiDevSec(int(*transmitProcess)(uint8_t * data, uint16_t datalen
 	TransmitSpiDev.collect = transmitProcess;
 	TransmitSpiDev.collect_on = 1;
 }
+uint8_t getTransmitResultSpiDevSec()
+{
+	return TransmitSpiDev.isready;
+}
+uint8_t getReceiveResultSpiDevSec()
+{
+	return ReceiveSpiDev.isready;
+}
+

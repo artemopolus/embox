@@ -81,4 +81,6 @@ module main_module_xmpl{
 	depends exacto.exactolink.exlnk_cmd
 
 	depends exacto.cmds.tests.timbase
+
+	depends exacto.cmds.perf_tests.ex_utils
 }

@@ -27,3 +27,26 @@ uint32_t ex_dwt_cyccnt_stop(void) {
 
 	return REG32_LOAD(DWT_CYCCNT);
 }
+
+void exutils_init(exutils_data_t * trg)
+{
+	trg->is_enabled = 0;
+	trg->result = 0;
+	trg->start = 0;
+	trg->stop = 0;
+}
+void exutils_updt(exutils_data_t * trg)
+{
+	if(trg->is_enabled)
+	{
+		trg->start = ex_dwt_cyccnt_start();
+		trg->is_enabled = 1;
+	}
+	else
+	{
+		trg->stop = ex_dwt_cyccnt_stop();
+		trg->result = trg->stop - trg->start;
+		trg->start = ex_dwt_cyccnt_start();
+	}
+}
+
