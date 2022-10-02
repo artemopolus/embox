@@ -18,4 +18,8 @@ extern void exmliner_setResetAction(int(*resetaction)());
 extern void exmliner_setRepeatAction(int(*repeataction)(uint8_t id, uint32_t mnum));
 extern void exmliner_setErrorAction(int(*erroraction)(int id));
 
+extern uint8_t exmliner_getRxIRQ();
+extern uint8_t exmliner_getTxIRQ();
+
+
 #endif //EXACTO_MLINER_MLINER_SEC_H_

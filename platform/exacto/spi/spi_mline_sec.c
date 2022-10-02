@@ -176,3 +176,12 @@ uint16_t setTransmitDataSpiDevSec(uint8_t * src, uint16_t srclen)
 	}
 	return i;
 }
+uint8_t getTransmitResultSpiDevSec()
+{
+	return TransmitSpiDev.isready;
+}
+uint8_t getReceiveResultSpiDevSec()
+{
+	return ReceiveSpiDev.isready;
+}
+
