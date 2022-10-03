@@ -43,6 +43,8 @@ static uint8_t
 #ifdef MEASURE_TIME
 static exutils_data_t TagTimer;
 static uint32_t 	
+						TimerMlineDuration = 0,
+						TimerMlineDurationAVR = 0,
 						LoadInMlineDuration = 0,
 						LoadInMlineDurationAVR = 0,
 						UpdateMlineDuration = 0,
@@ -87,7 +89,12 @@ static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 	{
 		if(trg[i].mnum == cmd->mnum)
 		{
-
+			printf("Done");
+			SendCounter++;
+		}
+		else
+		{
+			printf("Unkn");
 		}
 	}
 	return 0;
@@ -132,7 +139,7 @@ static void sending(uint8_t value)
 	exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, value);
 	exutils_updt(&TagTimer);
 	LoadInMlineDuration = TagTimer.result;
-	printf("TagUpl[%8d]", LoadInMlineDuration);
+	// printf("TagUpl[%8d]", LoadInMlineDuration);
 	printf("outCmd[%5d %3d %3d]", cmd.mnum, cmd.reg, cmd.value);
 	exutils_updt(&TagTimer);
 }
@@ -157,6 +164,8 @@ int main(int argc, char *argv[])
 	{
 		while(!EnableUpdate);
 
+		exutils_updt(&TagTimer);
+		TimerMlineDuration = TagTimer.result;
 		uint16_t trg_adr = AddressSendOrder[index++];
 
 		sending(trg_adr);
@@ -174,26 +183,30 @@ int main(int argc, char *argv[])
 		LoadInMlineDurationAVR += LoadInMlineDuration;
 		UpdateMlineDurationAVR += UpdateMlineDuration;
 		TransmitMlineDurationAVR += TransmitMlineDuration;
+		TimerMlineDurationAVR += TimerMlineDuration;
 
 		if(index >= AddressCount)
 			index = 0;
 		
 		if(NeedToPrint)
 		{
-			printf("tim[%8d]send[%5d][%3d]\n", TIM_Counter,SendCounter, trg_adr);
+			// printf("tim[%8d]send[%5d][%3d]\n", TIM_Counter,SendCounter, trg_adr);
 			LoadInMlineDurationAVR = LoadInMlineDurationAVR / TIM_1SEC_DIVIDER;
 			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
 			TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
-			printf("Load | Update | Transmit \n %8d %8d %8d\n", LoadInMlineDurationAVR, UpdateMlineDurationAVR, TransmitMlineDurationAVR);
+			TimerMlineDurationAVR = TimerMlineDurationAVR /TIM_1SEC_DIVIDER;
+			printf("\n      TIM|  Send| Adr|    Load |  Update | Transmit| Duration| \n %8d| %5d| %3d| %8d| %8d| %8d| %d\n",TIM_Counter, SendCounter, trg_adr, LoadInMlineDurationAVR, UpdateMlineDurationAVR, TransmitMlineDurationAVR, TimerMlineDurationAVR);
 
 			LoadInMlineDurationAVR = 0;
 			UpdateMlineDurationAVR = 0;
 			TransmitMlineDurationAVR = 0;
+			TimerMlineDurationAVR = 0;
 			NeedToPrint = 0;
 		}
 		EnableUpdate = 0;
 		ReceiveDone = 0;
 
+		exutils_updt(&TagTimer);
 		
 		// sleep(1);
 	}
