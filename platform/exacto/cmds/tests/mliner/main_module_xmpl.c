@@ -23,7 +23,7 @@ static uint8_t AddressSendOrder[] = {7, 16, 7, 16, 7, 16};
 static uint8_t AddressCount = 6;
 
 
-static uint8_t index = 0;
+static uint8_t AdrCntIndex = 0;
 
 
 
@@ -82,21 +82,12 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
 	printf("inAck:[mnum: %5d reg: %5d]", cmd->mnum, cmd->reg);
-	mliner_cmd_info_t * trg = NULL;
-	uint8_t *trgcnt = NULL;
-	exmliner_getSendPacks(trg, trgcnt, AddressSendOrder[index]);
-	for(int i = 0;trg && trgcnt && i < *trgcnt; i++)
+	if(exmliner_checkAck(cmd, AddressSendOrder[AdrCntIndex]))
 	{
-		if(trg[i].mnum == cmd->mnum)
-		{
-			printf("Done");
-			SendCounter++;
-		}
-		else
-		{
-			printf("Unkn");
-		}
+		printf("Done");
+		SendCounter++;
 	}
+
 	return 0;
 }
 static int onResetEventHandler()
@@ -166,7 +157,7 @@ int main(int argc, char *argv[])
 
 		exutils_updt(&TagTimer);
 		TimerMlineDuration = TagTimer.result;
-		uint16_t trg_adr = AddressSendOrder[index++];
+		uint16_t trg_adr = AddressSendOrder[AdrCntIndex++];
 
 		sending(trg_adr);
 		exmliner_Update(trg_adr);
@@ -185,8 +176,8 @@ int main(int argc, char *argv[])
 		TransmitMlineDurationAVR += TransmitMlineDuration;
 		TimerMlineDurationAVR += TimerMlineDuration;
 
-		if(index >= AddressCount)
-			index = 0;
+		if(AdrCntIndex >= AddressCount)
+			AdrCntIndex = 0;
 		
 		if(NeedToPrint)
 		{

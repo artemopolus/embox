@@ -65,15 +65,40 @@ static mliner_sec_in_dev_t Receive = {0};
 static uint8_t TmpBuffer[100] = {0};
 
 static mliner_pack_buffer_t * TargetPack = NULL;
-
-uint8_t exmliner_getSendPacks(mliner_cmd_info_t * pack, uint8_t * packlen, uint16_t address)
+void exmliner_initAckPack(mliner_pack_buffer_t * trg)
+{
+	for(int i = 0; i < trg->sendpacks_cnt; i++)
+	{
+		trg->sendpacks[i].ack = 1; //on init all sent
+	}
+}
+uint8_t exmliner_addAck(mliner_pack_buffer_t * trg, uint8_t id, uint32_t mnum)
+{
+	for(int i = 0; i < trg->sendpacks_cnt; i++)
+	{
+		if(trg->sendpacks[i].ack == 1)
+		{
+			trg->sendpacks[i].id = id;
+			trg->sendpacks[i].mnum = mnum;
+			trg->sendpacks[i].ack = 0;
+		}
+	}
+	return 1;
+}
+uint8_t exmliner_checkAck(exlnk_cmdack_str_t * ack, uint16_t address)
 {
 	for(int i = 0; i < MLINER_SEC_ADRCNT_MAX; i++)
 	{
 		if(Transmit.buffer[i].address == address)
 		{
-			pack = &Transmit.buffer[i].sendpacks[0];
-			packlen = &Transmit.buffer[i].sendpacks_cnt;
+			for (int j = 0; j < Transmit.buffer[i].sendpacks_cnt; i++)
+			{
+				if(Transmit.buffer[i].sendpacks[j].mnum == ack->mnum)
+				{
+					Transmit.buffer[i].sendpacks[j].ack = 1;
+					return 1;
+				}
+			}
 		}
 	}
 	return 0;
@@ -132,6 +157,7 @@ void exmliner_Init(uint16_t address)
 	}
 
 }
+
 void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 {
 	mliner_pack_buffer_t * trg = NULL;
@@ -147,12 +173,7 @@ void exmliner_Upload(void * data, size_t len, uint8_t id, uint16_t adr)
 		exlnk_cmd_str_t * cmd = (exlnk_cmd_str_t*)data;
 		// exlnk_CmdToArray(cmd, TmpBuffer, 100);
 		exlnk_uploadCmdHeader(&trg->header, cmd);
-		if(trg->sendpacks_cnt + 1 < MLINER_SEC_PACKCNT_MAX)
-		{
-			trg->sendpacks[trg->sendpacks_cnt].id = cmd->id;
-			trg->sendpacks[trg->sendpacks_cnt].mnum = cmd->mnum;
-			trg->sendpacks[trg->sendpacks_cnt++].ack = 0;
-		}
+		exmliner_addAck(trg, cmd->id, cmd->mnum);
 	}
 	else if (id == EXLNK_DATA_ID_CMDACK)
 	{
