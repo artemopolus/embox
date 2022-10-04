@@ -5,6 +5,8 @@
 
 #define CMDS_TESTS_ARRAY_COPY_SZ 1024
 static exutils_data_t TagTimer;
+	uint8_t src[CMDS_TESTS_ARRAY_COPY_SZ] = {5};
+	uint8_t trg[CMDS_TESTS_ARRAY_COPY_SZ] = {3};
 
 int main(int argc, char *argv[]) 
 {
@@ -13,8 +15,6 @@ int main(int argc, char *argv[])
 
 	uint32_t duration = 0;
 
-	uint8_t src[CMDS_TESTS_ARRAY_COPY_SZ] = {5};
-	uint8_t trg[CMDS_TESTS_ARRAY_COPY_SZ] = {3};
 	
 	exutils_updt(&TagTimer);
 	for(int i = 0; i < CMDS_TESTS_ARRAY_COPY_SZ; i++)
@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 	exutils_updt(&TagTimer);
 	duration = TagTimer.result;
 	printf("Standart: %d\n", duration);
+
 
 	uint8_t * trg_pt = &trg[0];
 	uint8_t * src_pt = &src[0];
