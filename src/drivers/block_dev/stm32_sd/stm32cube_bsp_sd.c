@@ -30,6 +30,9 @@
 #define USE_LOCAL_BUF OPTION_GET(BOOLEAN, use_local_buf)
 #define USE_IRQ       OPTION_GET(BOOLEAN,use_irq)
 
+ 
+
+
 #if USE_LOCAL_BUF
 static uint8_t sd_buf[BLOCKSIZE] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif

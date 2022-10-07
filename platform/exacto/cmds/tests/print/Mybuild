@@ -1,0 +1,29 @@
+package exacto.cmds.tests.print
+@AutoCmd
+@Cmd(name="print2sd_check", help=" Test for write data to SD using thread ", man='''
+AUTHOR Kuznetcov
+''')
+module check{
+	source "check.c"
+	depends exacto.cmds.tests.print.smpl_mod
+}
+@AutoCmd
+@Cmd(name="print2sd_start", help=" Test for write data to SD using thread ", man='''
+AUTHOR Kuznetcov
+''')
+module start{
+	source "start.c"
+	depends exacto.cmds.tests.print.smpl_mod
+}
+module smpl_mod{
+	source "smpl_mod.c"
+	@IncludeExport(path="")
+	source "smpl_mod.h"
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+}

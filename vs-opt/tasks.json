@@ -1,0 +1,83 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build stm32f103-base",
+            "type": "shell",
+            "command": "make clean cacheclean && make confload-platform/stm32f103/base && make -j4",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build stm32f103-master",
+            "type": "shell",
+            "command": "make clean cacheclean && make confload-platform/stm32f103/master && make -j4",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build exacto afina (master)",
+            "type": "shell",
+            "command": "make clean cacheclean && make confload-platform/exacto/afina/cliner && make ",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build apollon master",
+            "type": "shell",
+            "command": "make clean cacheclean && make confload-platform/apollon_master/init && make -j4",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build apollon tests",
+            "type": "shell",
+            "command": "make clean cacheclean && make confload-platform/exacto/apollon/perf_tests && make -j4",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build exacto apollon (slave)",
+            "type": "shell",
+            "command": "make clean cacheclean && make confload-platform/exacto/apollon/exstart && make -j4",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "mods list",
+            "type": "shell",
+            "command": "make mod-list"            
+        },
+        {
+            "label": "Upload embox stm32f1(one)",
+            "type": "shell",
+            "command": "openocd -f interface/stlink.cfg -f target/stm32f1x.cfg -c init -c \"reset halt\" -c \"flash write_image erase build/base/bin/embox\"",
+        },
+        {
+            "label": "Upload embox stm32f7(seven)",
+            "type": "shell",
+            "command": "openocd -f interface/stlink.cfg -f target/stm32f7x.cfg -c init -c \"reset halt\" -c \"flash write_image erase build/base/bin/embox\"",
+        }
+
+    ]
+}

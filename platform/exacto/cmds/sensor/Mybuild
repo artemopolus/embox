@@ -1,0 +1,86 @@
+package exacto.cmds.sensor
+
+@AutoCmd
+@Cmd(name="sns_reader", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module sns_reader{
+    source "sns_reader.c"
+	depends embox.kernel.lthread.lthread
+	
+	depends exacto.apollon.spi.spi1
+	depends exacto.commander.data_storage
+	depends exacto.commander.sensors
+	depends exacto.apollon.tim.tim3
+	
+	depends third_party.bsp.stmf1cube.cube
+}
+@AutoCmd
+@Cmd(name="sensor_smpl_comm", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module simple_comm{
+    source "simple_comm.c"
+    	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
+
+	depends exacto.apollon.spi.spi1
+	depends exacto.commander.data_storage
+	depends exacto.commander.sensors
+	depends exacto.apollon.tim.tim3
+	
+	depends third_party.bsp.stmf1cube.cube
+} 
+@AutoCmd
+@Cmd(name="sensor_storage_run", help=" Run data grabber and storager ", man='''
+AUTHOR Kuznetcov
+''')
+module storage_run{
+    source "storage.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+}
+module sns_service{
+    source "sns_service.c"
+	@IncludeExport(path="sensor")
+	source "sns_service.h"
+
+	depends embox.kernel.lthread.lthread
+	
+	depends exacto.spi.sns_apollon
+	depends exacto.commander.data_storage
+	depends exacto.commander.sns_apollon_lib
+	depends exacto.apollon.tim.tim3
+	depends exacto.sensors.ism330dlc
+	depends exacto.sensors.lsm303ah
+	
+	depends third_party.bsp.stmf1cube.cube
+}
+@AutoCmd
+@Cmd(name="sns2mliner", help="", man='''
+AUTHOR Kuznetcov
+''')
+module sns2mliner {
+	source "sns2mliner.c"
+
+	depends embox.kernel.lthread.lthread
+	depends embox.compat.posix.util.sleep
+	
+	depends exacto.spi.sns_apollon
+	depends exacto.commander.data_storage
+	depends exacto.commander.sns_apollon_lib
+	depends exacto.apollon.tim.tim3
+	depends exacto.sensors.ism330dlc
+	depends exacto.sensors.lsm303ah
+	depends exacto.spi.mliner_apollon
+	
+	depends third_party.bsp.stmf1cube.cube
+}

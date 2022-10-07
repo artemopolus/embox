@@ -1,0 +1,12 @@
+package exacto.cmds.tests.array
+
+@AutoCmd
+@Cmd(name="test_copy", help=" Test copy data from one array to another ", man='''
+AUTHOR Kuznetcov
+''')
+module copy{
+
+	source "copy.c"
+
+	depends exacto.cmds.perf_tests.ex_utils
+}

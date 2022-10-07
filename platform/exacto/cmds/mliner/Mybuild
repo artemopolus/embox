@@ -1,0 +1,198 @@
+package exacto.cmds.mliner
+
+@AutoCmd
+@Cmd(name="enabler", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+module enabler{
+    source "enabler.c"
+
+	depends exacto.apollon.spi.spi2slave
+	depends exacto.apollon.gpio.gpio_spi
+}
+@AutoCmd
+@Cmd(name="disabler", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+module disabler{
+    source "disabler.c"
+
+	depends exacto.apollon.spi.spi2slave
+}
+// @AutoCmd
+// @Cmd(name="disable_spi_master", help=" Test  ", man='''
+// AUTHOR Kuznetcov
+// ''')
+// module disable_spi_master{
+//     source "disable_spi_master.c"
+// 	depends exacto.afina.spi.spi1master
+
+// }
+// @AutoCmd
+// @Cmd(name="enable_spi_master", help=" Test  ", man='''
+// AUTHOR Kuznetcov
+// ''')
+// module enable_spi_master{
+//     source "enable_spi_master.c"
+// 	depends exacto.afina.spi.spi1master
+// 	depends exacto.afina.gpio.gpio_spi
+
+// }
+@AutoCmd
+@Cmd(name="spi_txrx", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_txrx {
+	source "spi_txrx.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	//depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+	//depends exacto.apollon.spi.spi2slave
+	depends exacto.spi.mliner_apollon
+	depends exacto.apollon.gpio.gpio_spi
+	depends exacto.apollon.tim.tim3
+	
+}
+@AutoCmd
+@Cmd(name="test_cmd", help=" Test sending one command for MLINE ", man='''
+AUTHOR Kuznetcov
+''')
+module test_cmd_afina 
+{
+	source "test_cmd_afina.c"
+
+	depends exacto.commander.data_storage
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
+
+@AutoCmd
+@Cmd(name="start_mliner", help=" Start MLINE service ", man='''
+AUTHOR Kuznetcov
+''')
+module start_mliner_afina 
+{
+	source "start_mliner_afina.c"
+
+	depends exacto.commander.data_storage
+	depends exacto.mliner.main_mod
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
+@AutoCmd
+@Cmd(name="stop_mliner", help=" Stop MLINE service ", man='''
+AUTHOR Kuznetcov
+''')
+module stop_mliner_afina 
+{
+	source "stop_mliner_afina.c"
+
+	depends exacto.commander.data_storage
+	depends exacto.mliner.main_mod
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
+@AutoCmd
+@Cmd(name="test_read", help=" Test reading data of MLINE ", man='''
+AUTHOR Kuznetcov
+''')
+module test_read_afina 
+{
+	source "test_read_afina.c"
+
+	depends exacto.commander.data_storage
+	depends exacto.mliner.main_mod
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+
+}
+@AutoCmd
+@Cmd(name="test_ex_spi_mline", help=" Test for MLINE ", man='''
+AUTHOR Kuznetcov
+''')
+module ex_spi_mline_apollon {
+	source "test_ex_spi_mline_apollon.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.data_storage
+	depends exacto.spi.mliner_apollon
+	depends exacto.apollon.gpio.gpio_spi
+	depends exacto.apollon.tim.tim3
+	//depends exacto.commander.tools
+}
+@AutoCmd
+@Cmd(name="test_ex_spi_mline", help=" Performance test for SD printer", man='''
+AUTHOR Kuznetcov
+''')
+module ex_spi_mline_afina{
+	source "test_ex_spi_mline_afina.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.cmds.tests.timbase
+
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.data_storage
+	depends exacto.spi.mliner_afina
+	depends exacto.afina.gpio.gpio_spi
+	depends exacto.commander.filemanager
+//	depends exacto.sensors.datatools
+
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends exacto.cmds.perf_tests.ex_utils
+}
+@AutoCmd
+@Cmd(name="test_ex_spi_mline_main", help=" Test for Mline Apollon -- Afina", man='''
+AUTHOR Kuznetcov
+''')
+module spi_main{
+	source "test_spi_main.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.cmds.tests.timbase
+
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.data_storage
+	depends exacto.spi.mline_main
+	depends exacto.gpio.mline_spi_main
+	depends exacto.gpio.led
+	depends exacto.commander.filemanager
+//	depends exacto.sensors.datatools
+
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends exacto.cmds.perf_tests.ex_utils
+}

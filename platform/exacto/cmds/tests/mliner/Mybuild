@@ -1,0 +1,88 @@
+package exacto.cmds.tests.mliner
+@AutoCmd
+@Cmd(name="test_mliner_sender", help=" Test send using address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module main_sender{
+	source "main_sender.c"
+	depends exacto.commander.data_storage
+	depends exacto.cmds.tests.timbase
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+
+	depends exacto.mliner.mliner
+}
+@AutoCmd
+@Cmd(name="test_mliner_getter", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module sec_getter{
+	source "sec_getter.c"
+	depends exacto.commander.data_storage
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+
+	depends exacto.tim.base
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+}
+@AutoCmd
+@Cmd(name="test_mline_sec", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module sec_module{
+
+	source "sec_module2.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+
+	depends exacto.spi.mline_sec
+
+	depends exacto.tim.base
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+	depends exacto.commander.buffer
+}
+@AutoCmd
+@Cmd(name="test_mline_sec_xmpl", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module sec_module_xmpl{
+
+	source "sec_module_xmpl.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+
+	depends exacto.mliner.mod_sec
+
+	depends exacto.tim.base
+
+	depends exacto.cmds.perf_tests.ex_utils
+}
+@AutoCmd
+@Cmd(name="test_mline_main_xmpl", help=" Test reaction on address via mline ", man='''
+AUTHOR Kuznetcov
+''')
+module main_module_xmpl{
+
+	source "main_module_xmpl.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+
+	depends exacto.mliner.mod_base
+
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+
+	depends exacto.cmds.tests.timbase
+	depends exacto.cmds.perf_tests.ex_utils
+}

@@ -1,0 +1,70 @@
+package exacto.mliner
+
+
+abstract module main_mod
+{}
+
+module main_mod_afina extends main_mod
+{
+	source "main_mod_afina.c"
+	@IncludeExport(path="mliner")
+	source "main_mod.h"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.cmds.tests.timbase
+
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.data_storage
+	depends exacto.spi.mline_main
+	depends exacto.gpio.mline_spi_main
+	depends exacto.gpio.led
+	depends exacto.commander.filemanager
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends exacto.cmds.perf_tests.ex_utils
+
+} 
+module dev
+{
+	source "mliner_dev.c"
+	@IncludeExport(path="mliner")
+	source "mliner_dev.h"
+}
+module mliner
+{
+	source "mliner.c"
+	@IncludeExport(path="mliner")
+	source "mliner.h"
+}
+module mod_sec
+{
+	source "mliner_sec.c"
+	@IncludeExport(path = "mliner")
+	source "mliner_sec.h"
+	depends exacto.spi.mline_sec
+
+	depends exacto.tim.base
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+	depends exacto.commander.buffer
+
+	depends exacto.mliner.mliner
+}
+module mod_base
+{
+	source "mliner_main.c"
+	@IncludeExport(path = "mliner")
+	source "mliner_main.h"
+	depends exacto.spi.mline
+
+	depends exacto.exactolink.exlnk_set_header
+	depends exacto.exactolink.exlnk_get_header
+	depends exacto.exactolink.exlnk_cmd
+	depends exacto.commander.buffer
+
+	depends exacto.mliner.mliner
+
+}

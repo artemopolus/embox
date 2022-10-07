@@ -1,0 +1,198 @@
+package exacto.cmds.tests
+
+
+@AutoCmd
+@Cmd(name="spi_basic", help=" Test for spi connection", man='''
+    AUTHOR Kuznetcov
+    Test for spi connection between
+    Apollon and Afina
+    for Afina module:
+    1. Send message to Apollon
+    2. Receive answer
+    3. Print 'Done' on success
+''')
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module spi_basic {
+    source "spi_basic.c"
+    depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
+
+	depends exacto.commander.data_storage
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+}
+@AutoCmd
+@Cmd(name="test_spi_receive", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_dma_receive_transmit {
+	source "spi_dma_receive_transmit.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+    //depends exacto.apollon.spi.spi2
+	depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+	depends exacto.apollon.spi.spi2slave
+	depends exacto.apollon.gpio.gpio_spi
+	
+	//depends third_party.bsp.stmf1cube.cube
+}
+
+
+
+@AutoCmd
+@Cmd(name="print_to_sd", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+''')
+module print_to_sd{
+	source "print_to_sd.c"
+	depends exacto.commander.filemanager
+	depends exacto.commander.data_storage
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+}
+// @AutoCmd
+// @Cmd(name="test_spi_dma_one_txrx", help=" Test for sending test array throw spi dma ", man='''
+// AUTHOR Kuznetcov
+// ''')
+// module spi_dma_one_txrx {
+// 	source "spi_dma_one_txrx.c"
+
+// 	depends embox.compat.posix.util.sleep
+// 	depends embox.kernel.lthread.lthread
+// 	depends embox.kernel.lthread.sync.mutex
+// 	depends exacto.cmds.tests.spi_dev
+// 	depends exacto.commander.data_storage
+// 	depends exacto.afina.spi.spi1master
+// 	depends exacto.afina.gpio.gpio_spi
+// }
+abstract module spi_dev{
+
+}
+@AutoCmd
+@Cmd(name="test_afina_transmit", help=" Test for sending test array throw spi dma ", man='''
+AUTHOR Kuznetcov
+
+Testing SPI with DMA. Using abstract module spi_dev
+
+''')
+module spi_dma_transmit_receive {
+	source "spi_dma_transmit_receive.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+}
+@AutoCmd
+@Cmd(name="test_sensors", help = "")
+module sensors {
+	source "sensors.c"
+	
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+	//depends embox.kernel.thread.core
+	//depends embox.kernel.sched.sched
+
+	depends exacto.apollon.spi.spi1
+	depends exacto.commander.data_storage
+	depends exacto.commander.sensors
+	//depends apollon_slave.project.defs
+	
+	depends third_party.bsp.stmf1cube.cube
+}
+abstract module timbase{
+
+}
+@AutoCmd
+@Cmd(name="test_tim_printer", help=" Test for tim based print ", man='''
+AUTHOR Kuznetcov
+''')
+module tim_printer{
+	source "tim_printer.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	//depends exacto.afina.tim.tim3
+	depends exacto.cmds.tests.timbase
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends exacto.commander.filemanager
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+}
+@AutoCmd
+@Cmd(name="test_spi_dma_tim_based", help=" Test for tim based DMA SPI module receiving data ", man='''
+AUTHOR Kuznetcov
+''')
+module spi_dma_tim_based{
+	source "spi_dma_tim_based.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends exacto.cmds.tests.timbase
+
+	depends embox.kernel.lthread.sync.mutex
+	//depends exacto.cmds.tests.spi_dev
+	depends exacto.commander.data_storage
+	//depends exacto.afina.spi.spi1master
+	depends exacto.spi.mliner_afina
+	depends exacto.afina.gpio.gpio_spi
+	depends exacto.commander.filemanager
+	//depends exacto.sensors.datatools
+
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+}
+@AutoCmd
+@Cmd(name="test_buffer_fifo_test", help=" Test for buffer", man='''
+AUTHOR Kuznetcov
+''')
+module buffer_fifo_test{
+	source "buffer_fifo_test.c"
+	depends exacto.commander.buffer	
+	depends embox.kernel.lthread.lthread
+}
+@AutoCmd
+@Cmd(name="test_lights", help=" Test for lights ", man='''
+AUTHOR Kuznetcov
+''')
+module lights {
+	source "lights.c"
+
+	depends embox.compat.posix.util.sleep
+	depends exacto.afina.gpio.gpio_spi
+}
+@AutoCmd
+@Cmd(name="sns_reader_smpl", help=" Test for lights ", man='''
+AUTHOR Kuznetcov
+''')
+module sns_reader_smpl{
+    source "sns_reader_smpl.c"
+	depends embox.kernel.lthread.lthread
+	
+	depends exacto.spi.sns_apollon
+	depends exacto.commander.data_storage
+	depends exacto.commander.sns_apollon_lib
+	depends exacto.apollon.tim.tim3
+	depends exacto.sensors.ism330dlc
+	depends exacto.sensors.lsm303ah
+	
+	depends third_party.bsp.stmf1cube.cube
+}

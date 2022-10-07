@@ -1,0 +1,6 @@
+package exacto.afina.gpio
+
+abstract module config
+{
+
+}

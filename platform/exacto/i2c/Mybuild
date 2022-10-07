@@ -1,0 +1,9 @@
+package exacto.i2c
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module apollon_m_smpl{
+	source "i2c1_apollon_m_smpl.c"
+	@IncludeExport(path="i2c")
+	source "i2c_master.h"
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+}

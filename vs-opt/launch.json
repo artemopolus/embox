@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Embox Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/base/bin/embox",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "stm32f1x",
+            "svdFile": "/home/artem/workspace/STM32F1_svd_V1.2/STM32F103.svd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "preRestartCommands": [
+                "load embox",
+                "enable breakpoint",
+                "monitor reset init"
+            ] 
+        },
+        {
+            "name": "stm32f7x Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/base/bin/embox",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "stm32f7x",
+            "svdFile": "/home/artem/workspace/STM32F7_svd_V1.5/STM32F746.svd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f7x.cfg"
+            ],
+            "preRestartCommands": [
+                "load embox",
+                "enable breakpoint",
+                "monitor reset init"
+            ] 
+        }    
+    ]
+}

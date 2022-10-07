@@ -1,0 +1,56 @@
+package exacto.commander
+
+abstract module blink{
+
+}
+module services{
+	source "exacto_services.c"
+	@IncludeExport(path="commander")
+	source "exacto_services.h"
+	depends embox.kernel.lthread.lthread
+
+
+}
+module buffer{
+	option number buffersz=512
+	option number extbuffersz=1024
+	source "exacto_buffer.c"
+	@IncludeExport(path="commander")
+	source "exacto_buffer.h"
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module sensors {
+	source "exacto_sensors.c"
+	@IncludeExport(path="commander")
+	source "exacto_sensors.h"
+
+	depends exacto.apollon.spi.spi1
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module sns_apollon_lib {
+	source "exacto_sns_ctrl.c"
+	@IncludeExport(path="commander")
+	source "exacto_sns_ctrl.h"
+
+	depends exacto.spi.sns_apollon
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	
+}
+module filemanager
+{
+	source "exacto_filemanager.c"
+	@IncludeExport(path="commander")
+	source "exacto_filemanager.h"
+	depends exacto.commander.data_storage
+	depends exacto.commander.buffer
+}
+module tools {
+	source "exacto_tools.c"
+	@IncludeExport(path="commander")
+	source "exacto_tools.h"
+	
+}

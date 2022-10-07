@@ -1,0 +1,97 @@
+package exacto.spi
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module sns_apollon{
+	source "spi_appolon.c"
+	@IncludeExport(path="spi")
+	source "spi_sns.h"
+	depends embox.kernel.lthread.lthread
+}
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module mliner_afina {
+	source "spi_afina_mliner.c"
+	@IncludeExport(path="spi")
+	source "spi_mliner.h"
+    depends exacto.commander.data_storage
+	depends exacto.afina.gpio.gpio_spi
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module mliner_apollon {
+	source "spi_apollon_mliner.c"
+	@IncludeExport(path="spi")
+	source "spi_mliner.h"
+	depends exacto.commander.data_storage
+	depends exacto.cmds.perf_tests.ex_utils
+	depends exacto.apollon.gpio.gpio_spi
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+}
+//TODO:
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module mline_main {
+	source "spi_mline_afina_main.c"
+	@IncludeExport(path="spi")
+	source "spi_mliner.h"
+
+	//call absract module
+	depends exacto.commander.data_storage
+	depends exacto.gpio.mline_spi_main
+	depends exacto.gpio.config
+	depends exacto.cmds.perf_tests.ex_utils
+
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+}
+module mline_base
+{
+	@IncludeExport(path="spi")
+	source "spi_mline_base.h"
+	depends exacto.commander.buffer
+}
+abstract module mline_sec_impl
+{
+
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module mline_sec_impl_apollon extends exacto.spi.mline_sec_impl
+{
+	source "spi_mline_sec_apollon.c"
+	@IncludeExport(path="spi")
+	source "spi_mline_sec_impl.h"
+}
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module mline_sec_impl_afina extends exacto.spi.mline_sec_impl
+{
+	source "spi_mline_sec_afina.c"
+	@IncludeExport(path="spi")
+	source "spi_mline_sec_impl.h"
+	depends exacto.gpio.config
+}
+abstract module mline
+{
+
+}
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module mline_main2 extends mline
+{
+	source "spi_mline_main.c"
+	@IncludeExport(path="spi")
+	source "spi_mline_sec.h"
+	depends exacto.spi.mline_sec_impl
+	depends exacto.gpio.config
+	depends exacto.gpio.mline_spi_main
+}
+module mline_sec
+{
+	source "spi_mline_sec.c"
+	@IncludeExport(path="spi")
+	source "spi_mline_sec.h"
+
+	depends exacto.gpio.mline_spi_sec
+	depends exacto.spi.mline_base
+	depends exacto.spi.mline_sec_impl
+	depends embox.kernel.lthread.lthread
+}

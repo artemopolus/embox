@@ -1,0 +1,9 @@
+package exacto.cmds.tests.i2c
+@AutoCmd
+@Cmd(name="smpl", help=" Test for i2c ", man='''
+AUTHOR Kuznetcov
+''')
+module smpl{
+	source "smpl.c"
+    depends exacto.i2c.apollon_m_smpl
+}

@@ -1,0 +1,53 @@
+package exacto.cmds.sensor.lsmism
+
+@AutoCmd
+@Cmd(name="start", help="", man='''
+AUTHOR Kuznetcov
+''')
+module start {
+	source "sns_start_lsmism.c"
+
+	depends embox.kernel.lthread.lthread
+	depends embox.compat.posix.util.sleep
+	
+	depends exacto.commander.data_storage
+	depends exacto.apollon.tim.tim3
+    depends exacto.sensors.apollon_lsmism
+}
+@AutoCmd
+@Cmd(name="stop", help="", man='''
+AUTHOR Kuznetcov
+''')
+module stop {
+	source "sns_stop_lsmism.c"
+
+	depends embox.kernel.lthread.lthread
+	depends embox.compat.posix.util.sleep
+	
+	depends exacto.commander.data_storage
+	depends exacto.apollon.tim.tim3
+    depends exacto.sensors.apollon_lsmism
+}
+@AutoCmd
+@Cmd(name="read", help="", man='''
+AUTHOR Kuznetcov
+''')
+module read {
+	source "sns_read_lsmism.c"
+
+	depends embox.kernel.lthread.lthread
+	depends embox.compat.posix.util.sleep
+	
+	depends exacto.commander.data_storage
+	depends exacto.apollon.tim.tim3
+    depends exacto.sensors.apollon_lsmism
+}
+@AutoCmd
+@Cmd(name="lsmism_reader", help="", man='''
+AUTHOR Kuznetcov
+''')
+module reader {
+	source "reader.c"
+	depends exacto.sensors.lsmism
+}
+

@@ -16,6 +16,8 @@
 
 #if defined(STM32F100xB)
 #include "stm32vl_discovery.h"
+#elif defined(STM32F103xB)
+#include "stm32vl_discovery.h"
 #else
 #error Unsupported platform
 #endif
