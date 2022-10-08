@@ -1,0 +1,27 @@
+package exacto.usb
+
+
+@BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/Core/Inc -I$(ROOT_DIR)/platform/exacto/usb/USB_DEVICE/App -I$(ROOT_DIR)/platform/exacto/usb/USB_DEVICE/Target -I$(ROOT_DIR)/platform/exacto/usb/Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I$(ROOT_DIR)/platform/exacto/usb/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc ")
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module base{
+
+	// source "Core/Src/main.c"
+	source "Core/Src/gpio.c"
+	source "Core/Src/stm32f7xx_it.c"
+	source "Core/Src/stm32f7xx_hal_msp.c"
+	source "Core/Src/system_stm32f7xx.c"
+
+
+	source "USB_DEVICE/App/usb_device.c"
+	source "USB_DEVICE/App/usbd_desc.c"
+	source "USB_DEVICE/App/usbd_cdc_if.c"
+	source "USB_DEVICE/Target/usbd_conf.c "
+
+
+	source "Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c"
+	source "Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c"
+	source "Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"
+	source "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c"
+
+
+}
