@@ -27,7 +27,7 @@ void HAL_MspInit(void)
   __HAL_RCC_SYSCFG_CLK_ENABLE();
 }
 
-static void SystemClock_Config(void)
+void SystemClock_Config(void)
 {
 
   (DBGMCU)->APB1FZ = 0x7E01BFF;
