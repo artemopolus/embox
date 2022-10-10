@@ -10,8 +10,13 @@ uint8_t Message[] = "Hello there\n";
 
 static uint32_t Index = 0;
 
+static uint8_t recever(uint8_t* Buf, uint32_t Len)
+{
+	return 0 ;
+}
 int main(int argc, char *argv[]) 
 {
+	CDC_setReceiver_FS(recever);
 	printf("Start sending via USB \n");
 	while (1)
 	{
