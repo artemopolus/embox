@@ -3,9 +3,14 @@ package exacto.cmds.tests.usb
 @Cmd(name="test_usb_sender", help=" Test send via USB ", man='''
 AUTHOR Kuznetcov
 ''')
+// @BuildDepends(exacto.usb.usb_cppflags)
+// @BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildDepends(exacto.usb.base)
 module sender{
 	source "sender.c"
 	depends embox.compat.posix.util.sleep
 
 	depends exacto.usb.base
+   // @NoRuntime depends exacto.usb.usb_cppflags
+   @NoRuntime depends exacto.usb.base
 }
