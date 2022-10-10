@@ -105,6 +105,7 @@ static void stm32_hcd_vbus_enable(void) {
 #if defined(STM32F407xx)
 	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_RESET);
 #elif defined(STM32F769xx)
+#elif defined(STM32F746xx)
 #else
 	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_SET);
 #endif
