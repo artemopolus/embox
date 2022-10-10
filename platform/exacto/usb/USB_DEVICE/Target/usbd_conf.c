@@ -26,6 +26,8 @@
 
 /* USER CODE BEGIN Includes */
 
+#include <kernel/irq.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,6 +66,15 @@ static void SystemClockConfig_Resume(void);
 *******************************************************************************/
 /* MSP Init */
 
+
+static irq_return_t eventUsbOTGFS_IRQhandler(unsigned int irq_nr, void *data)
+{
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(67, eventUsbOTGFS_IRQhandler, NULL); //OTG_FS_IRQn                 = 67,     /*!< USB OTG FS global Interrupt                                       */
+
+
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -99,8 +110,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
     /* Peripheral interrupt init */
-    HAL_NVIC_SetPriority(OTG_FS_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+    // HAL_NVIC_SetPriority(OTG_FS_IRQn, 0, 0); //TODO:
+    // HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+    irq_attach(67, eventUsbOTGFS_IRQhandler, 0, NULL, "eventUsbOTGFS_IRQhandler"); // embox function
   /* USER CODE BEGIN USB_OTG_FS_MspInit 1 */
 
   /* USER CODE END USB_OTG_FS_MspInit 1 */
