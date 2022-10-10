@@ -1,0 +1,11 @@
+package exacto.cmds.tests.usb
+@AutoCmd
+@Cmd(name="test_usb_sender", help=" Test send via USB ", man='''
+AUTHOR Kuznetcov
+''')
+module sender{
+	source "sender.c"
+	depends embox.compat.posix.util.sleep
+
+	depends exacto.usb.base
+}
