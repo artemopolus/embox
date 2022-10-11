@@ -235,6 +235,8 @@ typedef enum
   USBD_FAIL,
 } USBD_StatusTypeDef;
 
+#define USBD_CLASS_BOS_ENABLED 0
+
 /* USB Device descriptors structure */
 typedef struct
 {
