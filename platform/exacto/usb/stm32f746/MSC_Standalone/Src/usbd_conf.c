@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include <kernel/irq.h>
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -31,6 +32,12 @@ PCD_HandleTypeDef hpcd;
 /*******************************************************************************
                        PCD BSP Routines
 *******************************************************************************/
+static irq_return_t eventUsbOTGFS_IRQhandler(unsigned int irq_nr, void *data)
+{
+  HAL_PCD_IRQHandler(&hpcd);
+  return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(67, eventUsbOTGFS_IRQhandler, NULL); //OTG_FS_IRQn                 = 67,     /*!< USB OTG FS global Interrupt                                       */
 
 /**
   * @brief  Initializes the PCD MSP.
@@ -69,10 +76,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
   
   /* Set USBFS Interrupt priority */
-  HAL_NVIC_SetPriority(OTG_FS_IRQn, 7, 0);
+  // HAL_NVIC_SetPriority(OTG_FS_IRQn, 7, 0);
+  irq_attach(67, eventUsbOTGFS_IRQhandler, 0, NULL, "eventUsbOTGFS_IRQhandler"); // embox function
   
   /* Enable USBFS Interrupt */
-  HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+  // HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
 }
 
 /**

@@ -1,0 +1,17 @@
+package exacto.usb.stm32f746.msc
+
+@BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/stm32f746/MSC_Standalone/Inc")
+module flags{
+
+}
+@BuildDepends(exacto.usb.stm32f746.msc.flags)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildDepends(exacto.usb.stm32usblib.core)
+module base{
+	source "Src/main.c"
+	source "Src/usbd_conf.c"
+	source "Src/usbd_desc.c"
+	source "Src/usbd_storage.c"
+	@NoRuntime depends exacto.usb.stm32f746.msc.flags
+	@NoRuntime depends exacto.usb.stm32usblib.core
+}
