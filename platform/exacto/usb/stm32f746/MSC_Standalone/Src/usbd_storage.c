@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_storage.h"
 #include "stm32746g_discovery_sd.h"
-#include "stm32_adafruit_sd.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -29,6 +28,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+__IO uint32_t writestatus, readstatus = 0;
+
 /* USB Mass storage Standard Inquiry Data */
 int8_t STORAGE_Inquirydata[] = { /* 36 */
   /* LUN 0 */
@@ -87,15 +88,17 @@ int8_t STORAGE_Init(uint8_t lun)
   */
 int8_t STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
-  SD_CardInfo info;
+  HAL_SD_CardInfoTypeDef info;
   int8_t ret = -1;
 
-  BSP_SD_GetCardInfo(&info);
+  if(BSP_SD_IsDetected() != SD_NOT_PRESENT)
+  {
+    BSP_SD_GetCardInfo(&info);
 
-  *block_num = info.LogBlockNbr;
-  *block_size = info.LogBlockSize;
-  ret = 0;
-
+    *block_num = info.LogBlockNbr;
+    *block_size = info.LogBlockSize;
+    ret = 0;
+  }
   return ret;
 }
 
@@ -109,15 +112,22 @@ int8_t STORAGE_IsReady(uint8_t lun)
   static int8_t prev_status = 0;
   int8_t ret = -1;
 
-  if(prev_status < 0)
+  if(BSP_SD_IsDetected() != SD_NOT_PRESENT)
   {
-    BSP_SD_Init();
-    prev_status = 0;
-  }
+    if(prev_status < 0)
+    {
+      BSP_SD_Init();
+      prev_status = 0;
 
-  if(BSP_SD_GetCardState() == BSP_SD_OK)
+    }
+    if(BSP_SD_GetCardState() == SD_TRANSFER_OK)
+    {
+      ret = 0;
+    }
+  }
+  else if(prev_status == 0)
   {
-    ret = 0;
+    prev_status = -1;
   }
 
   return ret;
@@ -143,18 +153,24 @@ int8_t STORAGE_IsWriteProtected(uint8_t lun)
 int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   int8_t ret = -1;
-  uint32_t timeout = 100000;
 
-  BSP_SD_ReadBlocks((uint32_t *)buf, blk_addr, blk_len, SD_DATATIMEOUT);
-  while(BSP_SD_GetCardState() != BSP_SD_OK)
+  if(BSP_SD_IsDetected() != SD_NOT_PRESENT)
   {
-    if (timeout-- == 0)
-    {
-      return ret;
-    }
-  }
-  ret = 0;
+    BSP_SD_ReadBlocks_DMA((uint32_t *)buf, blk_addr, blk_len);
 
+    /* Wait for Rx Transfer completion */
+    while (readstatus == 0)
+    {
+    }
+    readstatus = 0;
+
+    /* Wait until SD card is ready to use for new operation */
+    while (BSP_SD_GetCardState() != SD_TRANSFER_OK)
+    {
+    }
+
+    ret = 0;
+  }
   return ret;
 }
 
@@ -168,18 +184,24 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_l
 int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   int8_t ret = -1;
-  uint32_t timeout = 100000;
 
-  BSP_SD_WriteBlocks((uint32_t *)buf, blk_addr, blk_len, SD_DATATIMEOUT);
-  while(BSP_SD_GetCardState() != BSP_SD_OK)
+  if(BSP_SD_IsDetected() != SD_NOT_PRESENT)
   {
-    if (timeout-- == 0)
-    {
-      return ret;
-    }
-  }
-  ret = 0;
+    BSP_SD_WriteBlocks_DMA((uint32_t *)buf, blk_addr, blk_len);
 
+    /* Wait for Tx Transfer completion */
+    while (writestatus == 0)
+    {
+    }
+    writestatus = 0;
+
+    /* Wait until SD card is ready to use for new operation */
+    while (BSP_SD_GetCardState() != SD_TRANSFER_OK)
+    {
+    }
+
+    ret = 0;
+  }
   return ret;
 }
 
@@ -192,5 +214,26 @@ int8_t STORAGE_GetMaxLun(void)
 {
   return(STORAGE_LUN_NBR - 1);
 }
+
+/**
+  * @brief BSP Tx Transfer completed callbacks
+  * @param None
+  * @retval None
+  */
+void BSP_SD_WriteCpltCallback(void)
+{
+  writestatus = 1;
+}
+
+/**
+  * @brief BSP Rx Transfer completed callbacks
+  * @param None
+  * @retval None
+  */
+void BSP_SD_ReadCpltCallback(void)
+{
+  readstatus = 1;
+}
+
 
 
