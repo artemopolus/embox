@@ -75,7 +75,7 @@ USBD_StorageTypeDef USBD_DISK_fops = {
   */
 int8_t STORAGE_Init(uint8_t lun)
 {
-  BSP_SD_Init();
+  // BSP_SD_Init();
   return 0;
 }
 
