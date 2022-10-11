@@ -16,7 +16,6 @@ typedef enum
 USBD_HandleTypeDef USBD_Device;
 
 /* Private function prototypes -----------------------------------------------*/
-static void Error_Handler(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -40,21 +39,8 @@ int initUSBDeviceMSC(void)
   
   /* Start Device Process */
   USBD_Start(&USBD_Device);
-  
+  return 0; 
 }
 
 
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @param  None
-  * @retval None
-  */
-static void Error_Handler(void)
-{
-  /* User may add here some code to deal with this error */
-  while(1)
-  {
-  }
-}
 

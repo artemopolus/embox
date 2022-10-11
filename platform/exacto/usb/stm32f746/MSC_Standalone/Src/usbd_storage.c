@@ -18,6 +18,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_storage.h"
+#include "stm32746g_discovery_sd.h"
 #include "stm32_adafruit_sd.h"
 
 /* Private typedef -----------------------------------------------------------*/

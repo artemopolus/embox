@@ -7,5 +7,14 @@ module core
 	source "Core/Src/usbd_core.c"
 	source "Core/Src/usbd_ctlreq.c"
 	source "Core/Src/usbd_ioreq.c"
-
+}
+@BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc ")
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module msc
+{
+	source "Class/MSC/Src/usbd_msc_bot.c"
+	source "Class/MSC/Src/usbd_msc_data.c"
+	source "Class/MSC/Src/usbd_msc_scsi.c"
+	source "Class/MSC/Src/usbd_msc.c"
+	
 }

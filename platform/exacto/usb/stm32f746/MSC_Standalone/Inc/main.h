@@ -26,8 +26,6 @@
 #include "usbd_desc.h"
 #include "usbd_msc.h"
 #include "usbd_storage.h"
-#include "stm32f7xx_nucleo_144.h"
-#include "stm32_adafruit_sd.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
