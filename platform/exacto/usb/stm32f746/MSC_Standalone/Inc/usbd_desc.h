@@ -30,6 +30,7 @@
 #define         DEVICE_ID3          (0x1FFF7A18)
 
 #define  USB_SIZ_STRING_SERIAL       0x1A
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 extern USBD_DescriptorsTypeDef MSC_Desc;

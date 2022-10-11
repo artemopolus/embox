@@ -26,6 +26,8 @@
 #include "usbd_desc.h"
 #include "usbd_msc.h"
 #include "usbd_storage.h"
+#include "stm32746g_discovery.h"
+#include "stm32746g_discovery_sd.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
