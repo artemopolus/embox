@@ -65,10 +65,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
     
     /* Set USBFS Interrupt priority */
-    HAL_NVIC_SetPriority(OTG_FS_IRQn, 7, 0);
+    // HAL_NVIC_SetPriority(OTG_FS_IRQn, 7, 0);
     
     /* Enable USBFS Interrupt */
-    HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+    // HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+    irq_attach(67, eventUsbOTGFS_IRQhandler, 0, NULL, "eventUsbOTGFS_IRQhandler"); // embox function
   }
   else if(hpcd->Instance == USB_OTG_HS)
   {
@@ -134,7 +135,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     // /* Enable USBHS Interrupt */
     // HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
 
-    irq_attach(67, eventUsbOTGFS_IRQhandler, 0, NULL, "eventUsbOTGFS_IRQhandler"); // embox function
   }   
 }
 
@@ -310,6 +310,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 {
+  // #define USE_USB_FS
 #ifdef USE_USB_FS
   /* Set LL Driver parameters */
   hpcd.Instance = USB_OTG_FS;
