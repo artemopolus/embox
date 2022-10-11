@@ -1,15 +1,29 @@
 package exacto.usb.stm32usblib
 
 @BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/Middlewares/ST/STM32_USB_Device_Library/Core/Inc ")
+module flags{
+
+}
 @BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildDepends(exacto.usb.stm32usblib.flags)
+@BuildDepends(exacto.usb.stm32f746.msc.flags)
 module core
 {
 	source "Core/Src/usbd_core.c"
 	source "Core/Src/usbd_ctlreq.c"
 	source "Core/Src/usbd_ioreq.c"
+	@NoRuntime depends exacto.usb.stm32usblib.flags
+	@NoRuntime depends exacto.usb.stm32f746.msc.flags
 }
 @BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc ")
+module msc_flags
+{
+
+}
+@BuildDepends(exacto.usb.stm32usblib.msc_flags)
+@BuildDepends(exacto.usb.stm32f746.msc.flags)
 @BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildDepends(exacto.usb.stm32usblib.flags)
 module msc
 {
 	source "Class/MSC/Src/usbd_msc_bot.c"
@@ -17,4 +31,7 @@ module msc
 	source "Class/MSC/Src/usbd_msc_scsi.c"
 	source "Class/MSC/Src/usbd_msc.c"
 	
+	@NoRuntime depends exacto.usb.stm32usblib.msc_flags
+	@NoRuntime depends exacto.usb.stm32f746.msc.flags
+	@NoRuntime depends exacto.usb.stm32usblib.flags
 }

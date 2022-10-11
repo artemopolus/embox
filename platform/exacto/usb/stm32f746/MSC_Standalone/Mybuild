@@ -1,6 +1,6 @@
 package exacto.usb.stm32f746.msc
 
-@BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/stm32f746/MSC_Standalone/Inc -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/BSP/Adafruit_Shield")
+@BuildArtifactPath(cppflags=" -I$(ROOT_DIR)/platform/exacto/usb/stm32f746/MSC_Standalone/Inc ")
 module flags{
 
 }
@@ -9,14 +9,11 @@ module flags{
 @BuildDepends(exacto.usb.stm32usblib.core)
 @BuildDepends(exacto.usb.stm32usblib.msc)
 @BuildDepends(platform.exacto.afina.basis.bsp)
-@BuildArtifactPath(cppflags=" -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/BSP/Adafruit_Shield")
 module base{
 	source "Src/main.c"
 	source "Src/usbd_conf.c"
 	source "Src/usbd_desc.c"
 	source "Src/usbd_storage.c"
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/BSP/Adafruit_Shield")
-	source "stm32_adafruit_sd.c"
 	@NoRuntime depends exacto.usb.stm32f746.msc.flags
 	@NoRuntime depends exacto.usb.stm32usblib.core
 	@NoRuntime depends exacto.usb.stm32usblib.msc
