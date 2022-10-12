@@ -130,6 +130,11 @@ int8_t STORAGE_Init(uint8_t lun)
       log_error("irq_attach error");
       return -1;
     }
+  	/* SDMMC2 irq priority should be higher that DMA due to
+	 * STM32Cube implementation. */
+	  irqctrl_set_prio(STM32_DMA_RX_IRQ, 10);
+	  irqctrl_set_prio(STM32_DMA_TX_IRQ, 10);
+	  irqctrl_set_prio(STM32_SDMMC_IRQ, 11);
  		return 0;
 	} else if (BSP_SD_IsDetected() != SD_PRESENT) {
 		/* microSD Card is not inserted, do nothing. */
@@ -218,13 +223,16 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_l
 
   if(BSP_SD_IsDetected() != SD_NOT_PRESENT)
   {
+    ipl_t ipl;
+    ipl = ipl_save();
     BSP_SD_ReadBlocks_DMA((uint32_t *)buf, blk_addr, blk_len);
+    ipl_restore(ipl);
 
     /* Wait for Rx Transfer completion */
-    while (readstatus == 0)
-    {
-    }
-    readstatus = 0;
+    // while (readstatus == 0)
+    // {
+    // }
+    // readstatus = 0;
 
     /* Wait until SD card is ready to use for new operation */
     while (BSP_SD_GetCardState() != SD_TRANSFER_OK)

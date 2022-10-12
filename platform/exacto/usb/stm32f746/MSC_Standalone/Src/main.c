@@ -27,7 +27,7 @@ USBD_HandleTypeDef USBD_Device;
 EMBOX_UNIT_INIT(initUSBDeviceMSC);
 int initUSBDeviceMSC(void)
 {
-
+  HAL_Init();
   /* Init Device Library */
   USBD_Init(&USBD_Device, &MSC_Desc, 0);
   
@@ -41,6 +41,15 @@ int initUSBDeviceMSC(void)
   USBD_Start(&USBD_Device);
   return 0; 
 }
-
+void HAL_Delay(__IO uint32_t Delay)
+{
+  while(Delay)
+  {
+    if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)
+    {
+      Delay--;
+    }
+  }
+}
 
 
