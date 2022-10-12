@@ -107,25 +107,29 @@ STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
   */
 int8_t STORAGE_Init(uint8_t lun)
 {
-	if (BSP_SD_Init() == MSD_OK) {
-	if (0 != irq_attach(STM32_DMA_RX_IRQ,
-				stm32_dma_rx_irq,
-				0, NULL, "stm32_dma_rx_irq")) {
-		log_error("irq_attach error");
-		return -1;
-	}
-	if (0 != irq_attach(STM32_DMA_TX_IRQ,
-				stm32_dma_tx_irq,
-				0, NULL, "stm32_dma_tx_irq")) {
-		log_error("irq_attach error");
-		return -1;
-	}
-	if (0 != irq_attach(STM32_SDMMC_IRQ,
-				stm32_sdmmc_irq,
-				0, NULL, "stm32_sdmmc_irq")) {
-		log_error("irq_attach error");
-		return -1;
-	}
+	// if (!block_dev_lookup(STM32F7_SD_DEVNAME)) {
+	// 	log_error("Block device not found");
+	// 	return -1;
+	// }
+  if (BSP_SD_Init() == MSD_OK) {
+    if (0 != irq_attach(STM32_DMA_RX_IRQ,
+          stm32_dma_rx_irq,
+          0, NULL, "stm32_dma_rx_irq")) {
+      log_error("irq_attach error");
+      return -1;
+    }
+    if (0 != irq_attach(STM32_DMA_TX_IRQ,
+          stm32_dma_tx_irq,
+          0, NULL, "stm32_dma_tx_irq")) {
+      log_error("irq_attach error");
+      return -1;
+    }
+    if (0 != irq_attach(STM32_SDMMC_IRQ,
+          stm32_sdmmc_irq,
+          0, NULL, "stm32_sdmmc_irq")) {
+      log_error("irq_attach error");
+      return -1;
+    }
  		return 0;
 	} else if (BSP_SD_IsDetected() != SD_PRESENT) {
 		/* microSD Card is not inserted, do nothing. */
