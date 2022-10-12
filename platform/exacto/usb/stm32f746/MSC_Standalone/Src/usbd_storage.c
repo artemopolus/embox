@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_storage.h"
 #include "stm32746g_discovery_sd.h"
+#include <kernel/irq.h>
+#include <util/log.h>
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -68,6 +70,36 @@ USBD_StorageTypeDef USBD_DISK_fops = {
 };
 /* Private functions ---------------------------------------------------------*/
 
+extern SD_HandleTypeDef uSdHandle;
+	// option number dma_sdmmc_irq = 49
+	// option number dma_rx_irq    = 59
+	// option number dma_tx_irq    = 69
+
+#define STM32_DMA_RX_IRQ 59
+#define STM32_DMA_TX_IRQ 69
+#define STM32_SDMMC_IRQ 49
+
+static irq_return_t stm32_dma_rx_irq(unsigned int irq_num, void *dev) {
+	HAL_DMA_IRQHandler(uSdHandle.hdmarx);
+	return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32_dma_rx_irq, NULL);
+
+static irq_return_t stm32_dma_tx_irq(unsigned int irq_num, void *dev) {
+	HAL_DMA_IRQHandler(uSdHandle.hdmatx);
+	return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
+
+static irq_return_t stm32_sdmmc_irq(unsigned int irq_num, void *dev) {
+	HAL_SD_IRQHandler(&uSdHandle);
+	return IRQ_HANDLED;
+}
+STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
+
+
+
+
 /**
   * @brief  Initializes the storage unit (medium)
   * @param  lun: Logical unit number
@@ -75,8 +107,34 @@ USBD_StorageTypeDef USBD_DISK_fops = {
   */
 int8_t STORAGE_Init(uint8_t lun)
 {
-  // BSP_SD_Init();
-  return 0;
+	if (BSP_SD_Init() == MSD_OK) {
+	if (0 != irq_attach(STM32_DMA_RX_IRQ,
+				stm32_dma_rx_irq,
+				0, NULL, "stm32_dma_rx_irq")) {
+		log_error("irq_attach error");
+		return -1;
+	}
+	if (0 != irq_attach(STM32_DMA_TX_IRQ,
+				stm32_dma_tx_irq,
+				0, NULL, "stm32_dma_tx_irq")) {
+		log_error("irq_attach error");
+		return -1;
+	}
+	if (0 != irq_attach(STM32_SDMMC_IRQ,
+				stm32_sdmmc_irq,
+				0, NULL, "stm32_sdmmc_irq")) {
+		log_error("irq_attach error");
+		return -1;
+	}
+ 		return 0;
+	} else if (BSP_SD_IsDetected() != SD_PRESENT) {
+		/* microSD Card is not inserted, do nothing. */
+		return 0;
+	} else {
+		log_error("BSP_SD_Init error");
+		return -1;
+	}
+ return 0;
 }
 
 /**
