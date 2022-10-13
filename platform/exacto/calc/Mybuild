@@ -1,0 +1,7 @@
+package exacto.calc
+
+module base{
+	source "calc.c"
+	@IncludeExport(path= "calc")
+	source "calc.h"
+}
