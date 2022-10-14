@@ -1,0 +1,15 @@
+package exacto.logger
+
+module base{
+	source "logger.c"
+	@IncludeExport(path="logger")
+	source "logger.h"
+
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+}
