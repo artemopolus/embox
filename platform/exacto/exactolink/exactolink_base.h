@@ -1,7 +1,7 @@
 #ifndef EXACTO_EXACTOLINK_EXACTOLINK_BASE_H
 #define EXACTO_EXACTOLINK_EXACTOLINK_BASE_H
 
-#include "commander/exacto_buffer.h"
+#include "operator/exacto_buffer.h"
 
 #define EXACTOLINK_SDPACK_ID 0x11
 

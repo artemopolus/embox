@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <commander/exacto_buffer.h>
+#include <operator/exacto_buffer.h>
 #define TEST_BFT_SZ 512
 #define TEST_BFT_TRY_CNT 50
 

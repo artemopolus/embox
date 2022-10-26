@@ -4,7 +4,7 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
-#include "commander/exacto_buffer.h"
+#include "operator/exacto_buffer.h"
 #include "commander/exacto_services.h"
 #include "commander/exacto_tools.h"
 
