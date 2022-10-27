@@ -17,7 +17,7 @@
 #include "mliner/mliner_secdev_impl.h"
 
 
-int initBoardSpi(void)
+int initBoardMlDev(void)
 {
 	LL_SPI_InitTypeDef SPI_InitStruct = {0};
 
@@ -81,7 +81,7 @@ int initBoardSpi(void)
 
    return 0;
 }
-void setBoardSpiBuffer(
+void setBoardMlDevBuffer(
 	spi_mline_dev_t * transmit, spi_mline_dev_t * receive
 	// uint8_t * rxdata, uint32_t rxlen, uint8_t * txdata, uint32_t txlen, int (*download)(uint32_t len), int(*upload)(uint32_t len)
 	)
@@ -99,7 +99,7 @@ void setBoardSpiBuffer(
 									LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5));
 	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_5, transmit->dmabufferlen);
 }
-uint8_t runBoardSpiIRQhandlerRX(void)
+uint8_t runBoardMlDevIRQhandlerRX(void)
 {
 	uint8_t res = 0;
 
@@ -113,7 +113,7 @@ uint8_t runBoardSpiIRQhandlerRX(void)
 
 	return res;
 }
-uint8_t runBoardSpiIRQhandlerTX(void)
+uint8_t runBoardMlDevIRQhandlerTX(void)
 {
 	uint8_t res = 0;
 	if (LL_DMA_IsActiveFlag_TC5(DMA1) != RESET)
@@ -125,7 +125,7 @@ uint8_t runBoardSpiIRQhandlerTX(void)
 	}
 	return res;
 }
-void enableBoardSpi(uint32_t rxlen, uint32_t txlen)
+void enableBoardMlDev(uint32_t rxlen, uint32_t txlen)
 {
 	LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_4);
 	LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_4);
@@ -141,7 +141,7 @@ void enableBoardSpi(uint32_t rxlen, uint32_t txlen)
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);   //transmit
 	LL_SPI_Enable(SPI2);
 }
-void disableBoardSpi(void)
+void disableBoardMlDev(void)
 {
 	LL_SPI_Disable(SPI2);
 	LL_SPI_DeInit(SPI2);
@@ -149,7 +149,7 @@ void disableBoardSpi(void)
 	LL_DMA_DeInit(DMA1, LL_DMA_CHANNEL_5);
 }
 
-void receiveBoardSpi(spi_mline_dev_t * receiver)
+void receiveBoardMlDev(spi_mline_dev_t * receiver)
 {
 	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
    //  for (uint16_t i = 0; i < _datacount; i++)
@@ -164,13 +164,13 @@ void receiveBoardSpi(spi_mline_dev_t * receiver)
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);
 }
 
-void resetBoardSpiRx(spi_mline_dev_t * receiver)
+void resetBoardMlDevRx(spi_mline_dev_t * receiver)
 {
 	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
 	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_4, receiver->dmabufferlen);
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
 }
-void resetBoardSpiRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+void resetBoardMlDevRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 {
 	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
 	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
@@ -179,7 +179,7 @@ void resetBoardSpiRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_4);   //receive
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
 }
-void receiveTransmitBoardSpi(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+void receiveTransmitBoardMlDev(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 {
 	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit

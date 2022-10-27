@@ -38,7 +38,11 @@ module mliner
 	@IncludeExport(path="mliner")
 	source "mliner.h"
 }
-module mod_sec
+abstract module mod_sec
+{
+
+}
+module mod_sec_base extends exacto.mliner.mod_sec
 {
 	source "mliner_sec.c"
 	@IncludeExport(path = "mliner")
@@ -82,6 +86,7 @@ module maindev_base extends ext.exacto.mliner.maindev
 }
 module secdev_base extends ext.exacto.mliner.secdev
 {
-	@IncludeExport(path = "mliner")
 	source "mliner_secdev_emb.c"
+	depends ext.exacto.mliner.secdev_h
+	depends embox.kernel.lthread.lthread
 }

@@ -105,6 +105,6 @@ module maindev_impl_afina extends ext.exacto.mliner.maindev_impl
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module secdev_impl_apollon extends ext.exacto.mliner.secdev_impl
 {
-	@IncludeExport(path="mliner")
 	source "mliner_secdev_impl_apollon.c"
+	depends ext.exacto.mliner.secdev_impl_h
 }
