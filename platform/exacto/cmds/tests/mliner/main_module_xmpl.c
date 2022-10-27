@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include "operator/exacto_buffer.h"
 
-#include "exlnk_setHeader.h"
-#include "exlnk_getHeader.h"
-#include "exlnk_Cmd.h"
+#include "exactolink/exlnk_setHeader.h"
+#include "exactolink/exlnk_getHeader.h"
+#include "exactolink/exlnk_Cmd.h"
 #include "mliner/mliner.h"
 
 #include "ex_utils.h"

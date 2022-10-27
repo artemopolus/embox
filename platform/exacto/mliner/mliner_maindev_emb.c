@@ -109,11 +109,11 @@ static int initSpiDevSec(void)
 	SpiIsEnabled = 0;
 	return 0;
 }
-void setTxBuffSpiDevSec(ExactoBufferUint8Type * buffer)
+void setTxBuffMlinerDev(ExactoBufferUint8Type * buffer)
 {
 	TransmitSpiDev.storage = buffer;
 }
-void setRxBuffSpiDevSec(ExactoBufferUint8Type * buffer)
+void setRxBuffMlinerDev(ExactoBufferUint8Type * buffer)
 {
 	ReceiveSpiDev.storage = buffer;
 }
@@ -133,7 +133,7 @@ uint8_t repeatTransmitSpiDevSec()
     ReceiveSpiDev.isready = 0;	
 	return 1;
 }
-uint8_t transmitSpiDevSec()
+uint8_t transmitMlinerDev()
 {
 	if(SpiIsEnabled == 0)
 	{
@@ -166,21 +166,21 @@ uint16_t setTransmitDataSpiDevSec(uint8_t * src, uint16_t srclen)
 	}
 	return i;
 }
-void setReceiverSpiDevSec(int(*receiveProcess)(uint8_t * data, uint16_t datalen))
+void setReceiverMlinerDev(int(*receiveProcess)(uint8_t * data, uint16_t datalen))
 {
 	ReceiveSpiDev.collect = receiveProcess;
 	ReceiveSpiDev.collect_on = 1;
 }
-void setTransmitSpiDevSec(int(*transmitProcess)(uint8_t * data, uint16_t datalen))
+void setTransmitMlinerDev(int(*transmitProcess)(uint8_t * data, uint16_t datalen))
 {
 	TransmitSpiDev.collect = transmitProcess;
 	TransmitSpiDev.collect_on = 1;
 }
-uint8_t getTransmitResultSpiDevSec()
+uint8_t getTransmitResultMlinerDev()
 {
 	return TransmitSpiDev.isready;
 }
-uint8_t getReceiveResultSpiDevSec()
+uint8_t getReceiveResultMlinerDev()
 {
 	return ReceiveSpiDev.isready;
 }
