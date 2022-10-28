@@ -21,7 +21,7 @@ static uint8_t SpiIsEnabled = 0;
 
 static irq_return_t TransmitIRQhandler(unsigned int irq_nr, void *data)
 {
-    if(runBoardMlDevIRQhandlerTX())
+    if(mlimpl_runBoardIRQhandlerTX())
     {
         TransmitSpiDev.isready = 1;
         ex_disableGpio(EX_GPIO_SPI_MLINE); //теперь можно обновлять tx на аполлоне
@@ -31,7 +31,7 @@ static irq_return_t TransmitIRQhandler(unsigned int irq_nr, void *data)
 STATIC_IRQ_ATTACH(SPI_MLINE_DMA_IRQ_TX, TransmitIRQhandler, NULL);
 static irq_return_t ReceiveIRQhandler(unsigned int irq_nr, void *data)
 {
-	if(runBoardMlDevIRQhandlerRX())
+	if(mlimpl_runBoardIRQhandlerRX())
 	{
 		ReceiveSpiDev.isready = 1;
 	} 
@@ -43,14 +43,14 @@ void enableSpiDevSec()
 {
     irq_attach(SPI_MLINE_DMA_IRQ_TX, TransmitIRQhandler, 0, NULL, "TransmitIRQhandler");
     irq_attach(SPI_MLINE_DMA_IRQ_RX, ReceiveIRQhandler, 0, NULL, "ReceiveIRQhandler");
-    enableBoardMlDev(MLINE_RXTX_BUFFER_SIZE, MLINE_RXTX_BUFFER_SIZE);
+    mlimpl_enableBoard(MLINE_RXTX_BUFFER_SIZE, MLINE_RXTX_BUFFER_SIZE);
 	SpiIsEnabled = 1;
 }
 void disableSpiDevSec()
 {
 	irq_detach(SPI_MLINE_DMA_IRQ_TX,NULL);
 	irq_detach(SPI_MLINE_DMA_IRQ_RX,NULL);
-	disableBoardMlDev();
+	mlimpl_disableBoard();
 	SpiIsEnabled = 0;
 }
 int downloadSpiDevSecData(uint32_t len)
@@ -89,7 +89,7 @@ int uploadSpiDevSecData(uint32_t len)
 EMBOX_UNIT_INIT(initSpiDevSec);
 static int initSpiDevSec(void)
 {
-	initBoardMlDev();
+	mlimpl_initBoard();
 	TransmitSpiDev.dmabufferdata = TransmitBuffer;
 	TransmitSpiDev.dmabufferlen = MLINE_RXTX_BUFFER_SIZE;
 	TransmitSpiDev.processData = uploadSpiDevSecData;
@@ -104,16 +104,16 @@ static int initSpiDevSec(void)
 	ReceiveSpiDev.isfull = 0;
 	ReceiveSpiDev.isready = 1;
 
-	setBoardMlDevBuffer(&TransmitSpiDev, &ReceiveSpiDev);
+	mlimpl_setBoardBuffer(&TransmitSpiDev, &ReceiveSpiDev);
 
 	SpiIsEnabled = 0;
 	return 0;
 }
-void setTxBuffMlinerDev(ExactoBufferUint8Type * buffer)
+void mldev_setTxBuff(ExactoBufferUint8Type * buffer)
 {
 	TransmitSpiDev.storage = buffer;
 }
-void setRxBuffMlinerDev(ExactoBufferUint8Type * buffer)
+void mldev_setRxBuff(ExactoBufferUint8Type * buffer)
 {
 	ReceiveSpiDev.storage = buffer;
 }
@@ -124,16 +124,16 @@ void receiveSpiDevSec()
 		initSpiDevSec();
 		enableSpiDevSec();
 	}
-	receiveBoardMlDev(&ReceiveSpiDev);
+	mlimpl_receiveBoard(&ReceiveSpiDev);
 }
 uint8_t repeatTransmitSpiDevSec()
 {
-	resetBoardMlDevRxTx(&ReceiveSpiDev, &TransmitSpiDev);
+	mlimpl_resetBoardRxTx(&ReceiveSpiDev, &TransmitSpiDev);
     TransmitSpiDev.isready = 0;
     ReceiveSpiDev.isready = 0;	
 	return 1;
 }
-uint8_t transmitMlinerDev()
+uint8_t mldev_transmit()
 {
 	if(SpiIsEnabled == 0)
 	{
@@ -143,7 +143,7 @@ uint8_t transmitMlinerDev()
 
     if(TransmitSpiDev.isready )
     {
-        receiveTransmitBoardMlDev(&ReceiveSpiDev, &TransmitSpiDev);
+        mlimpl_receiveTransmitBoard(&ReceiveSpiDev, &TransmitSpiDev);
         TransmitSpiDev.isready = 0;
         ReceiveSpiDev.isready = 0;	
         return 1;
@@ -166,21 +166,21 @@ uint16_t setTransmitDataSpiDevSec(uint8_t * src, uint16_t srclen)
 	}
 	return i;
 }
-void setReceiverMlinerDev(int(*receiveProcess)(uint8_t * data, uint16_t datalen))
+void mldev_setReceiver(int(*receiveProcess)(uint8_t * data, uint16_t datalen))
 {
 	ReceiveSpiDev.collect = receiveProcess;
 	ReceiveSpiDev.collect_on = 1;
 }
-void setTransmitMlinerDev(int(*transmitProcess)(uint8_t * data, uint16_t datalen))
+void mldev_setTransmit(int(*transmitProcess)(uint8_t * data, uint16_t datalen))
 {
 	TransmitSpiDev.collect = transmitProcess;
 	TransmitSpiDev.collect_on = 1;
 }
-uint8_t getTransmitResultMlinerDev()
+uint8_t mldev_getTransmitResult()
 {
 	return TransmitSpiDev.isready;
 }
-uint8_t getReceiveResultMlinerDev()
+uint8_t mldev_getReceiveResult()
 {
 	return ReceiveSpiDev.isready;
 }

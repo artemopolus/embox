@@ -2,7 +2,7 @@
 
 #include "gpio_config.h"
 
-int initBoardMlDev(void)
+int mlimpl_initBoard(void)
 {
     LL_SPI_InitTypeDef SPI_InitStruct = {0};
 
@@ -82,7 +82,7 @@ int initBoardMlDev(void)
     return 0;
 }
 
-void setBoardMlDevBuffer(
+void mlimpl_setBoardBuffer(
 	spi_mline_dev_t * transmit, spi_mline_dev_t * receive
 	// uint8_t * rxdata, uint32_t rxlen, uint8_t * txdata, uint32_t txlen, int (*download)(uint32_t len), int(*upload)(uint32_t len)
 	)
@@ -103,7 +103,7 @@ void setBoardMlDevBuffer(
 
 }
 
-uint8_t runBoardMlDevIRQhandlerRX(void)
+uint8_t mlimpl_runBoardIRQhandlerRX(void)
 {
     if (LL_DMA_IsActiveFlag_TC0(SPI_MLINE_DMA) != RESET)
     {
@@ -112,7 +112,7 @@ uint8_t runBoardMlDevIRQhandlerRX(void)
     }
     return 0;
 }
-uint8_t runBoardMlDevIRQhandlerTX(void)
+uint8_t mlimpl_runBoardIRQhandlerTX(void)
 {
     if (LL_DMA_IsActiveFlag_TC5(SPI_MLINE_DMA) != RESET)
     {
@@ -121,7 +121,7 @@ uint8_t runBoardMlDevIRQhandlerTX(void)
     }
     return 0;
 }
-void enableBoardMlDev(uint32_t rxlen, uint32_t txlen)
+void mlimpl_enableBoard(uint32_t rxlen, uint32_t txlen)
 {
     LL_DMA_EnableIT_TC(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX);
     LL_DMA_EnableIT_TE(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX);
@@ -136,24 +136,24 @@ void enableBoardMlDev(uint32_t rxlen, uint32_t txlen)
     LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
     LL_SPI_Enable(SPI_MLINE_SPI);
 }
-void disableBoardMlDev(void)
+void mlimpl_disableBoard(void)
 {
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
     LL_SPI_Disable(SPI_MLINE_SPI);
 
 }
-void receiveBoardMlDev(spi_mline_dev_t * receiver)
+void mlimpl_receiveBoard(spi_mline_dev_t * receiver)
 {
-    resetBoardMlDevRx(receiver);
+    mlimpl_resetBoardRx(receiver);
 }
-void resetBoardMlDevRx(spi_mline_dev_t * receiver)
+void mlimpl_resetBoardRx(spi_mline_dev_t * receiver)
 {
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_SetDataLength    (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX, receiver->dmabufferlen); //устанавливаем сколько символов передачть
     LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
 }
-void resetBoardMlDevRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+void mlimpl_resetBoardRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 {
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
@@ -167,7 +167,7 @@ void resetBoardMlDevRxTx(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 
 }
 
-void receiveTransmitBoardMlDev(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
+void mlimpl_receiveTransmitBoard(spi_mline_dev_t * receiver, spi_mline_dev_t * transmit)
 {
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 

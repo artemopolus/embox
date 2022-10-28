@@ -20,7 +20,7 @@ static uint8_t SpiIsEnabled = 0;
 
 static irq_return_t TransmitIRQhandler(unsigned int irq_nr, void *data)
 {
-	if(runBoardMlDevIRQhandlerTX())
+	if(mlimpl_runBoardIRQhandlerTX())
 	{
 		TransmitSpiDev.isready = 1;
 	// 	    SPI2_FULL_DMA_tx_buffer.is_full = 0;
@@ -31,7 +31,7 @@ static irq_return_t TransmitIRQhandler(unsigned int irq_nr, void *data)
 STATIC_IRQ_ATTACH(15, TransmitIRQhandler, NULL);
 static irq_return_t ReceiveIRQhandler(unsigned int irq_nr, void *data)
 {
-	if(runBoardMlDevIRQhandlerRX())
+	if(mlimpl_runBoardIRQhandlerRX())
 	{
 		ReceiveSpiDev.isready = 1;
 	// 	    SPI2_FULL_DMA_rx_buffer.is_full = 1;
@@ -47,14 +47,14 @@ void enableSpiDevSec()
 {
    irq_attach(15, TransmitIRQhandler, 0, NULL, "TransmitIRQhandler");
    irq_attach(14, ReceiveIRQhandler, 0, NULL, "ReceiveIRQhandler");
-	enableBoardMlDev(MLINE_RXTX_BUFFER_SIZE, MLINE_RXTX_BUFFER_SIZE);
+	mlimpl_enableBoard(MLINE_RXTX_BUFFER_SIZE, MLINE_RXTX_BUFFER_SIZE);
 	SpiIsEnabled = 1;
 }
-void disableDevSec()
+void mldev_disable()
 {
 	irq_detach(15,NULL);
 	irq_detach(14,NULL);
-	disableBoardMlDev();
+	mlimpl_disableBoard();
 	SpiIsEnabled = 0;
 }
 int downloadSpiDevSecData(uint32_t len)
@@ -90,7 +90,7 @@ int uploadSpiDevSecData(uint32_t len)
 EMBOX_UNIT_INIT(initSpiDevSec);
 static int initSpiDevSec(void)
 {
-	initBoardMlDev();
+	mlimpl_initBoard();
 	TransmitSpiDev.dmabufferdata = TransmitBuffer;
 	TransmitSpiDev.dmabufferlen = MLINE_RXTX_BUFFER_SIZE;
 	TransmitSpiDev.processData = uploadSpiDevSecData;
@@ -105,20 +105,20 @@ static int initSpiDevSec(void)
 	ReceiveSpiDev.isfull = 0;
 	ReceiveSpiDev.isready = 1;
 
-	setBoardMlDevBuffer(&TransmitSpiDev, &ReceiveSpiDev);
+	mlimpl_setBoardBuffer(&TransmitSpiDev, &ReceiveSpiDev);
 
 	SpiIsEnabled = 0;
 	return 0;
 }
-void setTxBuffDevSec(ExactoBufferUint8Type * buffer)
+void mldev_setTxBuff(ExactoBufferUint8Type * buffer)
 {
 	TransmitSpiDev.storage = buffer;
 }
-void setRxBuffDevSec(ExactoBufferUint8Type * buffer)
+void mldev_setRxBuff(ExactoBufferUint8Type * buffer)
 {
 	ReceiveSpiDev.storage = buffer;
 }
-void receiveDevSec()
+void mldev_receive()
 {
 	if(SpiIsEnabled == 0)
 	{
@@ -126,47 +126,47 @@ void receiveDevSec()
 		enableSpiDevSec();
 	}
 		if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
-	receiveBoardMlDev(&ReceiveSpiDev);
+	mlimpl_receiveBoard(&ReceiveSpiDev);
 }
-uint8_t repeatTransmitDevSec()
+uint8_t mldev_repeatTransmit()
 {
 	if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
 	{
-		resetBoardMlDevRxTx(&ReceiveSpiDev, &TransmitSpiDev);
+		mlimpl_resetBoardRxTx(&ReceiveSpiDev, &TransmitSpiDev);
 		return 1;
 	}
 	return 0;
 }
-uint8_t transmitDevSec()
+uint8_t mldev_transmit()
 {
 	if(!ReceiveSpiDev.isready)
 	{
-		resetBoardMlDevRx(&ReceiveSpiDev);	
+		mlimpl_resetBoardRx(&ReceiveSpiDev);	
 		return 0;
 	}
 	if(!ex_checkGpio(EX_GPIO_SPI_MLINE))
 	{
 		if(TransmitSpiDev.isready )
 		{
-			receiveTransmitBoardMlDev(&ReceiveSpiDev, &TransmitSpiDev);
+			mlimpl_receiveTransmitBoard(&ReceiveSpiDev, &TransmitSpiDev);
 			TransmitSpiDev.isready = 0;
 			ReceiveSpiDev.isready = 0;	
 			return 1;
 		}
 		else
 		{
-			receiveBoardMlDev(&ReceiveSpiDev);
+			mlimpl_receiveBoard(&ReceiveSpiDev);
 		}
 	}
 	return 0;
 }
-uint16_t getReceivedDataDevSec(uint8_t * trg, uint16_t trglen)
+uint16_t mldev_getReceivedData(uint8_t * trg, uint16_t trglen)
 {
 	if(downloadSpiDevSecData(ReceiveSpiDev.dmabufferlen))
 		return grball_exbu8(ReceiveSpiDev.storage, trg);
 	return 0;
 }
-uint16_t setTransmitDataDevSec(uint8_t * src, uint16_t srclen)
+uint16_t mldev_setTransmitData(uint8_t * src, uint16_t srclen)
 {
 	int i;
 	for(i = 0; i < srclen; i++)
@@ -176,11 +176,11 @@ uint16_t setTransmitDataDevSec(uint8_t * src, uint16_t srclen)
 	}
 	return i;
 }
-uint8_t getTransmitResultDevSec()
+uint8_t mldev_getTransmitResult()
 {
 	return TransmitSpiDev.isready;
 }
-uint8_t getReceiveResultDevSec()
+uint8_t mldev_getReceiveResult()
 {
 	return ReceiveSpiDev.isready;
 }
