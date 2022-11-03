@@ -7,4 +7,4 @@
 //"test_buffer_fifo_test",
 "test_mline_main_xmpl"
 //"test_mliner_sender"
-"test_copy"
+//"test_copy"
