@@ -4,7 +4,6 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/sync/mutex.h>
-#include "commander/exacto_data_storage.h"
 
 #include "tim.h"
 ex_subs_service_t ExTimServices[TIM_SERVICES_COUNT];
