@@ -108,6 +108,7 @@ module mliner_impl_maindev extends ext.exacto.mliner.maindev_impl
 	source "spi_impl_maindev.c"
 	depends ext.exacto.mliner.maindev_impl_h
 	depends exacto.gpio.config
+	depends exacto.gpio.mline_spi_main
 }
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module secdev_impl_apollon extends ext.exacto.mliner.secdev_impl

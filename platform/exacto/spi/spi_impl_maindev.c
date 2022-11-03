@@ -1,6 +1,7 @@
 #include "mliner/mliner_maindev_impl.h"
 
 #include "gpio_config.h"
+#include "gpio/gpio_spi.h"
 
 #include <embox/unit.h>
 #include <kernel/irq.h>
@@ -24,6 +25,7 @@ static irq_return_t TransmitIRQhandler(unsigned int irq_nr, void *data)
     {
         LL_DMA_ClearFlag_TC5(SPI_MLINE_DMA);
         MlinerDev->readyTx = 1;
+        ex_disableGpio(EX_GPIO_SPI_MLINE); //теперь можно обновлять tx на аполлоне
     }
     return IRQ_HANDLED;
 }
@@ -56,6 +58,7 @@ static int updateTxRx(struct mliner_dev * dev)
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
     dev->receiveDataProcess(RxBuffer, RxLen);
     dev->transmitDataProcess(TxBuffer, TxLen);
+    ex_enableGpio(EX_GPIO_SPI_MLINE); //block update apollon tx
     LL_DMA_SetDataLength     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX, RxLen);
     LL_DMA_SetDataLength     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX, TxLen); //устанавливаем сколько символов передачть
 
