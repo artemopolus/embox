@@ -1,4 +1,4 @@
-#include "mliner/mliner_sec.h"
+#include "mliner/mliner_main.h"
 #include <kernel/lthread/lthread.h>
 #include "tim/tim.h"
 #include <stdio.h>
@@ -48,7 +48,7 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
 	printf("in:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	cmd->value += 3;
-	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
+	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD,0);
 	SendCounter++;
 	return 0;
 }
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 #endif
-		exmliner_Update();
+		exmliner_Update(0);
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 		UpdateMlineDuration = TagTimer.result;

@@ -60,7 +60,7 @@ module sec_module_xmpl{
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
 
-	depends exacto.mliner.mod_sec
+	depends exacto.mliner.mod_base
 
 	depends exacto.tim.base
 
