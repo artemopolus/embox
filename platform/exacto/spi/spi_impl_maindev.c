@@ -53,7 +53,7 @@ static int updateRx(struct mliner_dev * dev)
 static int updateTxRx(struct mliner_dev * dev)
 {
     if(!dev->readyTx)
-        return 1;
+        return 0;
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
     dev->receiveDataProcess(RxBuffer, RxLen);
@@ -66,7 +66,7 @@ static int updateTxRx(struct mliner_dev * dev)
     LL_DMA_EnableStream     (SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_TX); //enable transmit 
     dev->readyRx = 0;
     dev->readyTx = 0;
-    return 0;
+    return 1;
 }
 static int read(struct mliner_dev * dev, uint8_t * data, uint16_t len)
 {
@@ -74,6 +74,7 @@ static int read(struct mliner_dev * dev, uint8_t * data, uint16_t len)
 }
 static int close (struct mliner_dev * dev)
 {
+    dev->is_opened = 0;
 	irq_detach(SPI_MLINE_DMA_IRQ_TX,NULL);
 	irq_detach(SPI_MLINE_DMA_IRQ_RX,NULL);
     LL_DMA_DisableStream(SPI_MLINE_DMA, SPI_MLINE_DMA_STREAM_RX); //enable receive
@@ -83,6 +84,7 @@ static int close (struct mliner_dev * dev)
 }
 static int open(struct mliner_dev * dev, const struct mliner_dev_params * params)
 {
+    dev->is_opened = 1;
     TxLen = params->len;
     RxLen = params->len;
     irq_attach(SPI_MLINE_DMA_IRQ_TX, TransmitIRQhandler, 0, NULL, "TransmitIRQhandler");

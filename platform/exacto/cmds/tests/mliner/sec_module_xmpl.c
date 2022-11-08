@@ -97,16 +97,28 @@ int main(int argc, char *argv[])
 	exmliner_Init(0);
 	while (1)
 	{
-		while(!EnableUpdate);
+		while(!EnableUpdate)
+			__asm("nop");
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 #endif
-		exmliner_Update(0);
+		exmliner_Update(7);
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 		UpdateMlineDuration = TagTimer.result;
 #endif
-		while(!exmliner_getRxIRQ());
+		int index = 0;
+		while(!exmliner_getRxIRQ())
+		{
+			index++;
+			if(index > 500000)
+			{
+				exmliner_Update(0);
+				index = 0;
+				printf("reset irq\n");
+				__asm("nop");
+			}
+		}
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 		TransmitMlineDuration = TagTimer.result;
