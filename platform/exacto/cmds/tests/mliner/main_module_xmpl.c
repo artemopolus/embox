@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
-	exmliner_Init(1);
+	exmliner_Init(1, 1);
    
 	
 	while (1)
