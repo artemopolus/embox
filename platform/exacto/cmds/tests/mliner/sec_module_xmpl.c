@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 			index++;
 			if(index > 500000)
 			{
-				exmliner_Update(0);
+				exmliner_Update(Address);
 				index = 0;
 				printf("reset irq\n");
 				__asm("nop");

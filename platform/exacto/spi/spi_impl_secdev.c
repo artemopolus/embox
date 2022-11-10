@@ -112,6 +112,8 @@ static int read(struct mliner_dev * dev, uint8_t * data, uint16_t len)
 static int close (struct mliner_dev * dev)
 {
 	dev->is_opened = 0;
+	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4); //receive
+	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5); //transmit
 	irq_detach(15,NULL);
 	irq_detach(14,NULL);
 	LL_SPI_Disable(SPI2);
@@ -123,8 +125,12 @@ static int close (struct mliner_dev * dev)
 static int open(struct mliner_dev * dev, const struct mliner_dev_params * params)
 {
 	dev->is_opened = 1;
+	dev->params = *params;
+	dev->readyRx = 0;
+	dev->readyTx = 1;
 	TxLen = params->len;
 	RxLen = params->len;
+	mlimpl_initBoard();
    irq_attach(15, TransmitIRQhandler, 0, NULL, "TransmitIRQhandler");
    irq_attach(14, ReceiveIRQhandler, 0, NULL, "ReceiveIRQhandler");
 
@@ -163,7 +169,6 @@ static int open(struct mliner_dev * dev, const struct mliner_dev_params * params
 EMBOX_UNIT_INIT(initSpiMlinerSec);
 static int initSpiMlinerSec(void)
 {
-	mlimpl_initBoard();
 	for(int i = 0; i < MLINER_BASEDEV_DEVSBLOCK_CNT; i++)
 	{
 		if(MlinerDevsBlock.devices[i].is_enabled == 0)
