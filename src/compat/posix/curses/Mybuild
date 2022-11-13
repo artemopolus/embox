@@ -1,8 +1,10 @@
 package embox.compat.posix
 
-static module LibCurses {
-	source "curses.c"
+@DefaultImpl(libcurses_tiny)
+abstract module LibCurses {
 
-	depends embox.compat.posix.termios
-	depends embox.mem.pool
+}
+
+module libcurses_tiny extends LibCurses {
+	source "curses.c"
 }

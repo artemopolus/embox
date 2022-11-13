@@ -14,8 +14,12 @@
 
 #if defined(STM32F407xx)
 #include "stm32f4_discovery.h"
-#elif defined (STM32F429xx)
+#elif defined(STM32F429xx) && defined(USE_STM32F4XX_NUCLEO_144)
 #include "stm32f4xx_nucleo_144.h"
+#elif defined(STM32F429xx)
+#include "stm32f429i_discovery.h"
+#elif defined(STM32F411xE)
+#include "stm32f411xe.h"
 #else
 #error Unsupported platform
 #endif
@@ -28,20 +32,26 @@
 
 #define USART6_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart6_irq)
-static_assert(USART6_IRQ == USART6_IRQn);
+static_assert(USART6_IRQ == USART6_IRQn, "");
 
+#if !defined(STM32F411xE)
 #define USART3_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart3_irq)
-static_assert(USART3_IRQ == USART3_IRQn);
+static_assert(USART3_IRQ == USART3_IRQn, "");
+#endif
 
 #define USART2_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart2_irq)
-static_assert(USART2_IRQ == USART2_IRQn);
+static_assert(USART2_IRQ == USART2_IRQn, "");
+
+#define USART1_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart1_irq)
+static_assert(USART1_IRQ == USART1_IRQn, "");
 
 #if defined(UART8)
 #define UART8_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, uart8_irq)
-static_assert(UART8_IRQ == UART8_IRQn);
+static_assert(UART8_IRQ == UART8_IRQn, "");
 #endif
 
 #if MODOPS_USARTX == 6
@@ -50,6 +60,12 @@ static_assert(UART8_IRQ == UART8_IRQn);
 
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART6_IRQ
+
+#elif MODOPS_USARTX == 1
+#define USARTx                           USART1
+
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      USART1_IRQ
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2
@@ -76,7 +92,6 @@ static_assert(UART8_IRQ == UART8_IRQn);
 #else
 #error Unsupported USARTx
 #endif
-
 
 #define STM32_USART_FLAGS(uart)   uart->SR
 #define STM32_USART_RXDATA(uart)  uart->DR

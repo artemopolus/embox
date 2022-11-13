@@ -61,4 +61,66 @@ struct uart_conf uarts[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts))
+struct pwm_conf pwms[] = {
+	[0] = {
+		.name = "PWM0",
+		.instance = VAL("INSTANCE", TIM2),
+		.channel = VAL("CHANNEL_TIM", CHANNEL_TIM2),
+		.servo_low = VAL("LOW", 430),
+		.servo_high = VAL("HIGH", 2175),
+		.dev = {
+			.pins = {
+				PIN("TIM",  PD, PIN_4, AF2),
+			},
+			.clocks = {
+				VAL("GPIO",  CLK_GPIOD),
+				VAL("TIM",  CLK_TIM2),
+			}
+		},
+	},
+};
+
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED3",
+		.port = VAL("", PE),
+		.pin = VAL("", 9),
+	},
+	[1] = {
+		.name = "LED4",
+		.port = VAL("", PE),
+		.pin = VAL("", 8),
+	},
+	[2] = {
+		.name = "LED5",
+		.port = VAL("", PE),
+		.pin = VAL("", 10),
+	},
+	[3] = {
+		.name = "LED6",
+		.port = VAL("PORT", PE),
+		.pin = VAL("PIN", 15),
+	},
+	[4] = {
+		.name = "LED7",
+		.port = VAL("", PE),
+		.pin = VAL("", 11),
+	},
+	[5] = {
+		.name = "LED8",
+		.port = VAL("", PE),
+		.pin = VAL("", 14),
+	},
+	[6] = {
+		.name = "LED9",
+		.port = VAL("", PE),
+		.pin = VAL("", 12),
+	},
+	[7] = {
+		.name = "LED10",
+		.port = VAL("PORT", PE),
+		.pin = VAL("PIN", 13),
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), PWM(pwms), LED(leds))

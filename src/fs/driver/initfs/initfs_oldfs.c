@@ -25,12 +25,13 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/vfs.h>
-#include <kernel/printk.h>
+#include <fs/super_block.h>
+
 #include <framework/mod/options.h>
 
 #include "initfs.h"
 
-static struct inode_operations initfs_iops = {
+struct inode_operations initfs_iops = {
 	.iterate = initfs_iterate,
 };
 
@@ -42,7 +43,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 		return -1;
 	}
 
-	fi = initfs_file_alloc();
+	fi = initfs_alloc_inode();
 	if (fi == NULL) {
 		return -ENOMEM;
 	}
@@ -55,20 +56,23 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int initfs_create_node(struct inode *node, struct inode *parent_node, int mode) {
-	return -EACCES;
-}
-
 extern struct file_operations initfs_fops;
+extern int initfs_fill_sb(struct super_block *sb, const char *source);
+
+struct super_block_operations initfs_sbops = {
+	//.open_idesc = dvfs_file_open_idesc,
+	.destroy_inode = initfs_destroy_inode,
+};
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
-	.create_node = initfs_create_node,
+	.create_node = initfs_create,
 };
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
-	.file_op = &initfs_fops,
+	.fill_sb   = initfs_fill_sb,
+//	.file_op = &initfs_fops,
 	.fsop = &initfs_fsop,
 };
 

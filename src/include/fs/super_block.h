@@ -13,8 +13,17 @@ struct block_dev;
 struct file_operations;
 struct fs_driver;
 struct inode_operations;
-struct super_block_operations;
 struct dlist_head;
+struct inode;
+struct super_block;
+struct idesc;
+struct lookup;
+
+struct super_block_operations {
+	int           (*destroy_inode)(struct inode *inode);
+	int           (*umount_begin)(struct super_block *sb);
+	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
+};
 
 struct super_block {
 	const struct fs_driver *fs_drv;

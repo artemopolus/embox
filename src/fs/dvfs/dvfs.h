@@ -9,11 +9,8 @@
 
 #include <config/embox/fs/dvfs/core.h>
 #include <framework/mod/options.h>
-#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, dentry_name_len)
-#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, max_path_len)
 
-#include <drivers/block_dev.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/file_desc.h>
 #include <util/dlist.h>
 #include <fs/file_operation.h>
@@ -44,38 +41,11 @@ struct super_block;
 struct lookup;
 struct inode_operations;
 struct dir_ctx;
-
-struct super_block_operations {
-	struct inode *(*alloc_inode)(struct super_block *sb);
-	int           (*destroy_inode)(struct inode *inode);
-	int           (*write_inode)(struct inode *inode);
-	int           (*umount_begin)(struct super_block *sb);
-	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
-};
-
-struct auto_mount {
-	char mount_path[DVFS_MAX_PATH_LEN];
-	struct fs_driver *fs_driver;
-};
-
-struct dvfsmnt {
-	struct dvfsmnt *mnt_parent;
-	struct dentry  *mnt_mountpoint;
-	struct dentry  *mnt_root;
-	struct super_block *mnt_sb;
-
-	struct dlist_head children;
-	struct dlist_head children_lnk;
-
-	int flags;
-};
+struct block_dev;
 
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
 extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
-
-extern struct dvfsmnt *dvfs_alloc_mnt(void);
-extern int             dvfs_destroy_mnt(struct dvfsmnt *mnt);
 
 extern struct dentry *dvfs_root(void);
 extern int dvfs_remove(const char *path);

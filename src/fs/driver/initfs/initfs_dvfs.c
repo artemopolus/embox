@@ -37,10 +37,6 @@
 
 #include "initfs.h"
 
-static int initfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return -EACCES;
-}
-
 static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
@@ -77,14 +73,6 @@ static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
-static int initfs_destroy_inode(struct inode *inode) {
-	if (inode_priv(inode) != NULL) {
-		initfs_file_free(inode_priv(inode));
-	}
-
-	return 0;
-}
-
 struct super_block_operations initfs_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = initfs_destroy_inode,
@@ -96,31 +84,11 @@ struct inode_operations initfs_iops = {
 	.iterate  = initfs_iterate,
 };
 
-extern struct file_operations initfs_fops;
-
-static int initfs_fill_sb(struct super_block *sb, const char *source) {
-	struct initfs_file_info *fi;
-
-	fi = initfs_file_alloc();
-	if (fi == NULL) {
-		return -ENOMEM;
-	}
-
-	sb->sb_iops = &initfs_iops;
-	sb->sb_fops = &initfs_fops;
-	sb->sb_ops  = &initfs_sbops;
-	sb->bdev    = NULL;
-
-	memset(fi, 0, sizeof(struct initfs_file_info));
-	inode_priv_set(sb->sb_root, fi);
-
-	return 0;
-}
+extern int initfs_fill_sb(struct super_block *sb, const char *source);
 
 static const struct fs_driver initfs_dumb_driver = {
 	.name      = "initfs",
 	.fill_sb   = initfs_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &initfs_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(initfs_dumb_driver);

@@ -32,7 +32,13 @@ WINDOW *curscr;
 #define SCREEN_MAX_WIDTH  200
 #define SCREEN_MAX_HEIGHT 200
 
-typedef struct SCREEN {
+struct line {
+	chtype *text;
+	curs_size_t firstchar;
+	curs_size_t lastchar;
+};
+
+struct screen {
 	char *type;
 	FILE *out;
 	FILE *in;
@@ -42,24 +48,27 @@ typedef struct SCREEN {
 	chtype cur_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
 	bool curses_mode; /* terminal mode (normal or curses) */
     struct termios last_mode;
-} SCREEN;
+};
 
 static SCREEN screen;
 
 POOL_DEF(wnd_pool, WINDOW, WINDOW_AMOUNT);
+POOL_DEF(line_pool, struct line, WINDOW_AMOUNT);
 
 static void window_init(WINDOW *win, uint16_t begy, uint16_t begx,
 		uint16_t nlines, uint16_t ncols, WINDOW *parent, chtype *lines) {
 	assert(win != NULL);
 
+	win->lines = pool_alloc(&line_pool);
+
 	win->begy = win->cury = begy;
 	win->begx = win->curx = begx;
-	win->endy = win->begy + nlines;
-	win->endx = win->begx + ncols;
+	win->maxy = win->begy + nlines;
+	win->maxx = win->begx + ncols;
 	win->parent = parent;
 	win->attrs = A_NORMAL;
 	win->bkgd = (chtype)0;
-	win->lines = lines;
+	win->lines->text = lines;
 	win->scrollok = false;
 	win->clearok = false;
 }
@@ -68,38 +77,38 @@ static void window_setch(WINDOW *win, chtype ch, uint16_t cury,
 		uint16_t curx) {
 	assert(win != NULL);
 	assert(win->lines != NULL);
-	assert((cury >= win->begy) && (cury < win->endy));
-	assert((curx >= win->begx) && (cury < win->endx));
+	assert((cury >= win->begy) && (cury < win->maxy));
+	assert((curx >= win->begx) && (cury < win->maxx));
 
 	if (ch == '#') {
 		ch = '#';
 	}
-	*(win->lines + cury * COLS + curx) = ch;
+	*(win->lines->text + cury * COLS + curx) = ch;
 }
 
 static chtype window_getch(WINDOW *win, uint16_t cury, uint16_t curx) {
 	assert(win != NULL);
 	assert(win->lines != NULL);
-	assert((cury >= win->begy) && (cury < win->endy));
-	assert((curx >= win->begx) && (cury < win->endx));
+	assert((cury >= win->begy) && (cury < win->maxy));
+	assert((curx >= win->begx) && (cury < win->maxx));
 
-	return *(win->lines + cury * COLS + curx);
+	return *(win->lines->text + cury * COLS + curx);
 }
 
 static void window_fill(WINDOW *win, chtype ch, uint16_t begy,
-		uint16_t begx, uint16_t endy, uint16_t endx) {
+		uint16_t begx, uint16_t maxy, uint16_t maxx) {
 	uint16_t y, x;
 
 	assert(win != NULL);
 
-	for (y = begy; y < endy; ++y) {
-		for (x = begx; x < endx; ++x) {
+	for (y = begy; y < maxy; ++y) {
+		for (x = begx; x < maxx; ++x) {
 			window_setch(win, ch, y, x);
 		}
 	}
 }
 
-static SCREEN * newterm(char *type, FILE *outfile, FILE *infile) {
+SCREEN *newterm(char *type, FILE *outfile, FILE *infile) {
 	int res;
 
 	COLS = SCREEN_WIDTH;
@@ -148,7 +157,7 @@ static int screen_change_mode(void) {
 	return 0;
 }
 
-WINDOW * initscr(void) {
+WINDOW *initscr(void) {
 	if (NULL == newterm("", stdout, stdin)) {
 		return NULL;
 	}
@@ -175,7 +184,7 @@ WINDOW * newwin(int nlines, int ncols, int begin_y, int begin_x) {
 	window_init(win, begin_y, begin_x,
 			nlines != 0 ? nlines : LINES - begin_y,
 			ncols != 0 ? ncols : COLS - begin_x, NULL,
-			stdscr->lines);
+			stdscr->lines->text);
 
 	return win;
 }
@@ -185,10 +194,10 @@ WINDOW * subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 	WINDOW *win;
 
 	if ((orig == NULL) || (nlines <= 0) || (ncols <= 0)
-			|| (begin_y < orig->begy) || (begin_y >= orig->endy)
-			|| (begin_x < orig->begx) || (begin_x >= orig->endx)
-			|| (begin_y + nlines > orig->endy)
-			|| (begin_x + ncols > orig->endx)) {
+			|| (begin_y < orig->begy) || (begin_y >= orig->maxy)
+			|| (begin_x < orig->begx) || (begin_x >= orig->maxx)
+			|| (begin_y + nlines > orig->maxy)
+			|| (begin_x + ncols > orig->maxx)) {
 		return NULL;
 	}
 
@@ -197,7 +206,7 @@ WINDOW * subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 		return NULL;
 	}
 
-	window_init(win, begin_y, begin_x, nlines, ncols, orig, stdscr->lines);
+	window_init(win, begin_y, begin_x, nlines, ncols, orig, stdscr->lines->text);
 
 	return win;
 }
@@ -209,6 +218,7 @@ WINDOW * derwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 }
 
 int delwin(WINDOW *win) {
+	pool_free(&line_pool, win->lines);
 	pool_free(&wnd_pool, win);
 
 	return OK;
@@ -226,15 +236,15 @@ int doupdate(void) {
 		}
 	}
 
-	std_ptr = stdscr->lines;
-	cur_ptr = curscr->lines;
-	std_end = stdscr->lines + LINES * COLS;
+	std_ptr = stdscr->lines->text;
+	cur_ptr = curscr->lines->text;
+	std_end = stdscr->lines->text + LINES * COLS;
 
 	do {
 		for (; (std_ptr < std_end) && (*std_ptr == *cur_ptr);
 				++std_ptr, ++cur_ptr) { }
 
-		offset = std_ptr - stdscr->lines;
+		offset = std_ptr - stdscr->lines->text;
 		/* y = offset / COLS; */
 		x = offset % COLS;
 
@@ -319,8 +329,8 @@ int move(int y, int x) {
 
 int wmove(WINDOW *win, int y, int x) {
 	if ((win == NULL)
-			|| (y < 0) || (y >= win->endy - win->begy)
-			|| (x < 0) || (x >= win->endx - win->begx)) {
+			|| (y < 0) || (y >= win->maxy - win->begy)
+			|| (x < 0) || (x >= win->maxx - win->begx)) {
 		return ERR;
 	}
 
@@ -359,11 +369,11 @@ int waddch(WINDOW *win, const chtype ch) {
 	window_setch(win, ch, win->cury, win->curx);
 
 	++win->curx;
-	if (win->curx == win->endx) {
+	if (win->curx == win->maxx) {
 		win->curx = win->begx;
 
 		++win->cury;
-		if (win->cury == win->endy) {
+		if (win->cury == win->maxy) {
 			win->cury = win->begy;
 		}
 
@@ -455,30 +465,30 @@ int wscrl(WINDOW *win, int n) {
 		src_line = win->begy + n;
 		dst_line = win->begy;
 
-		while (src_line < win->endy) {
-			src = win->lines + src_line * COLS + win->begx;
-			dst = win->lines + dst_line * COLS + win->begx;
-			memcpy(dst, src, (win->endx - win->begx) * sizeof(chtype));
+		while (src_line < win->maxy) {
+			src = win->lines->text + src_line * COLS + win->begx;
+			dst = win->lines->text + dst_line * COLS + win->begx;
+			memcpy(dst, src, (win->maxx - win->begx) * sizeof(chtype));
 			++src_line;
 			++dst_line;
 		}
 
-		window_fill(win, win->bkgd, dst_line, win->begx, win->endy, win->endx);
+		window_fill(win, win->bkgd, dst_line, win->begx, win->maxy, win->maxx);
 	}
 	else {
-		n = min(-n, win->endy - win->begy);
-		src_line = win->endy - n - 1;
-		dst_line = win->endy - 1;
+		n = min(-n, win->maxy - win->begy);
+		src_line = win->maxy - n - 1;
+		dst_line = win->maxy - 1;
 
 		while (src_line >= win->begy) {
-			src = win->lines + src_line * COLS + win->begx;
-			dst = win->lines + dst_line * COLS + win->begx;
-			memcpy(dst, src, (win->endx - win->begx) * sizeof(chtype));
+			src = win->lines->text + src_line * COLS + win->begx;
+			dst = win->lines->text + dst_line * COLS + win->begx;
+			memcpy(dst, src, (win->maxx - win->begx) * sizeof(chtype));
 			--src_line;
 			--dst_line;
 		}
 
-		window_fill(win, win->bkgd, win->begy, win->begx, src_line, win->endx);
+		window_fill(win, win->bkgd, win->begy, win->begx, src_line, win->maxx);
 	}
 
 	return OK;
@@ -517,7 +527,7 @@ int wclear(WINDOW *win) {
 		return ERR;
 	}
 
-	window_fill(win, win->bkgd, win->begy, win->begx, win->endy, win->endx);
+	window_fill(win, win->bkgd, win->begy, win->begx, win->maxy, win->maxx);
 
 	return OK;
 }
@@ -674,8 +684,8 @@ int wbkgd(WINDOW *win, chtype ch) {
 	old_ch = getbkgd(win);
 	wbkgdset(win, ch);
 
-	for (y = win->begy; y < win->endy; ++y) {
-		for (x = win->begx; x < win->endx; ++x) {
+	for (y = win->begy; y < win->maxy; ++y) {
+		for (x = win->begx; x < win->maxx; ++x) {
 			if (window_getch(win, y, x) == old_ch) {
 				window_setch(win, ch, y, x);
 			}
@@ -800,3 +810,28 @@ int nodelay(WINDOW *win, bool bf) {
 
 	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
+
+int curs_set(int visibility) {
+	return OK;
+}
+/****common part*****/
+int beep(void) {
+	return OK;
+}
+
+int keypad(WINDOW *win, bool bf) {
+#if 0
+	if (/*(SP == NULL)*/ || (win == NULL)) {
+		return ERR;
+	}
+
+	if (bf) {
+		win->flags |= WIN_KEYPAD;
+	}
+	else {
+		win->flags &= ~WIN_KEYPAD;
+	}
+#endif
+	return OK;
+}
+

@@ -8,14 +8,17 @@
  */
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <drivers/usb/usb.h>
 
 static void print_usage(void) {
-	printf("Usage: lsusb [-h] [-v]\n");
-	printf("\t[-h]      - print this help\n");
-	printf("\t[-v]      - prints verbose output with device, configuration" 
-		   " and interface descriptors\n");
+	printf("Usage: lsusb [-h] [-v] [-s [[bus]:]devnum] [-d [vendor]:[product]]\n");
+	printf("\t[-h]                    - print this help\n");
+	printf("\t[-v]                    - print verbose output with device, configuration and interface descriptors\n");
+	printf("\t[-s [[bus]:]devnum]     - print by device number and optional bus number (both in decimal)\n");
+	printf("\t[-d [vendor]:[product]] - print by vendor id and/or product id (both in hexadecimal)\n");
 
 }
 
@@ -66,38 +69,45 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			usb_dev->dev_desc.b_num_configurations);
 }
 
-static void show_usb_desc_interface(struct usb_dev *usb_dev) {
-	if (!usb_dev->usb_iface[0]->iface_desc[0]) {
+static void show_usb_desc_interface(struct usb_dev *usb_dev, int cfg) {
+	int i;
+	struct usb_dev_config *config = &usb_dev->usb_dev_configs[cfg];
+
+	if (!config->usb_iface[0]->iface_desc[0]) {
 		printf(" Interface Descriptor:\n"
-			   "   No interfaces\n"
+			   "   No interfaces\n\n"
 		);
 		return;
 	}
 
-	printf(" Interface Descriptor:\n"
-			"   b_length             %5u\n"
-			"   b_desc_type          %5u\n"
-			"   b_interface_number   %5u\n"
-			"   b_alternate_setting  %5u\n"
-			"   b_num_endpoints      %5u\n"
-			"   b_interface_class    %5u\n"
-			"   b_interface_subclass %5u\n"
-			"   b_interface_protocol %5u\n"
-			"   i_interface          %5u\n",
-			usb_dev->usb_iface[0]->iface_desc[0]->b_length,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_desc_type,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_number,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_alternate_setting,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_num_endpoints,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_class,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_subclass,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_protocol,
-			usb_dev->usb_iface[0]->iface_desc[0]->i_interface);
+	for (i = 0; i < config->usb_iface_num; i ++) {
+		struct usb_interface *iface;
+
+		iface = config->usb_iface[i];
+		printf(" Interface Descriptor:\n"
+				"   b_length             %5u\n"
+				"   b_desc_type          %5u\n"
+				"   b_interface_number   %5u\n"
+				"   b_alternate_setting  %5u\n"
+				"   b_num_endpoints      %5u\n"
+				"   b_interface_class    %5u\n"
+				"   b_interface_subclass %5u\n"
+				"   b_interface_protocol %5u\n"
+				"   i_interface          %5u\n\n",
+				iface->iface_desc[0]->b_length,
+				iface->iface_desc[0]->b_desc_type,
+				iface->iface_desc[0]->b_interface_number,
+				iface->iface_desc[0]->b_alternate_setting,
+				iface->iface_desc[0]->b_num_endpoints,
+				iface->iface_desc[0]->b_interface_class,
+				iface->iface_desc[0]->b_interface_subclass,
+				iface->iface_desc[0]->b_interface_protocol,
+				iface->iface_desc[0]->i_interface);
+	}
 }
 
-static void show_usb_desc_configuration(struct usb_dev *usb_dev) {
-	struct usb_desc_configuration *config = \
-				(struct usb_desc_configuration *) usb_dev->config_buf;
+static void show_usb_desc_configuration(struct usb_dev *usb_dev, int cfg) {
+	struct usb_desc_configuration *config = usb_dev->usb_dev_configs[cfg].config_buf;
 	
 	if (!config) {
 		printf(" Configuration Descriptor:\n"
@@ -130,7 +140,19 @@ int main(int argc, char **argv) {
 	struct usb_dev *usb_dev = NULL;
 	int opt, flag = 0;
 
-	while (-1 != (opt = getopt(argc, argv, "h:v"))) {
+	char *cp;
+
+	uint16_t bus = 0;
+	int bus_set = 0;
+	uint16_t devnum = 0;
+	int devnum_set = 0;
+
+	uint16_t vendor = 0;
+	int vendor_set = 0;
+	uint16_t product = 0;
+	int product_set = 0;
+
+	while (-1 != (opt = getopt(argc, argv, "s:d:h:v"))) {
 		switch (opt) {
 		case '?':
 		case 'h':
@@ -139,6 +161,41 @@ int main(int argc, char **argv) {
 		case 'v':
 			flag = 1;
 			break;
+		case 's':
+			cp = strchr(optarg, ':');
+			if (cp) {
+				*cp++ = 0;
+				if (*optarg) {
+					bus_set = 1;
+					bus = strtoul(optarg, NULL, 10);
+				}
+				if (*cp) {
+					devnum_set = 1;
+					devnum = strtoul(cp, NULL, 10);
+				}
+			} else {
+				if (*optarg) {
+					devnum_set = 1;
+					devnum = strtoul(optarg, NULL, 10);
+				}
+			}
+			break;
+		case 'd':
+			cp = strchr(optarg, ':');
+			if (!cp) {
+				print_error();
+				return 0;
+			}
+			*cp++ = 0;
+			if (*optarg) {
+				vendor_set = 1;
+				vendor = strtoul(optarg, NULL, 16);
+			}
+			if (*cp) {
+				product_set = 1;
+				product = strtoul(cp, NULL, 16);
+			}
+			break;
 		default:
 			print_error();
 			return 0;
@@ -146,11 +203,30 @@ int main(int argc, char **argv) {
 	}
 
 	while ((usb_dev = usb_dev_iterate(usb_dev))) {
+		if ((bus_set && bus != usb_dev->bus_idx) ||
+				(devnum_set && devnum != usb_dev->addr)) {
+			continue;
+		}
+
+		if ((vendor_set && vendor != usb_dev->dev_desc.id_vendor) ||
+				(product_set && product != usb_dev->dev_desc.id_product)) {
+			continue;
+		}
+
 		show_usb_dev(usb_dev);
 		if(flag) {
+			int conf_cnt = 0;
+
 			show_usb_desc_device(usb_dev);
-			show_usb_desc_configuration(usb_dev);
-			show_usb_desc_interface(usb_dev);
+
+			for (conf_cnt = 0;
+					conf_cnt < usb_dev->dev_desc.b_num_configurations;
+					conf_cnt ++) {
+
+				show_usb_desc_configuration(usb_dev, conf_cnt);
+				show_usb_desc_interface(usb_dev, conf_cnt);
+
+			}
 		}
 	}
 

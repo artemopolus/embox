@@ -77,6 +77,11 @@ extern size_t wcsftime(wchar_t *, size_t,
 
 extern int wcsncasecmp(const wchar_t *ws1, const wchar_t *ws2, size_t n);
 
+# if defined(__EMBOX__)
+#include <framework/mod/options.h>
+#include <module/embox/compat/libc/wchar_extended.h>
+#endif
+
 __END_DECLS
 
 #endif /* WCHAR_H_ */

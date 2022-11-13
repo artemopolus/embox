@@ -41,7 +41,7 @@ static struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 	uint8_t tmp_sec;
 	uint32_t tmp_clus;
 	struct inode *node;
-	char tmppath[PATH_MAX];
+	char tmppath[128];
 	int found = 0;
 
 	assert(name);
@@ -62,7 +62,7 @@ static struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 	}
 
 	while (!fat_get_next_long(di, &de, tmppath)) {
-		if (!strncmp(tmppath, name, sizeof(tmppath))) {
+		if (!strncmp(tmppath, name, NAME_MAX - 1)) {
 			found = 1;
 			break;
 		}
@@ -99,24 +99,7 @@ struct inode_operations fat_iops = {
 
 extern struct file_operations fat_fops;
 
-static int fat_destroy_inode(struct inode *inode) {
-	struct fat_file_info *fi;
-	struct dirinfo *di;
-
-	if (!inode->i_data)
-		return 0;
-
-	if (S_ISDIR(inode->i_mode)) {
-		di = inode->i_data;
-		fat_dirinfo_free(di);
-	} else {
-		fi = inode->i_data;
-		fat_file_free(fi);
-	}
-
-	return 0;
-}
-
+extern int fat_destroy_inode(struct inode *inode);
 struct super_block_operations fat_sbops = {
 	.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = fat_destroy_inode,
@@ -133,5 +116,4 @@ static const struct fs_driver dfs_fat_driver = {
 	.clean_sb  = fat_clean_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &dfs_fat_driver);
+DECLARE_FILE_SYSTEM_DRIVER(dfs_fat_driver);

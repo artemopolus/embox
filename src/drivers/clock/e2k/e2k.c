@@ -5,6 +5,8 @@
  * @version
  * @date 20.12.2017
  */
+#include <util/log.h>
+
 #include <stdint.h>
 #include <asm/io.h>
 
@@ -13,11 +15,21 @@
 
 #include <hal/clock.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time_device.h>
 
-#define E2K_CLOCK_BASE (uintptr_t)0x83200000
+#include <hal/ipl.h>
+#include <e2k_api.h>
+#include <e2k_mas.h>
+
+
+
+#include <asm/mpspec.h>
+
+static uint64_t clock_base = 0;
+
+#define E2K_CLOCK_BASE ((uint32_t)clock_base)
+
 #define IRQ_NR     OPTION_GET(NUMBER, irq_num)
 #define LT_FREQ    OPTION_GET(NUMBER, freq)
 
@@ -78,6 +90,12 @@ static irq_return_t e2k_clock_handler(unsigned int irq_nr, void *dev_id) {
 static int e2k_clock_init(struct clock_source *cs) {
 	uint32_t clock_hz = (10000000 + LT_FREQ / 2) / LT_FREQ;
 
+	clock_base = mpspec_get_clock_base();
+	if (clock_base == 0) {
+		log_error(" Error: MP_TIMER record not found, ");
+		return -1;
+	}
+
 	irq_attach(IRQ_NR, e2k_clock_handler, 0, cs, "e2k clock");
 
 	/* Setup frequency */
@@ -92,7 +110,11 @@ static int e2k_clock_set_periodic(struct clock_source *cs) {
 }
 
 static cycle_t e2k_clock_read(struct clock_source *cs) {
-	return e2k_read64(E2K_POWER_COUNTER);
+	cycle_t res;
+
+	res = e2k_read64(E2K_POWER_COUNTER);
+
+	return res;
 }
 
 static struct time_event_device e2k_clock_event = {
@@ -102,7 +124,7 @@ static struct time_event_device e2k_clock_event = {
 
 static struct time_counter_device e2k_clock_counter = {
 	.read     = e2k_clock_read,
-	.cycle_hz = 1000,
+	.cycle_hz = 10000000,
 };
 
 CLOCK_SOURCE_DEF(e2k_clock, e2k_clock_init, NULL,

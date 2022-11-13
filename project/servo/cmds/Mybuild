@@ -1,0 +1,9 @@
+package servo.cmd
+
+@AutoCmd
+@Cmd(name="pwm", help="Set PWM value to position motor", man="")
+module pwm {
+	source "pwm.c"
+
+	depends embox.driver.servo.servo
+}

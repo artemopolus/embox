@@ -38,8 +38,8 @@
 #include <kernel/sched/sched_lock.h>
 #include <kernel/time/ktime.h>
 
-#include <fs/idesc.h>
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc.h>
+#include <kernel/task/resource/idesc_event.h>
 
 #include <embox/net/pack.h>
 #include <embox/net/proto.h>
@@ -1347,7 +1347,7 @@ static int tcp_rcv(struct sk_buff *skb) {
 }
 
 static void tcp_timer_handler(struct sys_timer *timer, void *param) {
-	struct sock *sk;
+	struct sock *sk = NULL;
 	struct tcp_sock *tcp_sk;
 
 	(void)timer;

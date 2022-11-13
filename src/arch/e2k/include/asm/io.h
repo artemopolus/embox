@@ -32,6 +32,20 @@
 	__rval; \
 })
 
+#define E2K_WAIT_CORE(num) \
+({ \
+    asm volatile ("wait \tma_c = %0, fl_c = %1, ld_c = %2, "		\
+		"st_c = %3, all_e = %4, all_c = %5"	\
+                  : \
+                  : "i" (((num) & 0x20) >> 5), \
+                    "i" (((num) & 0x10) >> 4), \
+                    "i" (((num) & 0x8)  >> 3), \
+                    "i" (((num) & 0x4)  >> 2), \
+                    "i" (((num) & 0x2)  >> 1), \
+                    "i" (((num) & 0x1)) \
+	 :  "memory" ); \
+})
+
 static inline void e2k_wait_all(void) {
 	_Pragma ("no_asm_inline")
 	asm volatile ("wait \ttrap = %0, ma_c = %1, fl_c = %2, ld_c = %3, "
@@ -124,5 +138,8 @@ static inline void e2k_out8(uint8_t val, int port) {
 static inline uint8_t e2k_in8(int port) {
 	return e2k_read8((E2K_X86_IO_PORT_BASE + port));
 }
+
+#define out8(val, port)    e2k_out8(val, port)
+#define in8(port)          e2k_read8(port)
 
 #endif /* E2K_IO_H_ */

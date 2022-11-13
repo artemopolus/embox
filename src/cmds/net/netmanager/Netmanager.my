@@ -17,6 +17,8 @@ package embox.cmd.net
 
 
 module netmanager {
+	option string conf_file="network"
+
 	source "netmanager.c"
 
 	depends embox.cmd.net.ifconfig
@@ -27,6 +29,7 @@ module netmanager {
 	depends embox.compat.libc.stdio.scanf
 	depends embox.compat.libc.stdlib.system
 	depends embox.compat.libc.str
+	depends embox.net.lib.getifaddrs
 }
 
 

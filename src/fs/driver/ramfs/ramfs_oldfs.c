@@ -15,9 +15,17 @@
 
 #include "ramfs.h"
 
-struct inode_operations ramfs_iops;
-struct super_block_operations { };
-struct super_block_operations ramfs_sbops;
+extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
+
+struct inode_operations ramfs_iops = {
+	.iterate  = ramfs_iterate,
+};
+
+struct super_block_operations ramfs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = ramfs_destroy_inode,
+};
+
 static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
@@ -33,7 +41,7 @@ static struct fs_driver ramfs_driver = {
 	.name    = "ramfs",
 	.format = ramfs_format,
 	.fill_sb = ramfs_fill_sb,
-	.file_op = &ramfs_fops,
+//	.file_op = &ramfs_fops,
 	.fsop    = &ramfs_fsop,
 };
 

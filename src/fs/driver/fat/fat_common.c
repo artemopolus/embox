@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <drivers/block_dev.h>
 #include <fs/dir_context.h>
@@ -897,6 +898,8 @@ uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
 /* Same as fat_get_next(), but skip long-name entries with following 8.3-entries */
 uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char *name_buf) {
 	uint32_t ret;
+	char c;
+	int i;
 
 	assert(dir);
 	assert(dir->p_scratch);
@@ -912,21 +915,38 @@ uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char 
 
 	if (dirent->attr != ATTR_LONG_NAME) {
 		if (name_buf != NULL) {
-			char *t;
-			strncpy(name_buf, (char *) dirent->name, MSDOS_NAME);
-
-			/* MSDOS names are padded with spaces,
-			 * so we need to trimmer it */
-			t = name_buf + MSDOS_NAME - 1;
-			while (t >= name_buf) {
-				if (*t == ' ') {
-					*t = '\0';
-				} else {
+			/* Copy name body */
+			for (i = 0; i < 8; i++) {
+				c = dirent->name[i];
+				if (c == ' ') {
 					break;
 				}
 
-				t--;
+				if (isupper(c)) {
+					c += 0x20;
+				}
+
+				*name_buf++ = c;
 			}
+
+			/* Copy name extension */
+			if (dirent->name[8] != ' ') {
+				*name_buf++ = '.';
+				for (i = 8; i < 11; i++) {
+					c = dirent->name[i];
+					if (c == ' ')
+						break;
+
+					if (isupper(c)) {
+						c += 0x20;
+					}
+
+					*name_buf++ = c;
+				}
+			}
+
+			/* Terminate SFN str by a \0 */
+			*name_buf = 0;
 		}
 	} else {
 		while (dirent->attr == ATTR_LONG_NAME) {
@@ -2011,6 +2031,8 @@ extern struct file_operations fat_fops;
 int fat_fill_sb(struct super_block *sb, const char *source) {
 	struct fat_fs_info *fsi;
 	struct block_dev *bdev;
+	uint32_t pstart, psize;
+	uint8_t pactive, ptype;
 	struct dirinfo *di = NULL;
 	int rc = 0;
 
@@ -2032,7 +2054,14 @@ int fat_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_ops  = &fat_sbops;
 	sb->bdev    = bdev;
 
-	if (fat_get_volinfo(bdev, &fsi->vi, 0)) {
+	/* Obtain pointer to first partition on first (only) unit */
+	pstart = fat_get_ptn_start(bdev, 0, &pactive, &ptype, &psize);
+	if (pstart == 0xffffffff) {
+		rc = -EINVAL;
+		goto error;
+	}
+
+	if (fat_get_volinfo(bdev, &fsi->vi, pstart)) {
 		rc = -EBUSY;
 		goto error;
 	}
@@ -2170,12 +2199,7 @@ err_out:
 int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
-	char path[PATH_MAX];
 	int res;
-
-	if (!parent) {
-		strcpy(path, ROOT_DIR);
-	}
 
 	assert(parent->i_sb);
 
@@ -2203,13 +2227,21 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 	}
 
 	switch (res) {
-	case DFS_OK:
-		fat_fill_inode(next, &de, dirinfo);
-		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, name)) {
+	case DFS_OK: {
+		char tmp_name[128];
+
+		if (0 > fat_fill_inode(next, &de, dirinfo)) {
 			return -1;
 		}
+		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, tmp_name)) {
+			return -1;
+		}
+		strncpy(name, tmp_name, NAME_MAX-1);
+		name[NAME_MAX - 1] = '\0';
+
 		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
 		return 0;
+	}
 	case DFS_EOF:
 		/* Fall through */
 	default:
@@ -2280,6 +2312,25 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	if (0 != fat_create_file(fi, di, name, fi->mode)) {
 		return -EIO;
+	}
+
+	return 0;
+}
+
+int fat_destroy_inode(struct inode *inode) {
+	struct fat_file_info *fi;
+	struct dirinfo *di;
+
+	if (!inode_priv(inode)) {
+		return 0;
+	}
+
+	if (S_ISDIR(inode->i_mode)) {
+		di = inode_priv(inode);
+		fat_dirinfo_free(di);
+	} else {
+		fi = inode_priv(inode);
+		fat_file_free(fi);
 	}
 
 	return 0;

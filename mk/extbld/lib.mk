@@ -41,7 +41,7 @@ pkg_ext ?=
 first_url := $(word 1,$(sources_archive_mirrors))
 ifneq ($(filter %.tar.gz %.tar.bz %.tar.bz2 %.tar.xz,$(first_url)),)
 	pkg_ext := .tar$(suffix $(first_url))
-else ifneq ($(filter %.tgz %.tbz %.zip,$(first_url)),)
+else ifneq ($(filter %.tgz %.tbz %.zip %.gz,$(first_url)),)
 	pkg_ext := $(suffix $(first_url))
 endif
 
@@ -61,17 +61,33 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 			$(RM) $(pkg_archive_name); \
 		fi;) \
 	$(foreach g,$(sources_git), \
-		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
-			cd $(DOWNLOAD_DIR); \
-			git clone $g; \
+		dir_to_clone=$(DOWNLOAD_DIR)/$(call targets_git,$g); \
+		if [ ! -d $$dir_to_clone ]; then \
+			if [ ! "$(PKG_VER)" ]; then \
+				cd $(DOWNLOAD_DIR); \
+				git clone $g; \
+			else \
+				mkdir $$dir_to_clone; \
+				cd $$dir_to_clone; \
+				git init . ; \
+				git remote add origin '$g'; \
+				git remote set-url origin '$g'; \
+				git fetch origin ; \
+				git fetch origin -t ; \
+				git checkout -f -q '$(PKG_VER)'; \
+				git clean -ffdx; \
+			fi; \
 		fi;)
 	touch $@
 
 DOWNLOAD_CHECK  := $(BUILD_DIR)/.download_checked
 $(DOWNLOAD_CHECK) : $(DOWNLOAD)
-	cd $(DOWNLOAD_DIR) && ( \
-		$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
-	)
+    # check md5sum only for source archives and skip the check for git repos
+	if [ "$(sources_archive_mirrors)" ] ; then \
+		cd $(DOWNLOAD_DIR) && ( \
+				$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
+			); \
+    fi;
 	touch $@
 
 download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
@@ -81,12 +97,14 @@ extract : $(EXTRACT)
 $(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
 		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR);, \
-		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);) \
+		$(if $(filter-out %tar.gz %tgz,$(filter %gz,$(pkg_ext))), \
+		gzip -dk $(DOWNLOAD_DIR)/$(pkg_archive_name); mv $(DOWNLOAD_DIR)/$(PKG_NAME) $(BUILD_DIR);, \
+		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);)))
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)))"; \
 		if [ "$$COPY_FILES" ]; then \
 			cp -R $$COPY_FILES $(BUILD_DIR); \
-		fi; )
+		fi;
 	touch $@
 
 PATCH  := $(BUILD_DIR)/.patched

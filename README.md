@@ -1,4 +1,4 @@
-Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
+Embox [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 
 Embox is a configurable RTOS designed for resource constrained and embedded systems. Embox main idea is using Linux software without Linux.
@@ -8,7 +8,7 @@ Achievements
 * [VoIP phone on STM32F7Discovery based on PJSIP project](https://github.com/embox/embox/wiki/PJSIP-on-STM32)
 * [Qt on STM32F7Discovery](https://github.com/embox/embox/wiki/Qt-on-STM32)
 * [OpenCV on STM32F769i board](https://github.com/embox/embox/wiki/OpenCV-on-STM32)
-* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua
+* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua, JS, Scheme
 * SSHD based on Dropbear project
 * Mesa3d
 * Quake3
@@ -25,7 +25,7 @@ Key features
 * Popular platforms: STM32, i.MX6, RaPi, ...
 * Provides popular desktop software on MCU (e.g. STM32): Qt, OpenCV, PJSIP, dropbear, ...
 * Unix-like shell utilities: ls, cat, mount, ...
-* Popular programming languages: java, python, lua, tcl, lisp, ruby
+* Popular programming languages: java, python, lua, tcl, lisp, ruby, js, scheme
 
 Contacts
 ---------------
@@ -84,17 +84,34 @@ Since Embox is highly configurable project, it is necessary to specify modules t
 All commands described below are called from the `embox` directory, which includes `src/`, `templates/`, ...
 
 #### Configuring the project
-For configuring it is needed to specify params and modules supposed to be included into the system. Embox has several templates prepared, to list them use the following command:
+For configuring it is needed to specify params and modules supposed to be included into the system. There are two ways to set up a current config:
+
+* `make confload-<template> -` build artefacts generated in a fixed place
+* `./confset <template> -` build artefacts maintained in project dependent working paths
+
+While `make confload-<template>` is used, files from the template's folder are copied into './conf' folder. You can modify them.
+While `confset <template>` is used, files from the template's folder are copied into `./work/<template>/conf` folder and a link './conf' is created to `./work/<template>/conf`. This usage is suited for quick switching between your templates, because full rebuilds are avoided.
+Moreover, working conf-settings are retained as well, when you switch build e.g. between real target and qemu and back again. Only downside of using the confset method: more SSD/HDD usage, dependent on number of parallel projects.
+
+Embox has several templates prepared, to list them use the following command:
 ```
 $ make confload
 ```
 
 The simplest way to load a template is to specify its name in the command:
+
+`$ ./confset <template>`
+
+or
 ```
 $ make confload-<template>
 ```
 
 For the quick overview you can use one of `qemu` templates that exist for most architectures, that is, *`x86/qemu`* for x86:
+
+`$ ./confset x86/qemu`  &nbsp; _(yet no autocomplete/-suggest when only a part is typed: to Do)_
+
+or
 ```
 $ make confload-x86/qemu
 ```

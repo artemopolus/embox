@@ -29,7 +29,7 @@
 #include "net_sock.h"
 
 #include <kernel/sched/sched_lock.h>
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 #include <net/sock_wait.h>
 
 #include <util/err.h>
@@ -256,6 +256,7 @@ static int tcp_sock_alloc_missing_backlog(struct tcp_sock *tcp_sk) {
 			newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
 					SOCK_STREAM, IPPROTO_TCP);
 			if (err(newsk) != 0) {
+				log_info("could not sock_create() err(%d)", err(newsk));
 				break;
 			}
 

@@ -28,15 +28,15 @@
 
 #define USART6_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart6_irq)
-static_assert(USART6_IRQ == USART6_IRQn);
+static_assert(USART6_IRQ == USART6_IRQn, "");
 
 #define USART2_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart2_irq)
-static_assert(USART2_IRQ == USART2_IRQn);
+static_assert(USART2_IRQ == USART2_IRQn, "");
 
 #define USART1_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart1_irq)
-static_assert(USART1_IRQ == USART1_IRQn);
+static_assert(USART1_IRQ == USART1_IRQn, "");
 
 #if MODOPS_USARTX == 6
 
@@ -59,50 +59,6 @@ static_assert(USART1_IRQ == USART1_IRQn);
 #else
 #error Unsupported USARTx
 #endif
-
-#define STM32_USART1_ENABLED             1
-// #define USART1_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART1_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
-// #define USART1_TX_PIN                    GPIO_PIN_9
-#define USART1_TX_PIN                    GPIO_PIN_6
-// #define USART1_TX_GPIO_PORT              GPIOA
-#define USART1_TX_GPIO_PORT              GPIOB
-#define USART1_TX_AF                     GPIO_AF7_USART1
-#if defined STM32F746xx
-#define USART1_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
-#define USART1_RX_PIN                    GPIO_PIN_7
-#define USART1_RX_GPIO_PORT              GPIOB
-#define USART1_RX_AF                     GPIO_AF7_USART1
-#elif defined STM32F769xx
-#define USART1_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART1_RX_PIN                    GPIO_PIN_10
-#define USART1_RX_GPIO_PORT              GPIOA
-#define USART1_RX_AF                     GPIO_AF7_USART1
-#else
-#error Unsupported platform
-#endif
-
-#define STM32_USART2_ENABLED             1
-#define USART2_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART2_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART2_TX_PIN                    GPIO_PIN_2
-#define USART2_TX_GPIO_PORT              GPIOA
-#define USART2_TX_AF                     GPIO_AF7_USART2
-#define USART2_RX_PIN                    GPIO_PIN_3
-#define USART2_RX_GPIO_PORT              GPIOA
-#define USART2_RX_AF                     GPIO_AF7_USART2
-
-#define STM32_USART6_ENABLED             1
-#define USART6_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
-#define USART6_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
-#define USART6_TX_PIN                    GPIO_PIN_6
-#define USART6_TX_GPIO_PORT              GPIOC
-#define USART6_TX_AF                     GPIO_AF8_USART6
-#define USART6_RX_PIN                    GPIO_PIN_7
-#define USART6_RX_GPIO_PORT              GPIOC
-#define USART6_RX_AF                     GPIO_AF8_USART6
-
-
 
 #define STM32_USART_FLAGS(uart)   uart->ISR
 #define STM32_USART_RXDATA(uart)  uart->RDR

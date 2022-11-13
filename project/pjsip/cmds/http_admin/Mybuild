@@ -1,0 +1,24 @@
+package project.pjsip
+
+module http_admin {
+	@InitFS(target_dir="http_admin")
+	source "partials",
+		"css",
+		"index.html",
+		"ui-bootstrap-tpls-0.12.1.min.js",
+		"app.js"
+
+}
+
+@AutoCmd
+@Cmd(name="http_admin_accounts", help="", man="")
+@BuildDepends(third_party.lib.cjson)
+@Build(stage=2)
+module http_admin_accounts {
+	option number log_level=1
+
+	@IncludePath("$(CONF_DIR)")
+	source "http_admin_accounts.c"
+	
+	@NoRuntime depends project.pjsip.cmd.pjsua_lib	
+}

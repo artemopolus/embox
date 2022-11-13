@@ -35,21 +35,11 @@ module file_desc {
 
 	source "file_xattr.c"
 
-	depends idesc
+	depends embox.kernel.task.idesc
 	depends xattr
 
 	depends embox.fs.syslib.perm
 	depends embox.kernel.task.resource.idesc_table
-}
-
-module idesc {
-	source "idesc.c"
-
-	depends embox.kernel.task.resource.idesc_table
-}
-
-module idesc_event {
-	source "idesc_event.c"
 }
 
 @DefaultImpl(no_file_system)
@@ -100,35 +90,6 @@ module index_operation {
 	depends embox.fs.syslib.file
 }
 
-@DefaultImpl(rootfs)
-abstract module root_file_system {
-}
-
-module rootfs extends root_file_system {
-	source "rootfs.c"
-	option string fstype = "initfs"
-	option string bdev = ""
-	@NoRuntime depends driver.devfs_old
-	depends driver.repo
-	depends node
-	depends embox.fs.filesystem
-	depends embox.kernel.task.api
-	depends embox.fs.syslib.file_system_full
-	depends embox.compat.libc.str
-}
-
-module rootfs_dvfs extends root_file_system {
-	source "rootfs_dvfs.c"
-	option string fstype = "initfs"
-	option string bdev = ""
-
-	depends embox.driver.block_dev
-	depends embox.driver.char_dev
-	depends embox.fs.dvfs.core
-	depends embox.fs.driver.repo
-	depends embox.kernel.task.api
-}
-
 module journal {
 	source "journal.c"
 
@@ -148,6 +109,7 @@ module buffer_cache {
 
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
+	depends embox.driver.block_dev
 
 	depends embox.mem.sysmalloc_api
 

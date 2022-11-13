@@ -10,8 +10,10 @@
 #define PCI_H_
 
 #include <stdint.h>
-#include <drivers/pci/pci_id.h>
 #include <util/dlist.h>
+
+#include <drivers/pci/pci_regs.h>
+#include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_chip/pci_utils.h>
 
 /**
@@ -31,74 +33,23 @@
 
 #define PCI_DEVFN(slot, func)   ((((slot) & 0x1f) << 3) | ((func) & 0x07))
 
-/**
- * PCI configuration space
- * (Each device on the bus has a 256 bytes configuration space,
- * the first 64 bytes are standardized)
- * (according to PCI Local Bus Specification 2.2
- * DeviceID, VendorID, Status, Command, Class Code,
- * Revision ID, Header Type are required)
+
+#define PCI_IRQ_LEGACY    (1 << 0) /* allow legacy interrupts */
+#define PCI_IRQ_MSI       (1 << 1) /* allow MSI interrupts */
+#define PCI_IRQ_MSIX      (1 << 2) /* allow MSI-X interrupts */
+#define PCI_IRQ_AFFINITY  (1 << 3) /* auto-assign affinity */
+
+/*
+ * Virtual interrupts allow for more interrupts to be allocated
+ * than the device has interrupts for. These are not programmed
+ * into the device's MSI-X table and must be handled by some
+ * other driver means.
  */
-#define PCI_VENDOR_ID           0x00   /* 16 bits */
-#define PCI_DEVICE_ID           0x02   /* 16 bits */
-#define PCI_COMMAND             0x04   /* 16 bits */
-#define   PCI_COMMAND_IO         0x001   /* Enable response in I/O space */
-#define   PCI_COMMAND_MEMORY     0x002   /* Enable response in Memory space */
-#define   PCI_COMMAND_MASTER     0x004   /* Enable bus mastering */
-#define   PCI_COMMAND_SERR       0x100   /* Enable bus mastering */
-#define PCI_STATUS              0x06   /* 16 bits */
-#define PCI_REVISION_ID         0x08   /* 8 bits  */
-#define PCI_PROG_IFACE          0x09   /* 8 bits  */
-#define PCI_SUBCLASS_CODE       0x0a   /* 8 bits  */
-#define PCI_BASECLASS_CODE      0x0b   /* 8 bits  */
-#define PCI_CACHE_LINE_SIZE     0x0C   /* 8 bits  */
-#define PCI_LATENCY_TIMER       0x0D   /* 8 bits  */
-#define PCI_HEADER_TYPE         0x0e   /* 8 bits  */
-#define PCI_BIST                0x0f   /* 8 bits  */
+#define PCI_IRQ_VIRTUAL    (1 << 4)
 
-#define PCI_VENDOR_WRONG        0xFFFFFFFF /* device is not found in the slot */
-#define PCI_VENDOR_NONE         0x00000000 /* device is not found in the slot */
+#define PCI_IRQ_ALL_TYPES \
+	(PCI_IRQ_LEGACY | PCI_IRQ_MSI | PCI_IRQ_MSIX)
 
-/**
- * +------------+------------+---------+-----------+
- * |31         4|           3|2       1|          0|
- * +------------+------------+---------+-----------+
- * |Base Address|Prefetchable|Locatable|region type|
- * +------------+------------+---------+-----------+
- * \___________________________________/
- *           For Memory BARs
- * +--------------------------+--------+-----------+
- * |31                       2|       1|          0|
- * +--------------------------+--------+-----------+
- * |Base Address              |Reserved|region type|
- * +--------------------------+--------+-----------+
- * \___________________________________/
- *           For I/O BARs (Deprecated)
- * region type:  0 = Memory, 1 = I/O (deprecated)
- * Locatable:    0 = any 32-bit, 1 = < 1MiB, 2 = any 64-bit
- * Prefetchable: 0 = no, 1 = yes
- * Base Address: 16-byte aligned
- */
-#define PCI_BASE_ADDR_REG_0     0x10   /* 32 bits */
-#define PCI_BASE_ADDR_REG_1     0x14   /* 32 bits */
-#define PCI_BASE_ADDR_REG_2     0x18   /* 32 bits */
-#define PCI_BASE_ADDR_REG_3     0x1C   /* 32 bits */
-#define PCI_BASE_ADDR_REG_4     0x20   /* 32 bits */
-#define PCI_BASE_ADDR_REG_5     0x24   /* 32 bits */
-#define   PCI_BASE_ADDR_IO_MASK (~0x03)
-#define PCI_CARDBUS_CIS_POINTER 0x28   /* 32 bits */
-#define PCI_SUBSYSTEM_VENDOR_ID 0x2C   /* 16 bits */
-#define PCI_SUBSYSTEM_ID        0x2E   /* 16 bits */
-#define PCI_EXP_ROM_BASE_ADDR   0x30   /* 32 bits */
-#define PCI_CAPAB_POINTER       0x34   /* 8 bits  */
-#define PCI_INTERRUPT_LINE      0x3C   /* 8 bits  */
-#define PCI_INTERRUPT_PIN       0x3D   /* 8 bits  */
-#define PCI_MIN_GNT             0x3E   /* 8 bits  */
-#define PCI_MAX_LAT             0x3F   /* 8 bits  */
-
-#define PCI_PRIMARY_BUS         0x18
-#define PCI_SECONDARY_BUS       0x19
-#define PCI_SUBORDINATE_BUS     0x1a
 
 /** Device classes and subclasses */
 
@@ -179,6 +130,14 @@ struct pci_slot_dev {
 	uint8_t secondary;
 	uint8_t subordinate;
 	uint32_t membaselimit;
+
+	int msix_enabled;
+	int msi_enabled;
+	uint8_t msi_cap;            /* MSI capability offset */
+	uint8_t msix_cap;           /* MSI-X capability offset */
+	struct dlist_head msi_list;
+
+	int is_busmaster;
 };
 
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
@@ -192,5 +151,31 @@ struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 		uint32_t devfn, uint32_t vendor_reg);
 
 extern void pci_set_master(struct pci_slot_dev * slot_dev);
+extern void pci_intx(struct pci_slot_dev *pdev, int enable);
+
+extern int pci_read_config_byte(struct pci_slot_dev *dev, int where, uint8_t *val);
+extern int pci_read_config_word(struct pci_slot_dev *dev, int where, uint16_t *val);
+extern int pci_read_config_dword(struct pci_slot_dev *dev, int where, uint32_t *val);
+
+extern int pci_write_config_byte(struct pci_slot_dev *dev, int where, uint8_t val);
+extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t val);
+extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
+
+
+extern int pci_alloc_irq_vectors(struct pci_slot_dev *dev,
+		unsigned int min_vecs, unsigned int max_vecs, unsigned int flags);
+
+extern int pci_irq_vector(struct pci_slot_dev *dev, unsigned int nr);
+
+#define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
+
+struct msix_entry {
+	uint32_t vector; /* kernel uses to write allocated vector */
+	uint16_t entry;  /* driver uses to specify entry, OS writes */
+};
+
+
+#define for_each_pci_msi_entry(entry, dev) \
+			dlist_foreach_entry(entry, &dev->msi_list, list)
 
 #endif /* PCI_H_ */

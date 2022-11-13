@@ -243,6 +243,7 @@ void *mspace_malloc(size_t size, struct dlist_head *mspace) {
 }
 
 int mspace_free(void *ptr, struct dlist_head *mspace) {
+	int res = 0;
 	struct mm_segment *mm;
 
 	assert(ptr);
@@ -264,15 +265,17 @@ int mspace_free(void *ptr, struct dlist_head *mspace) {
 		}
 	} else {
 		/* No segment containing pointer @c ptr was found. */
+		res = -1;
 #ifdef DEBUG
 		printk("***** free(): incorrect address space\n");
 #endif
-		return -1;
+		goto out;
 	}
 
+out:
 	sched_unlock();
 
-	return 0;
+	return res;
 }
 
 void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
@@ -326,7 +329,7 @@ int mspace_init(struct dlist_head *mspace) {
 }
 
 int mspace_fini(struct dlist_head *mspace) {
-	struct mm_segment *mm;
+	struct mm_segment *mm = NULL;
 
 	dlist_foreach_entry(mm, mspace, link) {
 		mm_segment_free(mm, mm->size / PAGE_SIZE());
@@ -336,7 +339,7 @@ int mspace_fini(struct dlist_head *mspace) {
 }
 
 size_t mspace_deep_copy_size(struct dlist_head *mspace) {
-	struct mm_segment *mm;
+	struct mm_segment *mm = NULL;
 	size_t ret;
 
 	ret = 0;
@@ -348,7 +351,7 @@ size_t mspace_deep_copy_size(struct dlist_head *mspace) {
 
 
 void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
-	struct mm_segment *mm;
+	struct mm_segment *mm = NULL;
 	void *p;
 
 	dlist_init(store_space);
