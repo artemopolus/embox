@@ -1,0 +1,24 @@
+package exacto.cmds.tests.bullet
+
+
+@AutoCmd
+@Cmd(name="hw_bullet", help="", man="")
+// @BuildArtifactPath(cppflags="-mfpu=fpv5-sp-d16 -mfloat-abi=hard")
+@BuildDepends(embox.lib.libsupcxx)
+// @BuildDepends(third_party.gcc.libstdcxx)
+// @BuildDepends(third_party.gcc.libsupcxx)
+// @BuildDepends(embox.compat.libc.str)
+@BuildDepends(ext.bullet.core)
+module hello_world
+{
+	source "HelloWorld.cpp"
+	@NoRuntime depends ext.bullet.core
+	// @NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.lib.libsupcxx
+	// @NoRuntime depends third_party.gcc.libstdcxx
+	// @NoRuntime depends third_party.gcc.libsupcxx
+}
+module assert
+{
+	source "assert.cpp"
+}
