@@ -2,11 +2,11 @@
 #include <kernel/lthread/lthread.h>
 #include "tim/tim.h"
 #include <stdio.h>
-#include "commander/exacto_buffer.h"
+#include "operator/exacto_buffer.h"
 
-#include "exlnk_setHeader.h"
-#include "exlnk_getHeader.h"
-#include "exlnk_Cmd.h"
+#include "exactolink/exlnk_setHeader.h"
+#include "exactolink/exlnk_getHeader.h"
+#include "exactolink/exlnk_Cmd.h"
 #include "mliner/mliner.h"
 
 #include "ex_utils.h"
@@ -20,6 +20,8 @@
 // uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
 // uint8_t AddressSendOrder[] = {7, 0,0, 16, 0,0};
 static uint8_t AddressSendOrder[] = {7, 16, 7, 16, 7, 16};
+// static uint8_t AddressSendOrder[] = {16, 16, 16, 16, 16, 16};
+// uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 7};
 static uint8_t AddressCount = 6;
 
 
@@ -131,7 +133,7 @@ static void sending(uint8_t value)
 	exutils_updt(&TagTimer);
 	LoadInMlineDuration = TagTimer.result;
 	// printf("TagUpl[%8d]", LoadInMlineDuration);
-	printf("outCmd[%5d %3d %3d]", cmd.mnum, cmd.reg, cmd.value);
+	printf("outCmd[%2d %5d %3d %3d]", value, cmd.mnum, cmd.reg, cmd.value);
 	exutils_updt(&TagTimer);
 }
 int main(int argc, char *argv[]) 
@@ -148,7 +150,7 @@ int main(int argc, char *argv[])
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
-	exmliner_Init(0);
+	exmliner_Init(1, 1);
    
 	
 	while (1)

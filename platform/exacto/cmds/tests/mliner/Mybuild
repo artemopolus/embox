@@ -60,7 +60,7 @@ module sec_module_xmpl{
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
 
-	depends exacto.mliner.mod_sec
+	depends exacto.mliner.mod_base
 
 	depends exacto.tim.base
 
@@ -79,9 +79,9 @@ module main_module_xmpl{
 
 	depends exacto.mliner.mod_base
 
-	depends exacto.exactolink.exlnk_set_header
-	depends exacto.exactolink.exlnk_get_header
-	depends exacto.exactolink.exlnk_cmd
+	depends ext.exacto.exactolink.exlnk_set_header
+	depends ext.exacto.exactolink.exlnk_get_header
+	depends ext.exacto.exactolink.exlnk_cmd
 
 	depends exacto.cmds.tests.timbase
 	depends exacto.cmds.perf_tests.ex_utils

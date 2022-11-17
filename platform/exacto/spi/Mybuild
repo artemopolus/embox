@@ -95,3 +95,25 @@ module mline_sec
 	depends exacto.spi.mline_sec_impl
 	depends embox.kernel.lthread.lthread
 }
+@BuildDepends(exacto.gpio.config)
+module maindev_impl_afina extends ext.exacto.mliner.maindev_impl
+{
+	source "mliner_maindev_impl_afina.c"
+	depends ext.exacto.mliner.maindev_impl_h
+	depends exacto.gpio.config
+}
+@BuildDepends(exacto.gpio.config)
+module mliner_impl_maindev extends ext.exacto.mliner.maindev_impl
+{
+	source "spi_impl_maindev.c"
+	depends ext.exacto.mliner.maindev_impl_h
+	depends exacto.gpio.config
+	depends exacto.gpio.mline_spi_main
+}
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module mliner_impl_secdev extends ext.exacto.mliner.maindev_impl
+{
+	source "spi_impl_secdev.c"
+	depends ext.exacto.mliner.maindev_impl_h
+	depends exacto.gpio.mline_spi_sec
+}

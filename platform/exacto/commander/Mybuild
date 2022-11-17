@@ -11,12 +11,15 @@ module services{
 
 
 }
-module buffer{
+abstract module buffer{
+}
+module buffer_base extends exacto.commander.buffer{
 	option number buffersz=512
 	option number extbuffersz=1024
 	source "exacto_buffer.c"
 	@IncludeExport(path="commander")
 	source "exacto_buffer.h"
+
 }
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 module sensors {

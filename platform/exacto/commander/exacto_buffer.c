@@ -1,5 +1,6 @@
 #include <commander/exacto_buffer.h>
 #include <stdlib.h>
+#include <string.h>
 
 int setini_exbu8(ExactoBufferUint8Type * buffer)
 {
@@ -35,25 +36,26 @@ uint8_t grbfst_exbu8(ExactoBufferUint8Type * buffer, uint8_t * fstval)
 }
 uint8_t grbfstPack_exbu8(ExactoBufferUint8Type * buffer, uint8_t * dst, const uint16_t datalen)
 {
-    if(!buffer->isExist)    return 0;
+    if(!buffer->isExist || buffer->isEmpty)    return 0;
     uint16_t dataavailable = getlen_exbu8(buffer);
+    uint16_t lentocopy = 0;
     if (dataavailable < datalen)
+        lentocopy = dataavailable;
+    else
+        lentocopy = datalen;
+    if( buffer->datalen - buffer->str > lentocopy)
     {
-        setemp_exbu8(buffer);
-        return 0;
-    }
-    uint8_t value;
-    for (uint16_t i = 0; i < datalen; i++)
+        memcpy(&buffer[buffer->str], dst, lentocopy);
+    } 
+    else
     {
-        if (!grbfst_exbu8(buffer, &value))
-        {
-            return 0; //double check
-        }
-        else
-        {
-            dst[i] = value;
-        }
+        memcpy(&buffer[buffer->str], dst, buffer->datalen - buffer->str);
+        memcpy(&buffer[buffer->str], dst, lentocopy - buffer->datalen + buffer->str);
     }
+    buffer->str = (buffer->str + lentocopy) & buffer->mask;
+
+    if(buffer->str == buffer->lst)
+        setemp_exbu8(buffer); 
     return 1;
 }
 void pshfrc_exbu8(ExactoBufferUint8Type * buffer,const uint8_t value)

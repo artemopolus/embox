@@ -1,4 +1,4 @@
-#include "mliner/mliner_sec.h"
+#include "mliner/mliner_main.h"
 #include <kernel/lthread/lthread.h>
 #include "tim/tim.h"
 #include <stdio.h>
@@ -27,6 +27,7 @@ static int PointToTim;
 static uint8_t EnableUpdate = 0;
 static uint8_t NeedToPrint = 0;
 
+static uint8_t Address = 7;
 
 static int run_Tim_Lthread(struct  lthread * self)
 {
@@ -48,7 +49,7 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
 	printf("in:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	cmd->value += 3;
-	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
+	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
 	SendCounter++;
 	return 0;
 }
@@ -94,19 +95,31 @@ int main(int argc, char *argv[])
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
-	exmliner_Init(0);
+	exmliner_Init(0, Address);
 	while (1)
 	{
-		while(!EnableUpdate);
+		while(!EnableUpdate)
+			__asm("nop");
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 #endif
-		exmliner_Update();
+		exmliner_Update(Address);
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 		UpdateMlineDuration = TagTimer.result;
 #endif
-		while(!exmliner_getRxIRQ());
+		int index = 0;
+		while(!exmliner_getRxIRQ())
+		{
+			index++;
+			if(index > 500000)
+			{
+				exmliner_Update(Address);
+				index = 0;
+				printf("reset irq\n");
+				__asm("nop");
+			}
+		}
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 		TransmitMlineDuration = TagTimer.result;

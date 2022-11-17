@@ -38,7 +38,11 @@ module mliner
 	@IncludeExport(path="mliner")
 	source "mliner.h"
 }
-module mod_sec
+abstract module mod_sec
+{
+
+}
+module mod_sec_base extends exacto.mliner.mod_sec
 {
 	source "mliner_sec.c"
 	@IncludeExport(path = "mliner")
@@ -53,7 +57,11 @@ module mod_sec
 
 	depends exacto.mliner.mliner
 }
-module mod_base
+abstract module mod_base
+{
+
+}
+module mod_base_base extends exacto.mliner.mod_base
 {
 	source "mliner_main.c"
 	@IncludeExport(path = "mliner")
@@ -67,4 +75,22 @@ module mod_base
 
 	depends exacto.mliner.mliner
 
+}
+@BuildDepends(exacto.gpio.config)
+module maindev_base extends ext.exacto.mliner.maindev
+{
+	// @IncludeExport(path = "mliner")
+	source "mliner_maindev_emb.c"
+	depends ext.exacto.mliner.maindev_h
+	depends exacto.gpio.config
+	depends exacto.gpio.mline_spi_main
+
+	depends embox.kernel.lthread.lthread
+	// @NoRuntime depends exacto.gpio.config
+}
+module secdev_base extends ext.exacto.mliner.secdev
+{
+	source "mliner_secdev_emb.c"
+	depends ext.exacto.mliner.secdev_h
+	depends embox.kernel.lthread.lthread
 }
