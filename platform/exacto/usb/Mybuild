@@ -8,13 +8,11 @@ module usb_cppflags{
 
 @BuildDepends(usb_cppflags)
 @BuildDepends(third_party.bsp.stmf7cube.cube)
-module base{
+module base extends ext.exacto.mliner.maindev_impl{
 
-	source "Core/Src/main.c"
-	source "Core/Src/gpio.c"
-	// source "Core/Src/stm32f7xx_it.c"
-	// source "Core/Src/stm32f7xx_hal_msp.c"
-	// source "Core/Src/system_stm32f7xx.c"
+	// source "Core/Src/main.c"
+	// source "Core/Src/gpio.c"
+	source "mliner_impl_dev.c"
 
 
 	source "USB_DEVICE/App/usb_device.c"
@@ -29,5 +27,6 @@ module base{
 	source "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c"
 
 
+	depends ext.exacto.mliner.maindev_impl_h
     @NoRuntime depends usb_cppflags
 }
