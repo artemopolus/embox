@@ -1,8 +1,28 @@
 #include "btBulletDynamicsCommon.h"
 #include <string>
 #include <stdio.h>
-#include "LinearMath/btPoolAllocator.h"
+
+
+#include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
+
+#include "BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btEmptyCollisionAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btCompoundCollisionAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btCompoundCompoundCollisionAlgorithm.h"
+
+#include "BulletCollision/CollisionDispatch/btConvexPlaneCollisionAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btBoxBoxCollisionAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.h"
+#ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+#include "BulletCollision/CollisionDispatch/btSphereBoxCollisionAlgorithm.h"
+#endif  //USE_BUGGY_SPHERE_BOX_ALGORITHM
+#include "BulletCollision/CollisionDispatch/btSphereTriangleCollisionAlgorithm.h"
 #include "BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h"
+#include "BulletCollision/NarrowPhaseCollision/btMinkowskiPenetrationDepthSolver.h"
+#include "BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h"
+
+#include "LinearMath/btPoolAllocator.h"
 
 /// This is a Hello World program for running a basic Bullet physics simulation
 
@@ -10,7 +30,66 @@ int main(int argc, char** argv)
 {
 	int i;
 	printf("Start\n");
-	btAlignedAlloc(sizeof(btGjkEpaPenetrationDepthSolver), 16);
+	btDefaultCollisionConstructionInfo constructionInfo;
+	btCollisionAlgorithmCreateFunc* m_convexConvexCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_convexConcaveCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_swappedConvexConcaveCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_compoundCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_compoundCompoundCreateFunc;
+
+	btCollisionAlgorithmCreateFunc* m_swappedCompoundCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_emptyCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_sphereSphereCF;
+	btCollisionAlgorithmCreateFunc* m_sphereBoxCF;
+	btCollisionAlgorithmCreateFunc* m_boxSphereCF;
+
+	btCollisionAlgorithmCreateFunc* m_boxBoxCF;
+	btCollisionAlgorithmCreateFunc* m_sphereTriangleCF;
+	btCollisionAlgorithmCreateFunc* m_triangleSphereCF;
+	btCollisionAlgorithmCreateFunc* m_planeConvexCF;
+	btCollisionAlgorithmCreateFunc* m_convexPlaneCF;
+	btConvexPenetrationDepthSolver* m_pdSolver;
+	void* mem = NULL;
+	if (constructionInfo.m_useEpaPenetrationAlgorithm)
+	{
+		mem = btAlignedAlloc(sizeof(btGjkEpaPenetrationDepthSolver), 16);
+		m_pdSolver = new (mem) btGjkEpaPenetrationDepthSolver;
+	}
+	else
+	{
+		mem = btAlignedAlloc(sizeof(btMinkowskiPenetrationDepthSolver), 16);
+		m_pdSolver = new (mem) btMinkowskiPenetrationDepthSolver;
+	}
+
+	//default CreationFunctions, filling the m_doubleDispatch table
+	mem = btAlignedAlloc(sizeof(btConvexConvexAlgorithm::CreateFunc), 16);
+	m_convexConvexCreateFunc = new (mem) btConvexConvexAlgorithm::CreateFunc(m_pdSolver);
+	mem = btAlignedAlloc(sizeof(btConvexConcaveCollisionAlgorithm::CreateFunc), 16);
+	m_convexConcaveCreateFunc = new (mem) btConvexConcaveCollisionAlgorithm::CreateFunc;
+	mem = btAlignedAlloc(sizeof(btConvexConcaveCollisionAlgorithm::CreateFunc), 16);
+	m_swappedConvexConcaveCreateFunc = new (mem) btConvexConcaveCollisionAlgorithm::SwappedCreateFunc;
+	mem = btAlignedAlloc(sizeof(btCompoundCollisionAlgorithm::CreateFunc), 16);
+	m_compoundCreateFunc = new (mem) btCompoundCollisionAlgorithm::CreateFunc;
+
+	mem = btAlignedAlloc(sizeof(btCompoundCompoundCollisionAlgorithm::CreateFunc), 16);
+	m_compoundCompoundCreateFunc = new (mem) btCompoundCompoundCollisionAlgorithm::CreateFunc;
+
+	mem = btAlignedAlloc(sizeof(btCompoundCollisionAlgorithm::SwappedCreateFunc), 16);
+	m_swappedCompoundCreateFunc = new (mem) btCompoundCollisionAlgorithm::SwappedCreateFunc;
+	mem = btAlignedAlloc(sizeof(btEmptyAlgorithm::CreateFunc), 16);
+	m_emptyCreateFunc = new (mem) btEmptyAlgorithm::CreateFunc;
+
+	mem = btAlignedAlloc(sizeof(btSphereSphereCollisionAlgorithm::CreateFunc), 16);
+	m_sphereSphereCF = new (mem) btSphereSphereCollisionAlgorithm::CreateFunc;
+#ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+	mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc), 16);
+	m_sphereBoxCF = new (mem) btSphereBoxCollisionAlgorithm::CreateFunc;
+	mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc), 16);
+	m_boxSphereCF = new (mem) btSphereBoxCollisionAlgorithm::CreateFunc;
+	m_boxSphereCF->m_swapped = true;
+#endif  //USE_BUGGY_SPHERE_BOX_ALGORITHM
+
+
 	printf("Start\n");
 
 	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
