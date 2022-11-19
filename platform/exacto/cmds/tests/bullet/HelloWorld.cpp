@@ -50,6 +50,7 @@ int main(int argc, char** argv)
 	btCollisionAlgorithmCreateFunc* m_convexPlaneCF;
 	btConvexPenetrationDepthSolver* m_pdSolver;
 	void* mem = NULL;
+	#ifdef PartON
 	if (constructionInfo.m_useEpaPenetrationAlgorithm)
 	{
 		mem = btAlignedAlloc(sizeof(btGjkEpaPenetrationDepthSolver), 16);
@@ -81,13 +82,13 @@ int main(int argc, char** argv)
 
 	mem = btAlignedAlloc(sizeof(btSphereSphereCollisionAlgorithm::CreateFunc), 16);
 	m_sphereSphereCF = new (mem) btSphereSphereCollisionAlgorithm::CreateFunc;
-#ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
-	mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc), 16);
-	m_sphereBoxCF = new (mem) btSphereBoxCollisionAlgorithm::CreateFunc;
-	mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc), 16);
-	m_boxSphereCF = new (mem) btSphereBoxCollisionAlgorithm::CreateFunc;
-	m_boxSphereCF->m_swapped = true;
-#endif  //USE_BUGGY_SPHERE_BOX_ALGORITHM
+// #ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+// 	mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc), 16);
+// 	m_sphereBoxCF = new (mem) btSphereBoxCollisionAlgorithm::CreateFunc;
+// 	mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc), 16);
+// 	m_boxSphereCF = new (mem) btSphereBoxCollisionAlgorithm::CreateFunc;
+// 	m_boxSphereCF->m_swapped = true;
+// #endif  //USE_BUGGY_SPHERE_BOX_ALGORITHM
 
 mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16);
 	m_sphereTriangleCF = new (mem) btSphereTriangleCollisionAlgorithm::CreateFunc;
@@ -117,6 +118,7 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
 	printf("Start2\n");
+#endif
 
 	int m_persistentManifoldPoolSize;
 
@@ -134,22 +136,28 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 	else
 	{
 		m_ownsPersistentManifoldPool = true;
+	printf("Start21\n");
 		void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+	int tp = sizeof(btPersistentManifold);
+	int sz = constructionInfo.m_defaultMaxPersistentManifoldPoolSize;
+	printf("Start22 %d %d\n", tp, sz);
+	//here problem
 		m_persistentManifoldPool = new (mem) btPoolAllocator(sizeof(btPersistentManifold), constructionInfo.m_defaultMaxPersistentManifoldPoolSize);
 	}
+	printf("Start23\n");
 
-	collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;
-	if (constructionInfo.m_collisionAlgorithmPool)
-	{
-		m_ownsCollisionAlgorithmPool = false;
-		m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
-	}
-	else
-	{
-		m_ownsCollisionAlgorithmPool = true;
-		void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
-		m_collisionAlgorithmPool = new (mem) btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
-	}
+	// collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;
+	// if (constructionInfo.m_collisionAlgorithmPool)
+	// {
+	// 	m_ownsCollisionAlgorithmPool = false;
+	// 	m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
+	// }
+	// else
+	// {
+	// 	m_ownsCollisionAlgorithmPool = true;
+	// 	void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+	// 	m_collisionAlgorithmPool = new (mem) btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
+	// }
 
 	printf("Start3\n");
 
