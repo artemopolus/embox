@@ -1,13 +1,20 @@
 #include "btBulletDynamicsCommon.h"
 #include <string>
 #include <stdio.h>
+#include "LinearMath/btPoolAllocator.h"
+#include "BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h"
 
 /// This is a Hello World program for running a basic Bullet physics simulation
 
 int main(int argc, char** argv)
 {
 	int i;
+	printf("Start\n");
+	btAlignedAlloc(sizeof(btGjkEpaPenetrationDepthSolver), 16);
+	printf("Start\n");
+
 	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
+	printf("Start\n");
 
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
 	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
