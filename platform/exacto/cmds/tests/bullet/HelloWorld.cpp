@@ -29,7 +29,7 @@
 int main(int argc, char** argv)
 {
 	int i;
-	printf("Start\n");
+	printf("Start0\n");
 	btDefaultCollisionConstructionInfo constructionInfo;
 	btCollisionAlgorithmCreateFunc* m_convexConvexCreateFunc;
 	btCollisionAlgorithmCreateFunc* m_convexConcaveCreateFunc;
@@ -97,6 +97,7 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 
 	mem = btAlignedAlloc(sizeof(btBoxBoxCollisionAlgorithm::CreateFunc), 16);
 	m_boxBoxCF = new (mem) btBoxBoxCollisionAlgorithm::CreateFunc;
+	printf("Start1\n");
 
 	//convex versus plane
 	mem = btAlignedAlloc(sizeof(btConvexPlaneCollisionAlgorithm::CreateFunc), 16);
@@ -115,6 +116,7 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize2);
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
+	printf("Start2\n");
 
 	int m_persistentManifoldPoolSize;
 
@@ -149,10 +151,10 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 		m_collisionAlgorithmPool = new (mem) btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
 	}
 
-	printf("Start\n");
+	printf("Start3\n");
 
 	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
-	printf("Start\n");
+	printf("Start4\n");
 
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
 	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
