@@ -89,6 +89,65 @@ int main(int argc, char** argv)
 	m_boxSphereCF->m_swapped = true;
 #endif  //USE_BUGGY_SPHERE_BOX_ALGORITHM
 
+mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16);
+	m_sphereTriangleCF = new (mem) btSphereTriangleCollisionAlgorithm::CreateFunc;
+	mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16);
+	m_triangleSphereCF = new (mem) btSphereTriangleCollisionAlgorithm::CreateFunc;
+	m_triangleSphereCF->m_swapped = true;
+
+	mem = btAlignedAlloc(sizeof(btBoxBoxCollisionAlgorithm::CreateFunc), 16);
+	m_boxBoxCF = new (mem) btBoxBoxCollisionAlgorithm::CreateFunc;
+
+	//convex versus plane
+	mem = btAlignedAlloc(sizeof(btConvexPlaneCollisionAlgorithm::CreateFunc), 16);
+	m_convexPlaneCF = new (mem) btConvexPlaneCollisionAlgorithm::CreateFunc;
+	mem = btAlignedAlloc(sizeof(btConvexPlaneCollisionAlgorithm::CreateFunc), 16);
+	m_planeConvexCF = new (mem) btConvexPlaneCollisionAlgorithm::CreateFunc;
+	m_planeConvexCF->m_swapped = true;
+
+	///calculate maximum element size, big enough to fit any collision algorithm in the memory pool
+	int maxSize = sizeof(btConvexConvexAlgorithm);
+	int maxSize2 = sizeof(btConvexConcaveCollisionAlgorithm);
+	int maxSize3 = sizeof(btCompoundCollisionAlgorithm);
+	int maxSize4 = sizeof(btCompoundCompoundCollisionAlgorithm);
+
+	int collisionAlgorithmMaxElementSize = btMax(maxSize, constructionInfo.m_customCollisionAlgorithmMaxElementSize);
+	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize2);
+	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
+	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
+
+	int m_persistentManifoldPoolSize;
+
+	btPoolAllocator* m_persistentManifoldPool;
+	bool m_ownsPersistentManifoldPool;
+
+	btPoolAllocator* m_collisionAlgorithmPool;
+	bool m_ownsCollisionAlgorithmPool;
+
+	if (constructionInfo.m_persistentManifoldPool)
+	{
+		m_ownsPersistentManifoldPool = false;
+		m_persistentManifoldPool = constructionInfo.m_persistentManifoldPool;
+	}
+	else
+	{
+		m_ownsPersistentManifoldPool = true;
+		void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+		m_persistentManifoldPool = new (mem) btPoolAllocator(sizeof(btPersistentManifold), constructionInfo.m_defaultMaxPersistentManifoldPoolSize);
+	}
+
+	collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;
+	if (constructionInfo.m_collisionAlgorithmPool)
+	{
+		m_ownsCollisionAlgorithmPool = false;
+		m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
+	}
+	else
+	{
+		m_ownsCollisionAlgorithmPool = true;
+		void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+		m_collisionAlgorithmPool = new (mem) btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
+	}
 
 	printf("Start\n");
 
@@ -98,7 +157,8 @@ int main(int argc, char** argv)
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
 	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
 
-	///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
+/*	
+///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
 	btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
 
 	///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
@@ -242,5 +302,6 @@ int main(int argc, char** argv)
 
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
+	*/
 	return 0;
 }
