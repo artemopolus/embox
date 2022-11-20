@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 	printf("Start0\n");
 	btDefaultCollisionConstructionInfo constructionInfo;
 
-	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 512;
+	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 64;
 
 
 
@@ -55,11 +55,11 @@ int main(int argc, char** argv)
 
 	printf("Start3\n");
 
-	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration(constructionInfo);
-	printf("Start4\n");
+	// btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration(constructionInfo);
+	// printf("Start4\n");
 
-	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
-	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+	// ///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
+	// btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
 
 	printf("End\n");
 
