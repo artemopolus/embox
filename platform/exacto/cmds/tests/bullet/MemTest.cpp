@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 	printf("Start5\n");
 
 	m_persistentManifoldPoolAllocator = collisionConfiguration->getPersistentManifoldPool();
-	printf("Start6\n");
+	printf("Start6: %d\n", MAX_BROADPHASE_COLLISION_TYPES);
 
 	for (i = 0; i < MAX_BROADPHASE_COLLISION_TYPES; i++)
 	{
