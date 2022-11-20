@@ -29,8 +29,10 @@
 int main(int argc, char** argv)
 {
 	int i;
-	printf("Start0\n");
+	printf("Part 0\n");
 	btDefaultCollisionConstructionInfo constructionInfo;
+	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 16;
+	constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize = 16;
 	btCollisionAlgorithmCreateFunc* m_convexConvexCreateFunc;
 	btCollisionAlgorithmCreateFunc* m_convexConcaveCreateFunc;
 	btCollisionAlgorithmCreateFunc* m_swappedConvexConcaveCreateFunc;
@@ -50,7 +52,8 @@ int main(int argc, char** argv)
 	btCollisionAlgorithmCreateFunc* m_convexPlaneCF;
 	btConvexPenetrationDepthSolver* m_pdSolver;
 	void* mem = NULL;
-	#ifdef PartON
+#define PartON
+	#ifdef PartON 
 	if (constructionInfo.m_useEpaPenetrationAlgorithm)
 	{
 		mem = btAlignedAlloc(sizeof(btGjkEpaPenetrationDepthSolver), 16);
@@ -98,7 +101,7 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 
 	mem = btAlignedAlloc(sizeof(btBoxBoxCollisionAlgorithm::CreateFunc), 16);
 	m_boxBoxCF = new (mem) btBoxBoxCollisionAlgorithm::CreateFunc;
-	printf("Start1\n");
+	printf("Part 1\n");
 
 	//convex versus plane
 	mem = btAlignedAlloc(sizeof(btConvexPlaneCollisionAlgorithm::CreateFunc), 16);
@@ -117,7 +120,7 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize2);
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize3);
 	collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize, maxSize4);
-	printf("Start2\n");
+	printf("Part 2\n");
 #endif
 
 	int m_persistentManifoldPoolSize;
@@ -136,36 +139,36 @@ mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc), 16)
 	else
 	{
 		m_ownsPersistentManifoldPool = true;
-	printf("Start21\n");
+	printf("Part 21\n");
 		void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
 	int tp = sizeof(btPersistentManifold);
 	int sz = constructionInfo.m_defaultMaxPersistentManifoldPoolSize;
-	printf("Start22 %d %d\n", tp, sz);
+	printf("Part 22 %d %d\n", tp, sz);
 	//here problem
 		m_persistentManifoldPool = new (mem) btPoolAllocator(sizeof(btPersistentManifold), constructionInfo.m_defaultMaxPersistentManifoldPoolSize);
 	}
-	printf("Start23\n");
+	printf("Part 23\n");
 
-	// collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;
-	// if (constructionInfo.m_collisionAlgorithmPool)
-	// {
-	// 	m_ownsCollisionAlgorithmPool = false;
-	// 	m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
-	// }
-	// else
-	// {
-	// 	m_ownsCollisionAlgorithmPool = true;
-	// 	void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
-	// 	m_collisionAlgorithmPool = new (mem) btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
-	// }
+	collisionAlgorithmMaxElementSize = (collisionAlgorithmMaxElementSize + 16) & 0xffffffffffff0;
+	if (constructionInfo.m_collisionAlgorithmPool)
+	{
+		m_ownsCollisionAlgorithmPool = false;
+		m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;
+	}
+	else
+	{
+		m_ownsCollisionAlgorithmPool = true;
+		void* mem = btAlignedAlloc(sizeof(btPoolAllocator), 16);
+		m_collisionAlgorithmPool = new (mem) btPoolAllocator(collisionAlgorithmMaxElementSize, constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);
+	}
 
-	printf("Start3\n");
+	printf("Part 3\n");
 
-	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
-	printf("Start4\n");
+	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration(constructionInfo);
+	printf("Part 4\n");
 
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
-	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+//	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
 
 /*	
 ///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
