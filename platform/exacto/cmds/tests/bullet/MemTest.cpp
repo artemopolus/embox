@@ -78,11 +78,10 @@ int main(int argc, char** argv)
 
 	btCollisionAlgorithmCreateFunc* m_doubleDispatchClosestPoints[MAX_BROADPHASE_COLLISION_TYPES][MAX_BROADPHASE_COLLISION_TYPES];
 
-	btCollisionConfiguration* m_collisionConfiguration;
+	btCollisionConfiguration* m_collisionConfiguration = collisionConfiguration;
 
 	
 	
-	int i;
 
 	// setNearCallback(defaultNearCallback);
 

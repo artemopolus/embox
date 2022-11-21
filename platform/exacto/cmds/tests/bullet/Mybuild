@@ -11,7 +11,8 @@ package exacto.cmds.tests.bullet
 @BuildDepends(ext.bullet.core)
 module hello_world
 {
-	source "MemTest.cpp"
+	source "HelloWorld.cpp"
+	// source "MemTest.cpp"
 	@NoRuntime depends ext.bullet.core
 	// @NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.lib.libsupcxx

@@ -25,6 +25,8 @@
 #include "LinearMath/btPoolAllocator.h"
 
 /// This is a Hello World program for running a basic Bullet physics simulation
+	#pragma GCC push_options
+	#pragma GCC optimize ("O0")
 
 int main(int argc, char** argv)
 {
@@ -195,3 +197,5 @@ int main(int argc, char** argv)
 	printf("End\n");
 	return 0;
 }
+
+#pragma GCC pop_options
