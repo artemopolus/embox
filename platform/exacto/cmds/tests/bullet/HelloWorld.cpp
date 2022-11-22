@@ -33,8 +33,8 @@ int main(int argc, char** argv)
 	int i;
 	printf("Part 0\n");
 	btDefaultCollisionConstructionInfo constructionInfo;
-	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 16;
-	constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize = 16;
+	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 1;
+	constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize = 1;
 
 
 	printf("Part 3\n");
