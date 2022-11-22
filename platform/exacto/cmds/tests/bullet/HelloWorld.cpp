@@ -33,8 +33,8 @@ int main(int argc, char** argv)
 	int i;
 	printf("Part 0\n");
 	btDefaultCollisionConstructionInfo constructionInfo;
-	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 1;
-	constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize = 1;
+	constructionInfo.m_defaultMaxPersistentManifoldPoolSize = 16;
+	constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize = 16;
 
 
 	printf("Part 3\n");
@@ -55,7 +55,6 @@ int main(int argc, char** argv)
 	printf("Part 7\n");
 
 	btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-/*	
 
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		///-----initialization_end-----
@@ -132,6 +131,8 @@ int main(int argc, char** argv)
 	{
 		dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 
+		printf("Num obj: %d", dynamicsWorld->getNumCollisionObjects());
+
 		//print positions of all objects
 		for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
 		{
@@ -193,7 +194,6 @@ int main(int argc, char** argv)
 
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
-	*/
 	printf("End\n");
 	return 0;
 }
