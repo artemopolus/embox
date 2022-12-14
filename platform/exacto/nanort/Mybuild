@@ -1,0 +1,13 @@
+package exacto.nanort
+
+@AutoCmd
+@Cmd(name="test_nanort", help=" Test  ", man='''
+AUTHOR Kuznetcov
+''')
+@BuildDepends(embox.lib.libsupcxx)
+module test{
+  source "test.cpp"
+  @IncludeExport(path="")
+  source "nanort.h"
+  @NoRuntime depends embox.lib.libsupcxx
+}
