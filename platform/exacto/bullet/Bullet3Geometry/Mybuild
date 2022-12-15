@@ -1,0 +1,8 @@
+package exacto.bullet3.geometry
+
+
+module base
+{
+	@IncludeExport(path="Bullet3Geometry")
+	source "b3AabbUtil.h"
+}

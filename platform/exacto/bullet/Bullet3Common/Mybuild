@@ -1,0 +1,15 @@
+package exacto.bullet3.common
+
+module base
+{
+	source "b3Vector3.cpp"
+	@IncludeExport(path="Bullet3Common")
+	source "b3Vector3.h", 
+			"b3Transform.h", 
+			"b3Scalar.h", 
+			"b3Quaternion.h",
+			"b3MinMax.h",
+			"b3Matrix3x3.h",
+			"b3AlignedObjectArray.h",
+			"b3AlignedAllocator.h"
+}

@@ -1,0 +1,14 @@
+package exacto.bullet3.collision.broadphase
+
+module base
+{
+	source "b3DynamicBvh.cpp",
+			"b3DynamicBvhBroadphase.cpp",
+			"b3OverlappingPairCache.cpp"
+	@IncludeExport(path="Bullet3Collision/BroadPhaseCollision")
+	source "b3BroadphaseCallback.h", 
+			"b3DynamicBvh.h",
+			"b3DynamicBvhBroadphase.h",
+			"b3OverlappingPair.h",
+			"b3OverlappingPairCache.h"
+}

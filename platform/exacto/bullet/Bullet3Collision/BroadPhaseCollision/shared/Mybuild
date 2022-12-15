@@ -1,0 +1,7 @@
+package exacto.bullet3.collision.broadphase
+
+module base
+{
+	@IncludeExport(path="Bullet3Collision/BroadPhaseCollision/shared")
+	source "b3Aabb.h" 
+}
