@@ -74,6 +74,11 @@
             }
         },
         {
+            "label": "check tsl 6666",
+            "type": "shell",
+            "command": "sudo lsof -i tcp:6666"            
+        },
+        {
             "label": "mods list",
             "type": "shell",
             "command": "make mod-list"            
