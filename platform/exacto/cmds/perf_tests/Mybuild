@@ -52,14 +52,12 @@ module ex_sensor{
 	source "test_ex_sensor.c"
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
-	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
 
-	depends exacto.cmds.tests.timbase
+	depends exacto.tim.base
 	depends exacto.cmds.perf_tests.ex_utils
 
 	depends exacto.spi.sns_apollon
-	depends exacto.commander.data_storage
 	depends exacto.commander.sns_apollon_lib
 	depends exacto.sensors.ism330dlc
 	depends exacto.sensors.lsm303ah
@@ -75,12 +73,10 @@ module ex_sns_sender_smpl{
 	source "test_ex_sns_sender_smpl.c"
 	depends embox.compat.posix.util.sleep
 	depends embox.kernel.lthread.lthread
-	depends embox.kernel.lthread.lthread
 	depends embox.kernel.lthread.sync.mutex
-	depends exacto.cmds.tests.timbase
+	depends exacto.tim.base
 	depends exacto.cmds.perf_tests.ex_utils
 	depends exacto.spi.sns_apollon
-	depends exacto.commander.data_storage
 	depends exacto.commander.sns_apollon_lib
 	depends exacto.sensors.ism330dlc
 	depends exacto.sensors.lsm303ah

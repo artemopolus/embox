@@ -23,7 +23,6 @@
 #include "tim/tim.h"
 #include "ex_utils.h"
 
-#include "commander/exacto_data_storage.h"
 #include "commander/exacto_sns_ctrl.h"
 #include "sensors/ism330dlc_reg.h"
 #include "sensors/lsm303ah_reg.h"
