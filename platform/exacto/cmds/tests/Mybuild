@@ -177,7 +177,7 @@ module lights {
 	source "lights.c"
 
 	depends embox.compat.posix.util.sleep
-	depends exacto.afina.gpio.gpio_spi
+	depends exacto.gpio.led
 }
 @AutoCmd
 @Cmd(name="sns_reader_smpl", help=" Test for lights ", man='''

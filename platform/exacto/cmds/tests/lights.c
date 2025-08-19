@@ -4,7 +4,7 @@
 #include <stdio.h>
   
 #include <stdint.h>
-#include "gpio/gpio.h"
+#include "gpio/gpio_led.h"
 
 int main(int argc, char *argv[]) {
     usleep(1000000);

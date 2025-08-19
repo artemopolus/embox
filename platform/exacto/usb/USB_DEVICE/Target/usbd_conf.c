@@ -675,7 +675,7 @@ void USBD_LL_Delay(uint32_t Delay)
   */
 static void SystemClockConfig_Resume(void)
 {
-  SystemClock_Config();
+  // SystemClock_Config();
 }
 /* USER CODE END 5 */
 /**

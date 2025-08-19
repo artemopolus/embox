@@ -19,3 +19,19 @@ module base{
 	@NoRuntime depends exacto.usb.stm32usblib.msc
 	@NoRuntime depends platform.exacto.afina.basis.bsp
 }
+
+@BuildDepends(exacto.usb.stm32f746.msc.flags)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildDepends(exacto.usb.stm32usblib.core)
+@BuildDepends(exacto.usb.stm32usblib.msc)
+@BuildDepends(platform.exacto.afina.small.bsp)
+module small{
+	source "Src/main.c"
+	source "Src/usbd_conf.c"
+	source "Src/usbd_desc.c"
+	source "Src/usbd_storage.c"
+	@NoRuntime depends exacto.usb.stm32f746.msc.flags
+	@NoRuntime depends exacto.usb.stm32usblib.core
+	@NoRuntime depends exacto.usb.stm32usblib.msc
+	@NoRuntime depends platform.exacto.afina.small.bsp
+}
