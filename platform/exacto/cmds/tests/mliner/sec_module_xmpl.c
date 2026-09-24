@@ -4,6 +4,23 @@
 #include <stdio.h>
 
 #include "ex_utils.h"
+#include "sensors/lsmism.h"
+
+// Sensor print section
+
+static uint16_t Print_Counter = 0;
+static uint16_t Print_MaxCounter = 100;
+static uint8_t Print_Mark = 0;
+static int16_t Print_Buffer[3] = {0};
+static uint32_t Print_ItCounter = 0;
+
+// ===
+
+// Command value
+
+static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
+
+// ===
 
 
 #define TIM_1SEC_DIVIDER 200
@@ -29,6 +46,63 @@ static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
 
+
+int applyExactolinkCommand( )
+{
+	if (Command_Mark != EXACTOLINK_NO_DATA)
+	{
+		if (Command_Mark == EXACTOLINK_CMD_START)
+		{
+			printf("Start");
+			exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
+		}
+		else if (Command_Mark == EXACTOLINK_CMD_STOP)
+		{
+			printf("Stop");
+			exSnsStop();
+		}
+		else
+		{
+			printf("Unknown command");
+		}
+		
+		Command_Mark = EXACTOLINK_NO_DATA;
+	}
+	return 0;	
+}
+
+
+int printSensorData ()
+{
+	if (Print_Mark)
+	{
+		printf("[%d]sensor:[%8d %8d %8d]\n", Print_ItCounter++, Print_Buffer[0], Print_Buffer[1], Print_Buffer[2]);
+		Print_Mark = 0;
+	}
+	return 0;	
+}
+
+int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
+{
+	if(Print_Counter > Print_MaxCounter)
+	{
+		Print_Counter = 0;
+		if(!Print_Mark)
+		{
+			if(id == LSM303AH )
+			{
+				for(int i = 0; i < 3; i++)
+					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
+			}
+			Print_Mark  = 1;
+		}
+	}
+	else
+		Print_Counter++;
+	return 0;	
+}
+
+
 static int run_Tim_Lthread(struct  lthread * self)
 {
 	exse_ack(&ExTimServices[PointToTim]);
@@ -49,6 +123,7 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
 	printf("in:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	cmd->value += 3;
+	Command_Mark = cmd->value;
 	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
 	SendCounter++;
 	return 0;
@@ -87,6 +162,8 @@ int main(int argc, char *argv[])
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
 	exmliner_setRepeatAction(onRepeatEventHandler);
 	exmliner_setErrorAction(onErrorEventHandler);
+	
+	exmliner_init(&LsmIsmDev, onUpdateSensorData);
 
 #ifdef MEASURE_TIME
 	ex_dwt_cyccnt_reset();
@@ -128,6 +205,8 @@ int main(int argc, char *argv[])
 #endif
 		if(NeedToPrint)
 		{
+			printSensorData();
+			applyExactolinkCommand();
 #ifdef MEASURE_TIME
 			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
 			TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;

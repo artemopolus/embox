@@ -65,6 +65,7 @@ module sec_module_xmpl{
 	depends exacto.tim.base
 
 	depends exacto.cmds.perf_tests.ex_utils
+	depends exacto.sensors.lsmism
 }
 @AutoCmd
 @Cmd(name="test_mline_main_xmpl", help=" Test reaction on address via mline ", man='''
