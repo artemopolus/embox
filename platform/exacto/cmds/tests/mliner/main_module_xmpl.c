@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 			{
 				changeSnsMode( 0 );
 			}
-			else if (cnt < 3)
+			else
 			{
 				changeSnsMode( 2) ;
 			}

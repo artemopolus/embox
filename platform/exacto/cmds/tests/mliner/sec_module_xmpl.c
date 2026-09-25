@@ -96,6 +96,12 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
 			}
 			Print_Mark  = 1;
+			exlnk_cmd_str_t cmd;
+			cmd.id = 1;
+			cmd.mnum = 0;
+			cmd.reg = 66;
+			cmd.value = 77;
+			exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
 		}
 	}
 	else
@@ -205,9 +211,9 @@ int main(int argc, char *argv[])
 		UpdateMlineDurationAVR += UpdateMlineDuration;
 		TransmitMlineDurationAVR += TransmitMlineDuration;
 #endif
+		printSensorData();
 		if(NeedToPrint)
 		{
-			printSensorData();
 			applyExactolinkCommand();
 #ifdef MEASURE_TIME
 			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
