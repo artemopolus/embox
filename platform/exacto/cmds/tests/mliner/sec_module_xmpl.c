@@ -51,22 +51,22 @@ int applyExactolinkCommand( )
 {
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
-		if (Command_Mark == EXACTOLINK_CMD_START)
+		if (Command_Mark == 5)
 		{
-			printf("Start");
+			printf("\n\nStart\n\n");
 			exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
 		}
-		else if (Command_Mark == EXACTOLINK_CMD_STOP)
+		else if (Command_Mark == 9)
 		{
-			printf("Stop");
+			printf("\n\nStop\n\n");
 			exSnsStop();
 		}
 		else
 		{
-			printf("Unknown command");
+			printf("\n\nUnknown command: %d\n\n", Command_Mark);
 		}
 		
-		Command_Mark = EXACTOLINK_NO_DATA;
+		Command_Mark = 0;
 	}
 	return 0;	
 }
@@ -77,6 +77,7 @@ int printSensorData ()
 	if (Print_Mark)
 	{
 		printf("[%d]sensor:[%8d %8d %8d]\n", Print_ItCounter++, Print_Buffer[0], Print_Buffer[1], Print_Buffer[2]);
+		printf("Cmd mark: %d", Command_Mark);
 		Print_Mark = 0;
 	}
 	return 0;	
@@ -121,9 +122,9 @@ static int run_Tim_Lthread(struct  lthread * self)
 }
 static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
+	Command_Mark = cmd->value;
 	printf("in:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	cmd->value += 3;
-	Command_Mark = cmd->value;
 	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
 	SendCounter++;
 	return 0;
@@ -157,6 +158,7 @@ static int onErrorEventHandler(int id)
 }
 int main(int argc, char *argv[]) 
 {
+	printf("Basic application\nV 0.1\nAbilities:\n- Send ack\n- Change mode(start/stop sns)\n\n");
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);

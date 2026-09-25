@@ -116,28 +116,58 @@ static int onErrorEventHandler(int id)
 }
 
 
-static void sending(uint8_t value)
+// static void sending(uint8_t value)
+// {
+// 	exutils_updt(&TagTimer);
+// 	exlnk_cmd_str_t cmd;
+//    if(value == 7)
+// 	{
+//       exlnk_setCmd(&cmd, 65, 112);
+// 	}
+// 	else if(value == 16)
+// 	{
+//       exlnk_setCmd(&cmd, 55, 86);
+
+// 	}
+// 	exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, value);
+// 	exutils_updt(&TagTimer);
+// 	LoadInMlineDuration = TagTimer.result;
+// 	// printf("TagUpl[%8d]", LoadInMlineDuration);
+// 	printf("outCmd[%2d %5d %3d %3d]", value, cmd.mnum, cmd.reg, cmd.value);
+// 	exutils_updt(&TagTimer);
+// }
+
+static void changeSnsMode(uint8_t value)
 {
 	exutils_updt(&TagTimer);
 	exlnk_cmd_str_t cmd;
-   if(value == 7)
+   	if(value == 1)
 	{
-      exlnk_setCmd(&cmd, 65, 112);
+		printf("\n\nSend start command\n\n");
+		exlnk_setCmd(&cmd, 65, 5);
 	}
-	else if(value == 16)
+	else if(value == 0)
 	{
-      exlnk_setCmd(&cmd, 55, 86);
-
+		printf("\n\nSend STOP command\n\n");
+		exlnk_setCmd(&cmd, 65, 9);
 	}
-	exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, value);
+	else
+	{
+		printf("\n\nTEST command\n\n");
+// 	printf("outCmd[%2d %5d %3d %3d]", value, cmd.mnum, cmd.reg, cmd.value);
+		exlnk_setCmd(&cmd, 65, 112);
+	}
+	exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, 7);
 	exutils_updt(&TagTimer);
 	LoadInMlineDuration = TagTimer.result;
-	// printf("TagUpl[%8d]", LoadInMlineDuration);
-	printf("outCmd[%2d %5d %3d %3d]", value, cmd.mnum, cmd.reg, cmd.value);
 	exutils_updt(&TagTimer);
 }
+
+
+
 int main(int argc, char *argv[]) 
 {
+	printf("Start smpl sender to mliner\n\n");
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
@@ -151,6 +181,9 @@ int main(int argc, char *argv[])
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(1, 1);
+
+
+	uint8_t cnt = 0;
    
 	
 	while (1)
@@ -159,9 +192,27 @@ int main(int argc, char *argv[])
 
 		exutils_updt(&TagTimer);
 		TimerMlineDuration = TagTimer.result;
-		uint16_t trg_adr = AddressSendOrder[AdrCntIndex++];
+		// uint16_t trg_adr = AddressSendOrder[AdrCntIndex++];
+		uint16_t trg_adr = 7;
 
-		sending(trg_adr);
+		// sending(trg_adr);
+		if (cnt < 20)
+		{
+			if (cnt == 5)
+			{
+				changeSnsMode( 1 );
+			}
+			else if ( cnt > 10 )
+			{
+				changeSnsMode( 0 );
+			}
+			else if (cnt < 3)
+			{
+				changeSnsMode( 2) ;
+			}
+			printf("\ncnt: %d\n", cnt);
+			cnt++;
+		}
 		exmliner_Update(trg_adr);
 		exutils_updt(&TagTimer);
 		UpdateMlineDuration = TagTimer.result;
