@@ -5,6 +5,7 @@
 
 #include "ex_utils.h"
 #include "sensors/lsmism.h"
+#include "exactolink/exlnk_Data.h"
 
 // Sensor print section
 
@@ -45,6 +46,9 @@ static uint8_t EnableUpdate = 0;
 static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
+
+static uint8_t SensorsDataBuffer[128] = {0};
+static exlnk_data_str_t Data;
 
 
 int applyExactolinkCommand( )
@@ -181,6 +185,9 @@ int main(int argc, char *argv[])
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(0, Address);
+
+	exlnk_setData( & Data, 1,2,SensorsDataBuffer);
+
 	while (1)
 	{
 		while(!EnableUpdate)
