@@ -20,6 +20,7 @@ static uint32_t Print_ItCounter = 0;
 // Command value
 
 static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
+static uint8_t OverLoad_Mark = 0;
 
 // ===
 
@@ -47,12 +48,18 @@ static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
 
-static uint8_t SensorsDataBuffer[128] = {0};
+#define SENSOR_DATA_BUFFER_LEN 128
+static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t Data;
 
 
 int applyExactolinkCommand( )
 {
+	if (OverLoad_Mark)
+	{
+		printf("Overload!!!\n");
+	}
+	exmliner_Upload(Data.data, Data.len, EXLNK_DATA_ID_DATA, 7);
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
 		if (Command_Mark == 5)
@@ -100,12 +107,10 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
 			}
 			Print_Mark  = 1;
-			exlnk_cmd_str_t cmd;
-			cmd.id = 1;
-			cmd.mnum = 0;
-			cmd.reg = 66;
-			cmd.value = 77;
-			exmliner_Upload(&cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
+			if (!exlnk_addNewData(&Data,len, data))
+			{
+				OverLoad_Mark = 1;
+			}
 		}
 	}
 	else
@@ -186,7 +191,7 @@ int main(int argc, char *argv[])
 	ex_setFreqHz(100);
 	exmliner_Init(0, Address);
 
-	exlnk_setData( & Data, 1,2,SensorsDataBuffer);
+	exlnk_setData( & Data, 65, SENSOR_DATA_BUFFER_LEN,SensorsDataBuffer);
 
 	while (1)
 	{
