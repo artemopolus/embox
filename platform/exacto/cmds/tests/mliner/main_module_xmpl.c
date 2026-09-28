@@ -56,6 +56,34 @@ static uint32_t
 						;
 #endif
 
+static const char hex[] = "0123456789ABCDEF";
+
+
+void print_hex(const uint8_t *data, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++) {
+
+        if ((i % 16) == 0) {
+            putchar('\n');
+
+            // индекс элемента
+            putchar(hex[(i >> 12) & 0x0F]);
+            putchar(hex[(i >> 8)  & 0x0F]);
+            putchar(hex[(i >> 4)  & 0x0F]);
+            putchar(hex[i & 0x0F]);
+
+            putchar(':');
+            putchar(' ');
+        }
+
+        putchar(hex[data[i] >> 4]);
+        putchar(hex[data[i] & 0x0F]);
+        putchar(' ');
+    }
+
+    putchar('\n');
+}
+
 static int run_Tim_Lthread(struct  lthread * self)
 {
 	exse_ack(&ExTimServices[PointToTim]);
@@ -99,6 +127,8 @@ static int onResetEventHandler()
 }
 static int onCommonEventHandler(uint8_t * data, uint16_t len)
 {
+	printf("Common event handler\n");
+	print_hex( data, len );
 	return 0;
 }
 static int onRepeatEventHandler(uint8_t id, uint32_t mnum)
