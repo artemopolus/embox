@@ -97,6 +97,10 @@ static int onResetEventHandler()
 	printf("Try reset Mline\n");
 	return 0;
 }
+static int onCommonEventHandler(uint8_t * data, uint16_t len)
+{
+	return 0;
+}
 static int onRepeatEventHandler(uint8_t id, uint32_t mnum)
 {
 	printf("repeat: [%d %d ]\n", id, mnum);
@@ -173,6 +177,7 @@ int main(int argc, char *argv[])
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
 	exmliner_setRepeatAction(onRepeatEventHandler);
 	exmliner_setErrorAction(onErrorEventHandler);
+	exmliner_setCommonAction(onCommonEventHandler);
 
 	ex_dwt_cyccnt_reset();
 	exutils_init(&TagTimer);

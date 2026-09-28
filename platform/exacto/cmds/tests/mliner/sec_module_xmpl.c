@@ -170,6 +170,10 @@ static int onErrorEventHandler(int id)
 	{
 		printf("Repeat failed\n");
 	}
+	else
+	{
+		printf("Unknown error\n");
+	}
 	return 0 ;
 }
 int main(int argc, char *argv[]) 
