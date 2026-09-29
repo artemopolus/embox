@@ -231,13 +231,13 @@ int main(int argc, char *argv[])
 		uint16_t trg_adr = 7;
 
 		// sending(trg_adr);
-		if (cnt < 20)
+		if (1)
 		{
 			if (cnt == 5)
 			{
 				changeSnsMode( 1 );
 			}
-			else if ( cnt > 10 )
+			else if ( cnt > 10  && cnt < 20)
 			{
 				changeSnsMode( 0 );
 			}

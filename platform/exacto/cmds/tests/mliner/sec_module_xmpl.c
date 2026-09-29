@@ -53,14 +53,20 @@ static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t Data;
 
 
+
+
 int applyExactolinkCommand( )
 {
 	if (OverLoad_Mark)
 	{
 		printf("Overload!!!\n");
 	}
-	printf("Upload to exacto mliner, prev transmit: %d\n", exmliner_getTxIRQ());
-	exmliner_Upload(Data.data, Data.len, EXLNK_DATA_ID_DATA, 7);
+	if (Data.len > 0)
+	{
+		printf("Upload to exacto mliner [%d]\n", Data.len);
+		exmliner_Upload(&Data, Data.len, EXLNK_DATA_ID_DATA, 7);
+		exlnk_clearData(&Data);
+	}
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
 		if (Command_Mark == 5)
@@ -89,7 +95,7 @@ int printSensorData ()
 	if (Print_Mark)
 	{
 		printf("[%d]sensor:[%8d %8d %8d]\n", Print_ItCounter++, Print_Buffer[0], Print_Buffer[1], Print_Buffer[2]);
-		printf("Cmd mark: %d\n", Command_Mark);
+		// printf("Cmd mark: %d\n", Command_Mark);
 		Print_Mark = 0;
 	}
 	return 0;	
@@ -140,8 +146,8 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
 	Command_Mark = cmd->value;
 	printf("Get Command:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
-	cmd->value += 3;
-	exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
+	// cmd->value += 3;
+	// exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
 	SendCounter++;
 	return 0;
 }
