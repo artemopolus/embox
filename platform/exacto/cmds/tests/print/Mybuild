@@ -15,6 +15,14 @@ module start{
 	source "start.c"
 	depends exacto.cmds.tests.print.smpl_mod
 }
+@AutoCmd
+@Cmd(name="read_test_file", help=" Test for read SD data ", man='''
+AUTHOR Kuznetcov
+''')
+module read_test_file{
+	source "read_test_file.c"
+	depends exacto.cmds.tests.print.writer_smpl
+}
 module smpl_mod{
 	source "smpl_mod.c"
 	@IncludeExport(path="")

@@ -35,6 +35,87 @@ uint16_t ReaderAddCounter;
 uint16_t ReaderDataLen;
 uint16_t FileDataLen;
 
+static const char hex[] = "0123456789ABCDEF";
+
+void print_hex(const uint8_t *data, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++) {
+
+        if ((i % 16) == 0) {
+            putchar('\n');
+
+            // индекс элемента
+            putchar(hex[(i >> 12) & 0x0F]);
+            putchar(hex[(i >> 8)  & 0x0F]);
+            putchar(hex[(i >> 4)  & 0x0F]);
+            putchar(hex[i & 0x0F]);
+
+            putchar(':');
+            putchar(' ');
+        }
+
+        putchar(hex[data[i] >> 4]);
+        putchar(hex[data[i] & 0x0F]);
+        putchar(' ');
+    }
+
+    putchar('\n');
+}
+
+void readFileAndPrintHex(const char *filename) 
+{
+    int fd;
+    uint8_t read_buffer[128];
+    ssize_t bytes_read;
+
+    /*
+     * Если файл всё ещё открыт потоком записи,
+     * останавливаем цикл записи.
+     */
+    if (BBBFlag == 1) {
+        BBBFlag = 0;
+
+        /*
+         * Поток записи после выхода из while(BBBFlag)
+         * выполнит close(Pt). Даём ему завершить эту операцию.
+         */
+        usleep(1100000);
+    }
+
+    fd = open(filename, O_RDONLY);
+
+    if (fd < 0) {
+        printf("Can't open file %s, errno=%d\n", filename, errno);
+        return;
+    }
+
+    printf("\nReading file: %s\n", filename);
+
+    while (1) {
+        bytes_read = read(fd, read_buffer, sizeof(read_buffer));
+
+        if (bytes_read < 0) {
+            printf("Error reading file %s, errno=%d\n",
+                   filename, errno);
+            break;
+        }
+
+        if (bytes_read == 0) {
+            break;
+        }
+
+        print_hex(read_buffer, (uint16_t)bytes_read);
+    }
+
+    close(fd);
+
+    printf("\nEnd of file: %s\n", filename);
+}
+
+void readTestFile()
+{
+	readFileAndPrintHex("/mnt/test.txt");
+}
 
 static void *runMainBasicThread(void *arg) {
     
