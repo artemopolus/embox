@@ -10,6 +10,7 @@
 #include "mliner/mliner.h"
 
 #include "ex_utils.h"
+#include "writer_smpl.h"
 
 #define MLINER_MAIN_SENDER_BUFFER_PACKSCNT_MAX 10
 #define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
@@ -28,7 +29,8 @@ static uint8_t AddressCount = 6;
 static uint8_t AdrCntIndex = 0;
 
 
-
+ExactoBufferUint8Type DataStore;
+uint8_t DataTmBuffer[128] = {0};
 
 static uint16_t TIM_Counter = 0;
 static uint16_t SendCounter = 0;
@@ -129,8 +131,21 @@ static int onCommonEventHandler(uint8_t * data, uint16_t len)
 {
 	printf("Common event handler\n");
 	print_hex( data, len );
+	pshsftPack_exbu8(&DataStore, data, len);
 	return 0;
 }
+
+void uploadDataToSDwriter( )
+{
+	if (isReadyToWrite() == 0)
+		return;
+	if getlen_exbu8( &DataStore)
+	{
+		uint16_t copy = grbfstPack_exbu8(&DataStore, DataTmBuffer, 128);
+		addDataToWrite( DataTmBuffer, copy )
+	}
+}
+
 static int onRepeatEventHandler(uint8_t id, uint32_t mnum)
 {
 	printf("repeat: [%d %d ]\n", id, mnum);
@@ -216,6 +231,11 @@ int main(int argc, char *argv[])
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(1, 1);
+	setini_exbu8(&DataStore);
+
+	startSmplMod();
+
+	printReaderData();
 
 
 	uint8_t cnt = 0;

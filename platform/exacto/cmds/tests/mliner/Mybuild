@@ -84,7 +84,9 @@ module main_module_xmpl{
 	depends ext.exacto.exactolink.exlnk_set_header
 	depends ext.exacto.exactolink.exlnk_get_header
 	depends ext.exacto.exactolink.exlnk_cmd
+	depends ext.exacto.operator.buffer
 
 	depends exacto.cmds.tests.timbase
 	depends exacto.cmds.perf_tests.ex_utils
+	depends exacto.cmds.tests.print.writer_smpl
 }

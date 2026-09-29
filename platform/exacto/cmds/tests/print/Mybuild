@@ -27,3 +27,16 @@ module smpl_mod{
 	depends embox.kernel.sched.sched
 	depends embox.kernel.thread.sync
 }
+module writer_smpl{
+	source "writer_smpl.c"
+	@IncludeExport(path="")
+	source "writer_smpl.h"
+	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
+
+	depends embox.compat.posix.util.sleep
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	depends embox.kernel.thread.sync
+	depends ext.exacto.operator.buffer
+}
