@@ -25,8 +25,8 @@
 ExactoBufferUint8Type ReaderStore;
 
 static uint8_t buffer[1048];
-uint8_t Print2SDFlag;
-int PrintRes;
+static uint8_t Print2SDFlag;
+static int PrintRes;
 static uint8_t BBBFlag = 0;
 
 static struct thread *MainBasicThread;
@@ -42,7 +42,6 @@ static void *runMainBasicThread(void *arg) {
 
     while(BBBFlag == 0)
         sleep(1);
-	Print2SDFlag = 0;
     int	Pt = open("/mnt/test.txt",O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
 	if (0 > Pt)
 	{
@@ -51,6 +50,7 @@ static void *runMainBasicThread(void *arg) {
 	}
 	// else
     //   printf("Data file is opened\n");
+	Print2SDFlag = 1;
 	while (BBBFlag)
 	{
 		while (Print2SDFlag == 0)
@@ -59,6 +59,7 @@ static void *runMainBasicThread(void *arg) {
 
 		if (getlen_exbu8(&ReaderStore))
 		{
+			printf("Write data to file\n");
 			Print2SDFlag = 0;
 			uint16_t copy = grbfstPack_exbu8(&ReaderStore, buffer, 128);
 			PrintRes = write (Pt, buffer, copy);
@@ -71,7 +72,7 @@ static void *runMainBasicThread(void *arg) {
     
 	return NULL;
 }
-void startSmplMod()
+void openFileSD()
 {
     BBBFlag = 1;
 }
@@ -89,7 +90,7 @@ void addDataToWrite( uint8_t * data, uint16_t datalen)
 }
 void printReaderData()
 {
-	printf("Thread started: %d\nAdd Data Events Count: %d\n Data added len: %d", BBBFlag, ReaderAddCounter, ReaderDataLen);
+	printf("Thread started: %d\nAdd Data Events Count: %d\nData added len: %d\n", BBBFlag, ReaderAddCounter, ReaderDataLen);
 }
 EMBOX_UNIT_INIT(initTestSmplMod);
 static int initTestSmplMod()

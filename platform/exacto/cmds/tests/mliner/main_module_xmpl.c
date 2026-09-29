@@ -105,7 +105,7 @@ static int run_Tim_Lthread(struct  lthread * self)
 }
 static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
-	printf("inCmd:[reg: %3d val: %3d]", cmd->reg, cmd->value);
+	printf("inCmd:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	// cmd->value += 3;
 	// exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD);
 	// SendCounter++;
@@ -113,10 +113,10 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 }
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
-	printf("inAck:[mnum: %5d reg: %5d]", cmd->mnum, cmd->reg);
+	printf("inAck:[mnum: %5d reg: %5d]\n", cmd->mnum, cmd->reg);
 	if(exmliner_checkAck(cmd, AddressSendOrder[AdrCntIndex]))
 	{
-		printf("Done");
+		printf("=====>Done\n");
 		SendCounter++;
 	}
 
@@ -138,11 +138,14 @@ static int onCommonEventHandler(uint8_t * data, uint16_t len)
 void uploadDataToSDwriter( )
 {
 	if (isReadyToWrite() == 0)
+	{
+		printf("Not ready to write\n");
 		return;
-	if getlen_exbu8( &DataStore)
+	}
+	if (getlen_exbu8( &DataStore) )
 	{
 		uint16_t copy = grbfstPack_exbu8(&DataStore, DataTmBuffer, 128);
-		addDataToWrite( DataTmBuffer, copy )
+		addDataToWrite( DataTmBuffer, copy );
 	}
 }
 
@@ -233,7 +236,7 @@ int main(int argc, char *argv[])
 	exmliner_Init(1, 1);
 	setini_exbu8(&DataStore);
 
-	startSmplMod();
+	openFileSD();
 
 	printReaderData();
 

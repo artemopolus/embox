@@ -4,7 +4,7 @@
 
 extern void addDataToWrite( uint8_t * data, uint16_t datalen);
 extern void printReaderData();
-extern void startSmplMod();
+extern void openFileSD();
 extern uint8_t isReadyToWrite();
 
 #endif
