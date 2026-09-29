@@ -289,6 +289,8 @@ int main(int argc, char *argv[])
 		
 		if(NeedToPrint)
 		{
+			uploadDataToSDwriter();
+			printReaderData();
 			// printf("tim[%8d]send[%5d][%3d]\n", TIM_Counter,SendCounter, trg_adr);
 			LoadInMlineDurationAVR = LoadInMlineDurationAVR / TIM_1SEC_DIVIDER;
 			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
