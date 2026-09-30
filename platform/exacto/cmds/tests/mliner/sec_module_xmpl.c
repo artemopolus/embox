@@ -20,6 +20,7 @@ static uint32_t Print_ItCounter = 0;
 // Command value
 
 static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
+static uint8_t ModeChange_Mark = 0;
 static uint8_t OverLoad_Mark = 0;
 
 // ===
@@ -52,18 +53,36 @@ static uint8_t Address = 7;
 static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t Data;
 
+static uint16_t DataUploadLen = 0;
+static uint16_t SensorDataUploadCnt = 0;
 
-
+int ReportStatus()
+{
+	if (NeedToPrint == 0)
+		return 1;
+	printf("Upload to exacto mliner [%d]\n", DataUploadLen);
+	printf("Sensor Data uploads: %d\n", SensorDataUploadCnt);
+	if (OverLoad_Mark)
+	{
+		printf("Buffer Overload!!!\n");
+	}
+	if (ModeChange_Mark == 1)
+	{
+		printf("\n\nStart\n\n");
+	}
+	else if (ModeChange_Mark == 2)
+	{
+		printf("\n\nStop\n\n");
+	}
+	ModeChange_Mark = 0;
+	return 0;
+}
 
 int applyExactolinkCommand( )
 {
-	if (OverLoad_Mark)
-	{
-		printf("Overload!!!\n");
-	}
 	if (Data.len > 0)
 	{
-		printf("Upload to exacto mliner [%d]\n", Data.len);
+		DataUploadLen += Data.len;
 		exmliner_Upload(&Data, Data.len, EXLNK_DATA_ID_DATA, 7);
 		exlnk_clearData(&Data);
 	}
@@ -71,17 +90,17 @@ int applyExactolinkCommand( )
 	{
 		if (Command_Mark == 5)
 		{
-			printf("\n\nStart\n\n");
 			exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
+			ModeChange_Mark = 1;
 		}
 		else if (Command_Mark == 9)
 		{
-			printf("\n\nStop\n\n");
 			exSnsStop();
+			ModeChange_Mark = 2;
 		}
 		else
 		{
-			printf("\n\nUnknown command: %d\n\n", Command_Mark);
+			// printf("\n\nUnknown command: %d\n\n", Command_Mark);
 		}
 		
 		Command_Mark = 0;
@@ -103,6 +122,11 @@ int printSensorData ()
 
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
+	SensorDataUploadCnt += 1;
+	if (!exlnk_addNewData(&Data,len, data))
+	{
+		OverLoad_Mark = 1;
+	}
 	if(Print_Counter > Print_MaxCounter)
 	{
 		Print_Counter = 0;
@@ -114,10 +138,6 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
 			}
 			Print_Mark  = 1;
-			if (!exlnk_addNewData(&Data,len, data))
-			{
-				OverLoad_Mark = 1;
-			}
 		}
 	}
 	else
@@ -235,9 +255,11 @@ int main(int argc, char *argv[])
 		TransmitMlineDurationAVR += TransmitMlineDuration;
 #endif
 		printSensorData();
+		applyExactolinkCommand();
+		ReportStatus();
 		if(NeedToPrint)
 		{
-			applyExactolinkCommand();
+
 #ifdef MEASURE_TIME
 			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
 			TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
