@@ -21,7 +21,7 @@ static uint32_t Print_ItCounter = 0;
 
 static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
 static uint8_t ModeChange_Mark = 0;
-static uint8_t OverLoad_Mark = 0;
+static uint32_t OverLoad_Mark = 0;
 
 // ===
 
@@ -123,9 +123,10 @@ int printSensorData ()
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
 	SensorDataUploadCnt += 1;
-	if (!exlnk_addNewData(&Data,len, data))
+	uint16_t overload_value = exlnk_addNewData(&Data,len, data);
+	if (overload_value > 0)
 	{
-		OverLoad_Mark = 1;
+		OverLoad_Mark += overload_value;
 	}
 	if(Print_Counter > Print_MaxCounter)
 	{
