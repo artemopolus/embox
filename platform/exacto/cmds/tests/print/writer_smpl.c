@@ -28,16 +28,18 @@ static uint8_t buffer[1048];
 static uint8_t Print2SDFlag;
 static int PrintRes;
 static uint8_t BBBFlag = 0;
+static int Pt;
 
 static struct thread *MainBasicThread;
 
 uint16_t ReaderAddCounter;
 uint16_t ReaderDataLen;
 uint16_t FileDataLen;
+uint8_t FileOpen;
 
 static const char hex[] = "0123456789ABCDEF";
 
-void print_hex(const uint8_t *data, uint16_t len)
+static void print_hex(const uint8_t *data, uint16_t len)
 {
     for (uint16_t i = 0; i < len; i++) {
 
@@ -79,7 +81,8 @@ void readFileAndPrintHex(const char *filename)
          * Поток записи после выхода из while(BBBFlag)
          * выполнит close(Pt). Даём ему завершить эту операцию.
          */
-        usleep(1100000);
+        while(FileOpen)
+            sleep(1);
     }
 
     fd = open(filename, O_RDONLY);
@@ -116,40 +119,55 @@ void readTestFile()
 {
 	readFileAndPrintHex("/mnt/test.txt");
 }
+void writeBufferDataToFile()
+{
+    if (getlen_exbu8(&ReaderStore))
+    {
+        printf("Write data to file\n");
+        Print2SDFlag = 0;
+        uint16_t copy = grbfstPack_exbu8(&ReaderStore, buffer, 128);
+        PrintRes = write (Pt, buffer, copy);
+        Print2SDFlag = 1;
+    }
+}
 
 static void *runMainBasicThread(void *arg) {
     
 	printf("Start thread\n");
 
     while(BBBFlag == 0)
-        sleep(1);
-    int	Pt = open("/mnt/test.txt",O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0666);
+        usleep(1100000);
+    BBBFlag = 0;
+    Pt = open("/mnt/test.txt",O_CREAT | O_WRONLY | O_TRUNC, 0666);
 	if (0 > Pt)
 	{
       	printf("Can't open Data file\n");
 		return NULL;
 	}
+    FileOpen = 1;
+    uint8_t Header[] = {7, 7, 7, 7, 7, 7};
+    uint8_t Ender[] = {4, 4, 4, 4, 4, 4};
 	// else
     //   printf("Data file is opened\n");
+    addDataToWrite( Header, 6);
+    writeBufferDataToFile();
 	Print2SDFlag = 1;
+    BBBFlag = 1;
 	while (BBBFlag)
 	{
 		while (Print2SDFlag == 0)
 		{
 		}
 
-		if (getlen_exbu8(&ReaderStore))
-		{
-			printf("Write data to file\n");
-			Print2SDFlag = 0;
-			uint16_t copy = grbfstPack_exbu8(&ReaderStore, buffer, 128);
-			PrintRes = write (Pt, buffer, copy);
-			Print2SDFlag = 1;
-		}
-		usleep(1000000);
+        writeBufferDataToFile();
+
+		usleep(10000);
 	}
 	
-
+    addDataToWrite( Ender, 6);
+    writeBufferDataToFile();
+    close(Pt);
+    FileOpen = 0;
     
 	return NULL;
 }
@@ -163,6 +181,8 @@ uint8_t isReadyToWrite()
 }
 void addDataToWrite( uint8_t * data, uint16_t datalen)
 {
+    // if (BBBFlag == 0)
+        // return;
 	Print2SDFlag = 0;
 	ReaderAddCounter ++;
 	ReaderDataLen += datalen;
@@ -180,6 +200,7 @@ static int initTestSmplMod()
     BBBFlag = 0;
 	ReaderAddCounter = 0;
 	ReaderDataLen = 0;
+    FileOpen = 0;
 	setini_exbu8(&ReaderStore);
 	MainBasicThread = thread_create(THREAD_FLAG_DETACHED |THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
     thread_launch(MainBasicThread);
