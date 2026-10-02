@@ -56,6 +56,9 @@ static uint32_t Ticker_Cnt = 0;
 
 // static uint16_t OverFlow = 0;
 
+static uint8_t SnsCounter = 0;
+static uint8_t SnsMaxCnt = 4;
+
 static struct lthread Init_Lthread;
 
 #define DEMCR        0xE000EDFC
@@ -277,6 +280,16 @@ static int runSnsContainerLthread(struct lthread * self)
 			Ticker_Cnt = 0;
 			Ticker_Res = 0;
 		}
+	}
+	if (SnsCounter < SnsMaxCnt)
+	{
+		SnsCounter++;
+		trg->done = 1;
+		return 0;
+	}
+	else
+	{
+		SnsCounter = 0;
 	}
 	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
 	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);

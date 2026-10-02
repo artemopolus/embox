@@ -22,6 +22,7 @@ static uint32_t Print_ItCounter = 0;
 static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
 static uint8_t ModeChange_Mark = 0;
 static uint32_t OverLoad_Mark = 0;
+static uint32_t DataInputALLCount = 0;
 
 // ===
 
@@ -49,22 +50,25 @@ static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
 
-#define SENSOR_DATA_BUFFER_LEN 128
+#define SENSOR_DATA_BUFFER_LEN 768
 static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t Data;
 
 static uint16_t DataUploadLen = 0;
 static uint16_t SensorDataUploadCnt = 0;
 
+static uint16_t TIM_Event_Counter = 0;
+
 int ReportStatus()
 {
 	if (NeedToPrint == 0)
 		return 1;
+	printf("Tim Event: %d\n", TIM_Event_Counter);
 	printf("Upload to exacto mliner [%d]\n", DataUploadLen);
 	printf("Sensor Data uploads: %d\n", SensorDataUploadCnt);
 	if (OverLoad_Mark)
 	{
-		printf("Buffer Overload!!!\n");
+		printf("Buffer Overload!!![%d]/[%d]\n", OverLoad_Mark, DataInputALLCount);
 	}
 	if (ModeChange_Mark == 1)
 	{
@@ -75,6 +79,9 @@ int ReportStatus()
 		printf("\n\nStop\n\n");
 	}
 	ModeChange_Mark = 0;
+	
+	exmliner_printStatus(0);
+
 	return 0;
 }
 
@@ -123,6 +130,7 @@ int printSensorData ()
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
 	SensorDataUploadCnt += 1;
+	DataInputALLCount += (uint32_t)len;
 	uint16_t overload_value = exlnk_addNewData(&Data,len, data);
 	if (overload_value > 0)
 	{
@@ -158,7 +166,10 @@ static int run_Tim_Lthread(struct  lthread * self)
 	if(NeedToPrint == 0)
 	{
 		if(! (TIM_Counter % TIM_1SEC_DIVIDER))
+		{
 			NeedToPrint = 1;
+			TIM_Event_Counter ++;
+		}
 	}
 	EnableUpdate = 1;
 	return 0;
