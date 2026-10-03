@@ -57,7 +57,7 @@ static uint32_t Ticker_Cnt = 0;
 // static uint16_t OverFlow = 0;
 
 static uint8_t SnsCounter = 0;
-static uint8_t SnsMaxCnt = 4;
+static uint8_t SnsMaxCnt = 8;
 
 static struct lthread Init_Lthread;
 

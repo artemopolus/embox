@@ -15,6 +15,7 @@
 #include "stm32f1xx.h"
 
 #include "mliner/mliner_maindev_impl.h"
+#include "mliner/mliner_main.h"
 
 #include "gpio/gpio.h"
 
@@ -23,7 +24,7 @@
 
 
 #ifndef MLINE_RXTX_BUFFER_SIZE
-#define MLINE_RXTX_BUFFER_SIZE 512
+#define MLINE_RXTX_BUFFER_SIZE MLINER_MSG_SZ
 #endif
 
 static uint8_t RxBuffer[MLINE_RXTX_BUFFER_SIZE];

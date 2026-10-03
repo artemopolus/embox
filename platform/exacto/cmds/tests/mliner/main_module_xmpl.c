@@ -193,6 +193,7 @@ static void changeSnsMode(uint8_t value)
 {
 	exutils_updt(&TagTimer);
 	exlnk_cmd_str_t cmd;
+	exmliner_printStatus(1);
    	if(value == 1)
 	{
 		printf("\n\nSend start command\n\n");
