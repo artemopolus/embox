@@ -16,7 +16,7 @@
 #define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
 #define ECTM_SEC_COUNT 2
 #define TIM_1SEC_DIVIDER 200
-
+#define DATA_STORE_SZ 128
 
 // uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
 // uint8_t AddressSendOrder[] = {7, 0,0, 16, 0,0};
@@ -30,7 +30,8 @@ static uint8_t AdrCntIndex = 0;
 
 
 ExactoBufferUint8Type DataStore;
-uint8_t DataTmBuffer[128] = {0};
+ExactoBufferUint8Type GyrDataStore;
+uint8_t DataTmBuffer[DATA_STORE_SZ] = {0};
 
 static uint16_t TIM_Counter = 0;
 static uint16_t SendCounter = 0;
@@ -127,11 +128,18 @@ static int onResetEventHandler()
 	printf("Try reset Mline\n");
 	return 0;
 }
-static int onCommonEventHandler(uint8_t * data, uint16_t len)
+static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 {
 	printf("Common event handler\n");
 	print_hex( data, len );
-	pshsftPack_exbu8(&DataStore, data, len);
+	if (reg == 33)
+	{
+		pshsftPack_exbu8(&DataStore, data, len);
+	}
+	else if (reg == 34)
+	{
+		pshsftPack_exbu8(&GyrDataStore, data, len);
+	}
 	return 0;
 }
 
@@ -142,11 +150,19 @@ void uploadDataToSDwriter( )
 		printf("Not ready to write\n");
 		return;
 	}
+	blockWrite();
 	if (getlen_exbu8( &DataStore) )
 	{
-		uint16_t copy = grbfstPack_exbu8(&DataStore, DataTmBuffer, 128);
-		addDataToWrite( DataTmBuffer, copy );
+		uint16_t copy = grbfstPack_exbu8(&DataStore, DataTmBuffer, DATA_STORE_SZ);
+		// addDataToWrite( DataTmBuffer, copy );
+		addDataToFile( 0, DataTmBuffer, copy);
 	}
+	if (getlen_exbu8( &GyrDataStore) )
+	{
+		uint16_t copy = grbfstPack_exbu8(&GyrDataStore, DataTmBuffer, DATA_STORE_SZ);
+		addDataToFile( 1, DataTmBuffer, copy);
+	}
+	unBlockWrite();
 }
 
 static int onRepeatEventHandler(uint8_t id, uint32_t mnum)
@@ -236,6 +252,7 @@ int main(int argc, char *argv[])
 	ex_setFreqHz(100);
 	exmliner_Init(1, 1);
 	setini_exbu8(&DataStore);
+	setini_exbu8(&GyrDataStore);
 
 	openFileSD();
 

@@ -51,8 +51,11 @@ static uint8_t NeedToPrint = 0;
 static uint8_t Address = 7;
 
 #define SENSOR_DATA_BUFFER_LEN 768
+#define GYR_DATA_BUFFER_LEN 512
 static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
-static exlnk_data_str_t Data;
+static uint8_t GyrDataBuffer[GYR_DATA_BUFFER_LEN] = {0};
+static exlnk_data_str_t AccData;
+static exlnk_data_str_t GyrData;
 
 static uint16_t DataUploadLen = 0;
 static uint16_t SensorDataUploadCnt = 0;
@@ -87,11 +90,17 @@ int ReportStatus()
 
 int applyExactolinkCommand( )
 {
-	if (Data.len > 0)
+	if (AccData.len > 0)
 	{
-		DataUploadLen += Data.len;
-		exmliner_Upload(&Data, Data.len, EXLNK_DATA_ID_DATA, 7);
-		exlnk_clearData(&Data);
+		DataUploadLen += AccData.len;
+		exmliner_Upload(&AccData, AccData.len, EXLNK_DATA_ID_DATA, 7);
+		exlnk_clearData(&AccData);
+	}
+	if (GyrData.len > 0)
+	{
+		DataUploadLen += GyrData.len;
+		exmliner_Upload(&GyrData, GyrData.len, EXLNK_DATA_ID_DATA, 7);
+		exlnk_clearData(&GyrData);
 	}
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
@@ -131,7 +140,15 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
 	SensorDataUploadCnt += 1;
 	DataInputALLCount += (uint32_t)len;
-	uint16_t overload_value = exlnk_addNewData(&Data,len, data);
+	uint16_t overload_value = 0;
+	if (id == LSM303AH)
+	{
+		overload_value = exlnk_addNewData(&AccData,len, data);
+	}
+	else if (id == ISM330DLC)
+	{
+		overload_value = exlnk_addNewData(&GyrData,len, data);
+	}
 	if (overload_value > 0)
 	{
 		OverLoad_Mark += overload_value;
@@ -234,7 +251,8 @@ int main(int argc, char *argv[])
 	ex_setFreqHz(100);
 	exmliner_Init(0, Address);
 
-	exlnk_setData( & Data, 65, SENSOR_DATA_BUFFER_LEN,SensorsDataBuffer);
+	exlnk_setData( & AccData, 33, SENSOR_DATA_BUFFER_LEN, SensorsDataBuffer);
+	exlnk_setData( &GyrData, 34, GYR_DATA_BUFFER_LEN, GyrDataBuffer);
 
 	while (1)
 	{
