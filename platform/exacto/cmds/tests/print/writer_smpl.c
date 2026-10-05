@@ -134,6 +134,9 @@ uint8_t get_file_name(
 
     char number[10];
 
+    const char *suffix = "_acc.bin";
+    size_t suffix_len = strlen(suffix);
+
     for (unsigned int i = 0; i < 1000000000U; ++i)
     {
         int written = snprintf(number, sizeof(number),
@@ -144,8 +147,14 @@ uint8_t get_file_name(
             return 1;
         }
 
+        if (prefix_len + digits + suffix_len + 1 > result_size)
+        {
+            return 1;
+        }
+
         memcpy(result, prefix, prefix_len);
         memcpy(result + prefix_len, number, digits + 1);
+        memcpy(result + prefix_len + digits, suffix, suffix_len + 1);
 
         FILE *file = fopen(result, "r");
 
