@@ -162,6 +162,7 @@ uint8_t get_file_name(
         {
             if (errno == ENOENT)
             {
+                result[prefix_len + digits] = '\0';
                 return 0;
             }
 
@@ -391,10 +392,10 @@ static void *runMainBasicThread(void *arg) {
     GyrDataFile.write_flag = 1;
 	// Print2SDFlag = 1;
     BBBFlag = 1;
-    printf("Test end\n");
-    close_files();
-    FileOpen = 0;
-    return NULL;
+    // printf("Test end\n");
+    // close_files();
+    // FileOpen = 0;
+    // return NULL;
 
 	while (BBBFlag)
 	{
@@ -455,8 +456,8 @@ void addDataToFile(uint8_t file_id, uint8_t *data, uint16_t datalen)
         return;
     }
     trg->write_flag = 0;
-    trg->write_cnt++;
-    trg->write_event_cnt += datalen;
+    trg->write_cnt+= datalen;
+    trg->write_event_cnt ++;
     pshsftPack_exbu8(&(trg->Store), data, datalen);
     trg->write_flag = 1;
 }
@@ -474,17 +475,24 @@ void addDataToWrite( uint8_t * data, uint16_t datalen)
 void printReaderData()
 {
 	printf("Thread started: %d\n"
-            "Add Data Events Count: %d\n"
+            "ACC events: %d\n"
             "Data added len: %d\n"
-        , BBBFlag, ReaderAddCounter, ReaderDataLen);
+            "GYR events: %d\n"
+            "Data added len: %d\n"
+        , BBBFlag, AccDataFile.write_event_cnt, AccDataFile.write_cnt,
+        GyrDataFile.write_event_cnt, GyrDataFile.write_cnt
+    );
 }
 EMBOX_UNIT_INIT(initTestSmplMod);
 static int initTestSmplMod()
 {
 	Print2SDFlag = 1;
-    BBBFlag = 0;
 	ReaderAddCounter = 0;
 	ReaderDataLen = 0;
+
+    unBlockWrite();
+
+    BBBFlag = 0;
     FileOpen = 0;
 	setini_exbu8(&ReaderStore);
     setini_exbu8(&(AccDataFile.Store));

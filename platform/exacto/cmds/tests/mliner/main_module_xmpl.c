@@ -257,16 +257,16 @@ int main(int argc, char *argv[])
 
 	openFileSD();
 
-	if (1)
-	{
-		while (1)
-		{
-			printf("test\n");
-			sleep(1);
-		}
+	// if (1)
+	// {
+	// 	while (1)
+	// 	{
+	// 		printf("test\n");
+	// 		sleep(1);
+	// 	}
 		
-		return 1;
-	}
+	// 	return 1;
+	// }
 
 	printReaderData();
 

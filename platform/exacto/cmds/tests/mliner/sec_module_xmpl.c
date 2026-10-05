@@ -50,7 +50,7 @@ static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
 
-#define SENSOR_DATA_BUFFER_LEN 768
+#define SENSOR_DATA_BUFFER_LEN 256
 #define GYR_DATA_BUFFER_LEN 512
 static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
 static uint8_t GyrDataBuffer[GYR_DATA_BUFFER_LEN] = {0};
@@ -58,6 +58,7 @@ static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
 
 static uint16_t DataUploadLen = 0;
+static uint16_t GyrDataUploadLen = 0;
 static uint16_t SensorDataUploadCnt = 0;
 
 static uint16_t TIM_Event_Counter = 0;
@@ -67,7 +68,8 @@ int ReportStatus()
 	if (NeedToPrint == 0)
 		return 1;
 	printf("Tim Event: %d\n", TIM_Event_Counter);
-	printf("Upload to exacto mliner [%d]\n", DataUploadLen);
+	printf("Upload to exacto mliner acc[%d]\n", DataUploadLen);
+	printf("Upload to exacto mliner GYR[%d]\n", GyrDataUploadLen);
 	printf("Sensor Data uploads: %d\n", SensorDataUploadCnt);
 	if (OverLoad_Mark)
 	{
@@ -98,7 +100,7 @@ int applyExactolinkCommand( )
 	}
 	if (GyrData.len > 0)
 	{
-		DataUploadLen += GyrData.len;
+		GyrDataUploadLen += GyrData.len;
 		exmliner_Upload(&GyrData, GyrData.len, EXLNK_DATA_ID_DATA, 7);
 		exlnk_clearData(&GyrData);
 	}
