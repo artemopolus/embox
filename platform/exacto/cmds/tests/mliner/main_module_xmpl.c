@@ -2,6 +2,7 @@
 #include <kernel/lthread/lthread.h>
 #include "tim/tim.h"
 #include <stdio.h>
+#include <unistd.h>
 #include "operator/exacto_buffer.h"
 
 #include "exactolink/exlnk_setHeader.h"
@@ -255,6 +256,17 @@ int main(int argc, char *argv[])
 	setini_exbu8(&GyrDataStore);
 
 	openFileSD();
+
+	if (1)
+	{
+		while (1)
+		{
+			printf("test\n");
+			sleep(1);
+		}
+		
+		return 1;
+	}
 
 	printReaderData();
 

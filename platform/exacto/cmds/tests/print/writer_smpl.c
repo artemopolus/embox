@@ -53,6 +53,9 @@ ExactoFile AccDataFile = {
 ExactoFile GyrDataFile = {
     .status = 0,
     .write_flag = 1,
+    .write_event_cnt = 0,
+    .write_cnt = 0,
+    .file_write_dones = 0,
     .filename = "none",
 };
 	
@@ -172,7 +175,7 @@ int get_filenames()
         dir =  opendir("/mnt/data");
         if (!dir)
         {
-            printf("Dir mnt/data not created")
+            printf("Dir mnt/data not created");
             return 1;
         }
     }
@@ -187,8 +190,8 @@ int get_filenames()
     {
         snprintf(AccDataFile.filename, sizeof(AccDataFile.filename),"%s_acc.bin", target_prefix);
         snprintf(GyrDataFile.filename, sizeof(GyrDataFile.filename),"%s_gyr.bin", target_prefix);
-        printf("Acc:%s", AccDataFile.filename);
-        printf("Gyr:%s", GyrDataFile.filename);
+        printf("Acc filename:%s\n", AccDataFile.filename);
+        printf("Gyr filename:%s\n", GyrDataFile.filename);
         AccDataFile.status = 1;
         GyrDataFile.status = 1;
     }
@@ -198,44 +201,54 @@ int get_filenames()
     }
     return 0;
 }
-void close_files()
-{
-    close_one_file( &AccDataFile );
-    close_one_file( & GyrDataFile );
-}
 void close_one_file( ExactoFile * trg)
 {
+    if (trg->status == 0 )
+        return;
     close(trg->File);
     trg->status = 0;
     trg->write_cnt = 0;
     trg->write_event_cnt = 0;
     trg->file_write_dones = 0;
 }
+void close_files()
+{
+    close_one_file( & AccDataFile );
+    close_one_file( & GyrDataFile );
+    printf("Close files\n");
+}
 int open_one_file(ExactoFile * trg)
 {
+    printf("Try to open %s\n", trg->filename);
     if (trg->status == 1)
     {
         trg->File = open(trg->filename,O_CREAT | O_WRONLY | O_TRUNC, 0666);
         if (0 > trg->File)
         {
-            printf("Can't open Data file\n");
+            printf("Can't open Data file: %s\n", trg->filename);
             return 1;
         }
+        printf("Open file %s\n", trg->filename);
         trg->status = 2;
+        return 0;
     }
-    return 0;
+    printf("Bad status\n");
+    return 1;
 }
-void open_files()
+int open_files()
 {
-    if (open_one_file(&AccDataFile) && open_one_file(&GyrDataFile))
+    if ((!open_one_file(&AccDataFile)) && (!open_one_file(&GyrDataFile)))
     {
-        return 1;
+        return 0;
     }
-    return 0;
+    printf("error open files\n");
+    return 1;
 }
 
 void readOneFile( ExactoFile * trg)
 {
+    uint8_t read_buffer[128];
+    ssize_t bytes_read;
     trg->File = open(trg->filename, O_RDONLY);
     if (trg->File < 0) {
         printf("Can't open file %s, errno=%d\n", trg->filename, errno);
@@ -245,7 +258,7 @@ void readOneFile( ExactoFile * trg)
     printf("\nReading file: %s\n", trg->filename);
 
     while (1) {
-        bytes_read = read(trg->filename, read_buffer, sizeof(read_buffer));
+        bytes_read = read(trg->File, read_buffer, sizeof(read_buffer));
 
         if (bytes_read < 0) {
             printf("Error reading file %s, errno=%d\n",
@@ -266,9 +279,6 @@ void readOneFile( ExactoFile * trg)
 
 void readFileAndPrintHex(const char *filename) 
 {
-    int fd;
-    uint8_t read_buffer[128];
-    ssize_t bytes_read;
 
     /*
      * Если файл всё ещё открыт потоком записи,
@@ -305,11 +315,6 @@ void writeBufferDataToFile()
         Print2SDFlag = 1;
     }
 }
-void write_to_buffers( ExactoFile * trg)
-{
-    writeBuffer( & AccDataFile);
-    writeBuffer( & GyrDataFile);
-}
 void writeBuffer( ExactoFile * trg)
 {
     if (getlen_exbu8(&(trg->Store)))
@@ -327,20 +332,25 @@ void writeBuffer( ExactoFile * trg)
         trg->write_flag = 1;
     }
 }
+void write_to_buffers( )
+{
+    writeBuffer( & AccDataFile);
+    writeBuffer( & GyrDataFile);
+}
 
 static void *runMainBasicThread(void *arg) {
     
-	printf("Start thread\n");
+	printf("Start thread with SD writing\n");
 
     while(BBBFlag == 0)
         usleep(1100000);
     BBBFlag = 0;
-    if get_filenames()
+    if (get_filenames())
     {
         printf("Error: get file names\n");
         return NULL;
     }
-    if open_files()
+    if (open_files())
     {
         printf("Error: open files\n");
         return NULL;
@@ -364,6 +374,7 @@ static void *runMainBasicThread(void *arg) {
     addDataToFile(0, Header, 6);
     addDataToFile(1, Header, 6);
 
+
     // addDataToWrite( Header, 6);
     // writeBufferDataToFile();
     write_to_buffers();
@@ -371,6 +382,11 @@ static void *runMainBasicThread(void *arg) {
     GyrDataFile.write_flag = 1;
 	// Print2SDFlag = 1;
     BBBFlag = 1;
+    printf("Test end\n");
+    close_files();
+    FileOpen = 0;
+    return NULL;
+
 	while (BBBFlag)
 	{
 		while (AccDataFile.write_flag == 0 && GyrDataFile.write_flag == 0)
@@ -421,6 +437,10 @@ void addDataToFile(uint8_t file_id, uint8_t *data, uint16_t datalen)
     {
         trg = & AccDataFile;
     }
+    else if (file_id == 1)
+    {
+        trg = & GyrDataFile;
+    }
     else
     {
         return;
@@ -428,7 +448,7 @@ void addDataToFile(uint8_t file_id, uint8_t *data, uint16_t datalen)
     trg->write_flag = 0;
     trg->write_cnt++;
     trg->write_event_cnt += datalen;
-    pshsft_exbu8(&(trg->Store), data, datalen);
+    pshsftPack_exbu8(&(trg->Store), data, datalen);
     trg->write_flag = 1;
 }
 
@@ -444,7 +464,10 @@ void addDataToWrite( uint8_t * data, uint16_t datalen)
 }
 void printReaderData()
 {
-	printf("Thread started: %d\nAdd Data Events Count: %d\nData added len: %d\n", BBBFlag, ReaderAddCounter, ReaderDataLen);
+	printf("Thread started: %d\n"
+            "Add Data Events Count: %d\n"
+            "Data added len: %d\n"
+        , BBBFlag, ReaderAddCounter, ReaderDataLen);
 }
 EMBOX_UNIT_INIT(initTestSmplMod);
 static int initTestSmplMod()
