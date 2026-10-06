@@ -12,7 +12,7 @@
 static uint16_t Print_Counter = 0;
 static uint16_t Print_MaxCounter = 100;
 static uint8_t Print_Mark = 0;
-static int16_t Print_Buffer[3] = {0};
+static int16_t Print_Buffer[20] = {0};
 static uint32_t Print_ItCounter = 0;
 
 // ===
@@ -67,21 +67,21 @@ int ReportStatus()
 {
 	if (NeedToPrint == 0)
 		return 1;
-	printf("Tim Event: %d\n", TIM_Event_Counter);
-	printf("Upload to exacto mliner acc[%d]\n", DataUploadLen);
-	printf("Upload to exacto mliner GYR[%d]\n", GyrDataUploadLen);
-	printf("Sensor Data uploads: %d\n", SensorDataUploadCnt);
+	printf("Tim Events: %d\n", TIM_Event_Counter);
+	printf("ACC upload[%d]\n", DataUploadLen);
+	printf("GYR upload[%d]\n", GyrDataUploadLen);
+	printf("SNS Events: %d\n", SensorDataUploadCnt);
 	if (OverLoad_Mark)
 	{
-		printf("Buffer Overload!!![%d]/[%d]\n", OverLoad_Mark, DataInputALLCount);
+		printf("Buffer OVERLOAD(!!!)[%d]/[%d]\n", OverLoad_Mark, DataInputALLCount);
 	}
 	if (ModeChange_Mark == 1)
 	{
-		printf("\n\nStart\n\n");
+		printf("\n\nSTART\n\n");
 	}
 	else if (ModeChange_Mark == 2)
 	{
-		printf("\n\nStop\n\n");
+		printf("\n\nSTOP\n\n");
 	}
 	ModeChange_Mark = 0;
 	
@@ -131,7 +131,16 @@ int printSensorData ()
 {
 	if (Print_Mark)
 	{
-		printf("[%d]sensor:[%8d %8d %8d]\n", Print_ItCounter++, Print_Buffer[0], Print_Buffer[1], Print_Buffer[2]);
+		printf("[%d]sensor:"
+			"[%8d %8d %8d] "
+			"[%8d %8d %8d] "
+			"[%8d %8d %8d]"
+			"\n"
+			, Print_ItCounter++, 
+			Print_Buffer[0], Print_Buffer[1], Print_Buffer[2],
+			Print_Buffer[3], Print_Buffer[4], Print_Buffer[5],
+			Print_Buffer[6], Print_Buffer[7], Print_Buffer[8]
+		);
 		// printf("Cmd mark: %d\n", Command_Mark);
 		Print_Mark = 0;
 	}
@@ -164,6 +173,11 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 			{
 				for(int i = 0; i < 3; i++)
 					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
+			}
+			else if (id == ISM330DLC)
+			{
+				for(uint8_t i = 0; i < 6; i++)
+					exlnk_cv_Uint8_Int16(&data[i*2 + 2], (int16_t *)&Print_Buffer[i + 3]);
 			}
 			Print_Mark  = 1;
 		}
@@ -295,7 +309,7 @@ int main(int argc, char *argv[])
 #ifdef MEASURE_TIME
 			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
 			TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
-			printf("Update | Transmit \n %8d %8d\n", UpdateMlineDurationAVR, TransmitMlineDurationAVR);
+			printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, TransmitMlineDurationAVR);
 #endif
 			printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
 			NeedToPrint = 0;
