@@ -26,7 +26,45 @@ static const char hex[] = "0123456789ABCDEF";
 void cv_Uint8_Int16(uint8_t * src, int16_t * dst)
 {
     int16_t first = (int16_t) src[1];
-    *dst = (first << 8) + (int16_t)src[0];
+    *dst = (first << 8) | (int16_t)src[0];
+}
+static void print_gyr_values(uint8_t *data, uint16_t len, uint16_t rows)
+{
+
+    const uint16_t offset = 6;
+    const uint16_t packet_size = 16;
+    if (len <= offset) {
+        return;
+    }
+    uint16_t available_rows = (len - offset) / packet_size;
+    if (rows > available_rows) {
+        rows = available_rows;
+    }
+    for (uint16_t i = 0; i < rows; i++) {
+        uint8_t *src = &data[offset + i * packet_size];
+        int16_t value1;
+        int16_t value2;
+        int16_t value3;
+
+        int16_t acc1;
+        int16_t acc2;
+        int16_t acc3;
+
+        cv_Uint8_Int16(&src[2], &value1);
+        cv_Uint8_Int16(&src[4], &value2);
+        cv_Uint8_Int16(&src[6], &value3);
+        
+        cv_Uint8_Int16(&src[8], &acc1);
+        cv_Uint8_Int16(&src[10], &acc2);
+        cv_Uint8_Int16(&src[12], &acc3);
+
+        printf("%3u    %10d    %10d    %10d    %10d    %10d    %10d\n",
+               i + 1,
+               value1,
+               value2,
+               value3, acc1, acc2, acc3
+            );
+    }
 }
 
 // =================
@@ -72,6 +110,26 @@ static void print_values(uint8_t *data, uint16_t len, uint16_t rows)
     }
 }
 // =================
+// static void print_hexblock(const uint8_t *data, uint16_t len)
+// {
+//     for (uint16_t i = 0; i < len; i++) {
+//         if ((i % 16) == 0) {
+//             putchar('\n');
+
+//             putchar(hex[(i >> 12) & 0x0F]);
+//             putchar(hex[(i >> 8)  & 0x0F]);
+//             putchar(hex[(i >> 4)  & 0x0F]);
+//             putchar(hex[i & 0x0F]);
+//             putchar(':');
+//             putchar(' ');
+//         }
+
+//         putchar(hex[data[i] >> 4]);
+//         putchar(hex[data[i] & 0x0F]);
+//         putchar(' ');
+//     }
+//     putchar('\n');
+// }
 
 static void print_hex(const uint8_t *data, uint16_t len)
 {
@@ -151,6 +209,20 @@ static int readOneFile(const char *filename, int print_mode)
 
     printf("\nReading file: %s\n", filename);
 
+    if (print_mode == 2)
+    {
+        printf(" #      GR 1      GR 2      GR 3      XL 1      XL 2      XL 3\n");
+        printf("------------------------------------------\n");
+    }
+    else if (print_mode == 1)
+    {
+        printf("HEX MODE\n");
+    }
+    else if (print_mode == 0)
+    {
+        printf(" #      Value 1      Value 2      Value 3\n");
+        printf("------------------------------------------\n");
+    }
     if (1)
     {
         bytes_read = read(file, read_buffer, sizeof(read_buffer));
@@ -168,15 +240,17 @@ static int readOneFile(const char *filename, int print_mode)
             // break;
         }
 
-        if (print_mode == 1)
+        if (print_mode == 2)
+        {
+            print_gyr_values(read_buffer, (size_t)bytes_read, 64);
+
+        }
+        else if (print_mode == 1)
         {
             print_hex(read_buffer, (size_t)bytes_read);
         }
         else if (print_mode == 0)
         {
-            printf(" #      Value 1      Value 2      Value 3\n");
-            printf("------------------------------------------\n");
-
             print_values(read_buffer, (size_t)bytes_read, 64);
         }
         else 
