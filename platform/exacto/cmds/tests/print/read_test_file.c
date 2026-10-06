@@ -17,9 +17,9 @@
 
 #include <embox/unit.h>
 
-#define MAX_PRINT 64 
-#define HEAD_BYTES 16 
-#define TAIL_BYTES 16
+#define MAX_PRINT 256
+#define HEAD_BYTES 64 
+#define TAIL_BYTES 64
 
 static const char hex[] = "0123456789ABCDEF";
 
@@ -30,7 +30,7 @@ void cv_Uint8_Int16(uint8_t * src, int16_t * dst)
 }
 
 // =================
-static void print_values(const uint8_t *data, uint16_t len, uint16_t rows)
+static void print_values(uint8_t *data, uint16_t len, uint16_t rows)
 {
     // Первые 6 байт пропускаем
     const uint16_t offset = 6;
@@ -51,13 +51,10 @@ static void print_values(const uint8_t *data, uint16_t len, uint16_t rows)
         rows = available_rows;
     }
 
-    printf(" #      Value 1      Value 2      Value 3\n");
-    printf("------------------------------------------\n");
-
     for (uint16_t i = 0; i < rows; i++) {
 
         // Начало текущей пачки
-        const uint8_t *src = &data[offset + i * packet_size];
+        uint8_t *src = &data[offset + i * packet_size];
 
         int16_t value1;
         int16_t value2;
@@ -141,7 +138,7 @@ static void print_hex(const uint8_t *data, uint16_t len)
 
 static int readOneFile(const char *filename, int print_mode)
 {
-    uint8_t read_buffer[128];
+    uint8_t read_buffer[1024];
     ssize_t bytes_read;
     int file = open(filename, O_RDONLY);
 
@@ -154,7 +151,7 @@ static int readOneFile(const char *filename, int print_mode)
 
     printf("\nReading file: %s\n", filename);
 
-    while (1)
+    if (1)
     {
         bytes_read = read(file, read_buffer, sizeof(read_buffer));
 
@@ -168,7 +165,7 @@ static int readOneFile(const char *filename, int print_mode)
 
         if (bytes_read == 0)
         {
-            break;
+            // break;
         }
 
         if (print_mode == 1)
@@ -177,7 +174,10 @@ static int readOneFile(const char *filename, int print_mode)
         }
         else if (print_mode == 0)
         {
-            print_values(read_buffer, (size_t)bytes_read, 6);
+            printf(" #      Value 1      Value 2      Value 3\n");
+            printf("------------------------------------------\n");
+
+            print_values(read_buffer, (size_t)bytes_read, 64);
         }
         else 
         {
