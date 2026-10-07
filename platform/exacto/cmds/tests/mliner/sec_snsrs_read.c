@@ -64,7 +64,6 @@ int printSensorData ()
 	if (Print_Mark)
 	{
 		printf("[%d]sensor:"
-			"\n"
 			, Print_ItCounter++ 
 		);
 		for (uint8_t i ; i < 3; i++)

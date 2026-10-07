@@ -150,7 +150,7 @@ static uint8_t getDataFromSns(ex_sns_cmds_t * sns, uint8_t * trg, uint16_t * ptr
 	disableExactoSensor(sns->sns);
 	if(isXlGrDataReady(sns->sns, PackageToGett.data[0]) && process_completed)
 	{
-		exmliner_run(&LsmIsmDev, &PackageToGett.data[sns->shift], tmp_length, (uint8_t)sns->sns);
+		exmliner_run(&LsmIsmDev, &PackageToGett.data[sns->shift], tmp_length, (uint8_t)sns->id_sns);
 		
 		sns->dtrd = 1;
 		*ptr += tmp_length + 2;
@@ -300,6 +300,7 @@ static int runSnsContainerLthread(struct lthread * self)
 	{
 		SnsContainer.sns[0].dtrd = 0;
 		SnsContainer.sns[1].dtrd = 0;
+		SnsContainer.sns[2].dtrd = 0;
 	}
 	trg->done = 1;
 	return 0;
@@ -313,10 +314,11 @@ static int run_Init_Lthread(struct lthread * self)
 	SnsContainer.sns_count = 3;
 	SnsContainer.sns[0].isenabled = 1;
 	SnsContainer.sns[0].sns = LSM303AH;
-	SnsContainer.sns[0].address = LSM303AH_STATUS_A; 
-	SnsContainer.sns[0].datalen = 7;
+	SnsContainer.sns[0].id_sns = LSM303AH;
+	SnsContainer.sns[0].address = LSM303AH_OUT_X_L_A; 
+	SnsContainer.sns[0].datalen = 6;
 	SnsContainer.sns[0].pt2buffer = 0;
-	SnsContainer.sns[0].shift = 1;
+	SnsContainer.sns[0].shift = 0;
 	SnsContainer.sns[0].counter = 0;
 	SnsContainer.sns[0].cnt_cur = 0;
 	SnsContainer.sns[0].cnt_max = 0;
@@ -324,6 +326,7 @@ static int run_Init_Lthread(struct lthread * self)
 
 	SnsContainer.sns[1].isenabled = 1;
  	SnsContainer.sns[1].sns = ISM330DLC;
+ 	SnsContainer.sns[1].id_sns = ISM330DLC;
 	SnsContainer.sns[1].address = ISM330DLC_OUTX_L_G; 
 	SnsContainer.sns[1].datalen = 6;
 	SnsContainer.sns[1].pt2buffer = 0;
@@ -334,7 +337,8 @@ static int run_Init_Lthread(struct lthread * self)
 	SnsContainer.sns[1].dtrd = 0;
 
 	SnsContainer.sns[2].isenabled = 1;
- 	SnsContainer.sns[2].sns = ISM330DLC_XL;
+ 	SnsContainer.sns[2].sns = ISM330DLC;
+ 	SnsContainer.sns[2].id_sns = ISM330DLC_XL;
 	SnsContainer.sns[2].address = ISM330DLC_OUTX_L_XL; 
 	SnsContainer.sns[2].datalen = 6;
 	SnsContainer.sns[2].pt2buffer = 6;

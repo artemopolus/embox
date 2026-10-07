@@ -11,6 +11,7 @@ typedef enum exacto_sensor_list{
 }exacto_sensors_list_t;
 typedef struct ex_sns_cmd{
     exacto_sensors_list_t sns;
+    exacto_sensors_list_t id_sns;
     uint8_t isenabled;
     uint8_t address;
     uint16_t datalen;
