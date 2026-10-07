@@ -6,6 +6,7 @@
 typedef enum exacto_sensor_list{
     LSM303AH = 1,
     ISM330DLC = 2,
+    ISM330DLC_XL = 3,
     BMP280 = 4
 }exacto_sensors_list_t;
 typedef struct ex_sns_cmd{

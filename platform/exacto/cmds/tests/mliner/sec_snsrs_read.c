@@ -22,6 +22,7 @@ static uint32_t Print_ItCounter = 0;
 
 static uint8_t Acc_Mark = 1;
 static uint8_t Gyr_Mark = 1;
+static uint8_t GXL_Mark = 1;
 
 // ===
 
@@ -63,19 +64,19 @@ int printSensorData ()
 	if (Print_Mark)
 	{
 		printf("[%d]sensor:"
-			"[%8d %8d %8d] "
-			"[%8d %8d %8d] "
-			"[%8d %8d %8d]"
 			"\n"
-			, Print_ItCounter++, 
-			Print_Buffer[0], Print_Buffer[1], Print_Buffer[2],
-			Print_Buffer[3], Print_Buffer[4], Print_Buffer[5],
-			Print_Buffer[6], Print_Buffer[7], Print_Buffer[8]
+			, Print_ItCounter++ 
 		);
+		for (uint8_t i ; i < 3; i++)
+		{
+			printf("[%8d %8d %8d] ",Print_Buffer[3*i], Print_Buffer[3*i + 1], Print_Buffer[3* i + 2]);
+		}
+		printf("\n");
 		// printf("Cmd mark: %d\n", Command_Mark);
 		Print_Mark = 0;
 		Acc_Mark = 1;
 		Gyr_Mark = 1;
+		GXL_Mark = 1;
 	}
 	return 0;	
 }
@@ -90,10 +91,16 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	}
 	else if ( Gyr_Mark && id == ISM330DLC)
 	{
-		for(uint8_t i = 0; i < 9; i++)
-			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
+		for(uint8_t i = 0; i < 3; i++)
+			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
 		Gyr_Mark = 0;
 	}	
+	else if ( GXL_Mark && id == ISM330DLC_XL)
+	{
+		for(uint8_t i = 0; i < 3; i++)
+			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 6]);
+		GXL_Mark = 0;
+	}
 	if(Print_Counter > Print_MaxCounter)
 	{
 		Print_Counter = 0;

@@ -291,8 +291,9 @@ static int runSnsContainerLthread(struct lthread * self)
 	{
 		SnsCounter = 0;
 	}
-	// getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
+	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
 	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
+	getDataFromSns(&SnsContainer.sns[2], &TmpBufferData[0], & TmpBufferPtr);
 	SnsContainer.done = 1;
 	Counter++;
 	if (SnsContainer.sns[0].dtrd && SnsContainer.sns[1].dtrd)
@@ -309,7 +310,7 @@ static int run_Init_Lthread(struct lthread * self)
 	PackRecvCounter = 0;
 	Apollon_lsmism_Ticker_Readable = 0;
 	Ticker_Enable = 0;
-	SnsContainer.sns_count = 2;
+	SnsContainer.sns_count = 3;
 	SnsContainer.sns[0].isenabled = 1;
 	SnsContainer.sns[0].sns = LSM303AH;
 	SnsContainer.sns[0].address = LSM303AH_STATUS_A; 
@@ -323,14 +324,25 @@ static int run_Init_Lthread(struct lthread * self)
 
 	SnsContainer.sns[1].isenabled = 1;
  	SnsContainer.sns[1].sns = ISM330DLC;
-	SnsContainer.sns[1].address = ISM330DLC_OUTX_L_XL; 
-	SnsContainer.sns[1].datalen = 18;
-	SnsContainer.sns[1].pt2buffer = 6;
+	SnsContainer.sns[1].address = ISM330DLC_OUTX_L_G; 
+	SnsContainer.sns[1].datalen = 6;
+	SnsContainer.sns[1].pt2buffer = 0;
 	SnsContainer.sns[1].shift = 0;
 	SnsContainer.sns[1].counter = 0;
 	SnsContainer.sns[1].cnt_cur = 0;
 	SnsContainer.sns[1].cnt_max = 0;
 	SnsContainer.sns[1].dtrd = 0;
+
+	SnsContainer.sns[2].isenabled = 1;
+ 	SnsContainer.sns[2].sns = ISM330DLC_XL;
+	SnsContainer.sns[2].address = ISM330DLC_OUTX_L_XL; 
+	SnsContainer.sns[2].datalen = 6;
+	SnsContainer.sns[2].pt2buffer = 6;
+	SnsContainer.sns[2].shift = 0;
+	SnsContainer.sns[2].counter = 0;
+	SnsContainer.sns[2].cnt_cur = 0;
+	SnsContainer.sns[2].cnt_max = 0;
+	SnsContainer.sns[2].dtrd = 0;
 
 	SnsContainer.done = 0;
     
