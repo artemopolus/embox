@@ -19,10 +19,6 @@ static uint32_t Print_ItCounter = 0;
 
 // Command value
 
-static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
-static uint8_t ModeChange_Mark = 0;
-static uint32_t OverLoad_Mark = 0;
-static uint32_t DataInputALLCount = 0;
 
 static uint8_t Acc_Mark = 1;
 static uint8_t Gyr_Mark = 1;
@@ -35,17 +31,10 @@ static uint8_t Gyr_Mark = 1;
 
 #ifdef MEASURE_TIME
 static exutils_data_t TagTimer;
-static uint32_t 	
-						UpdateMlineDuration = 0,
-						UpdateMlineDurationAVR = 0,
-						TransmitMlineDuration = 0,
-						TransmitMlineDurationAVR = 0
-						;
 #endif
 
 
 static uint16_t TIM_Counter = 0;
-static uint16_t SendCounter = 0;
 
 static int PointToTim;
 static uint8_t EnableUpdate = 0;
@@ -60,9 +49,6 @@ static uint8_t GyrDataBuffer[GYR_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
 
-static uint16_t DataUploadLen = 0;
-static uint16_t GyrDataUploadLen = 0;
-static uint16_t SensorDataUploadCnt = 0;
 
 static uint16_t TIM_Event_Counter = 0;
 
@@ -104,8 +90,8 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	}
 	else if ( Gyr_Mark && id == ISM330DLC)
 	{
-		for(uint8_t i = 0; i < 6; i++)
-			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
+		for(uint8_t i = 0; i < 9; i++)
+			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
 		Gyr_Mark = 0;
 	}	
 	if(Print_Counter > Print_MaxCounter)

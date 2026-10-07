@@ -163,14 +163,14 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
         }
     }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
-    for (uint8_t i = 0; i < output->datalen; i++)
+    for (uint8_t idx = 0; idx < output->datalen; idx++)
     {
         for(SPI_APPOLON_INDEX_SZ_INT j = 0; (!result) && (!LL_SPI_IsActiveFlag_RXNE(SPI1)); j++)
             result = (j > SPI_APPOLON_INDEX_MAX)? 1 : 0; 
         if (result)
-            output->data[i] = 0;
+            output->data[idx] = 0;
         else
-            output->data[i] = LL_SPI_ReceiveData8(SPI1);
+            output->data[idx] = LL_SPI_ReceiveData8(SPI1);
     }
     i = 0;
 	while(LL_SPI_IsActiveFlag_BSY(SPI1))

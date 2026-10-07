@@ -291,7 +291,7 @@ static int runSnsContainerLthread(struct lthread * self)
 	{
 		SnsCounter = 0;
 	}
-	getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
+	// getDataFromSns(&SnsContainer.sns[0], &TmpBufferData[0], & TmpBufferPtr);
 	getDataFromSns(&SnsContainer.sns[1], &TmpBufferData[0], & TmpBufferPtr);
 	SnsContainer.done = 1;
 	Counter++;
@@ -323,10 +323,10 @@ static int run_Init_Lthread(struct lthread * self)
 
 	SnsContainer.sns[1].isenabled = 1;
  	SnsContainer.sns[1].sns = ISM330DLC;
-	SnsContainer.sns[1].address = ISM330DLC_STATUS_REG; 
-	SnsContainer.sns[1].datalen = 16;
+	SnsContainer.sns[1].address = ISM330DLC_OUTX_L_XL; 
+	SnsContainer.sns[1].datalen = 18;
 	SnsContainer.sns[1].pt2buffer = 6;
-	SnsContainer.sns[1].shift = 4;
+	SnsContainer.sns[1].shift = 0;
 	SnsContainer.sns[1].counter = 0;
 	SnsContainer.sns[1].cnt_cur = 0;
 	SnsContainer.sns[1].cnt_max = 0;
@@ -362,9 +362,16 @@ uint8_t exSnsStop(void)
 EMBOX_UNIT_INIT(initApollon_lsmism);
 static int initApollon_lsmism()
 {
+	const uint8_t try_cnt = 100;
 	exmliner_cr(&LsmIsmDev);
-	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, 0);
-	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, 0); // BOOT BDU H_ACTIVE PP_OD SIM IF_INC BLE SW_RESET=0 1 0 0 1 1 0 0
+	sendOptionsRaw(LSM303AH, LSM303AH_3WIRE_ADR, LSM303AH_3WIRE_VAL, try_cnt);
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL3_C, 0x4c, try_cnt); 
+	// BOOT BDU H_ACTIVE PP_OD SIM IF_INC BLE SW_RESET=
+	//   0   1      0      0    1    1     0     0
+	
+	sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xc5, try_cnt);	//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x44, try_cnt);	//0100 01 0 0 : 104 Hz 16g 
+	sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
 
 	lthread_init(&Init_Lthread, run_Init_Lthread);
 	return 0;
