@@ -25,14 +25,14 @@ static const char hex[] = "0123456789ABCDEF";
 
 void cv_Uint8_Int16(uint8_t * src, int16_t * dst)
 {
-    int16_t first = (int16_t) src[1];
-    *dst = (first << 8) | (int16_t)src[0];
+    int16_t first = (int16_t) src[1] << 8;
+    *dst = (int16_t)(first | src[0]);
 }
 static void print_gyr_values(uint8_t *data, uint16_t len, uint16_t rows)
 {
 
     const uint16_t offset = 6;
-    const uint16_t packet_size = 16;
+    const uint16_t packet_size = 12;
     if (len <= offset) {
         return;
     }
@@ -49,14 +49,16 @@ static void print_gyr_values(uint8_t *data, uint16_t len, uint16_t rows)
         int16_t acc1;
         int16_t acc2;
         int16_t acc3;
-
-        cv_Uint8_Int16(&src[2], &value1);
-        cv_Uint8_Int16(&src[4], &value2);
-        cv_Uint8_Int16(&src[6], &value3);
         
-        cv_Uint8_Int16(&src[8], &acc1);
-        cv_Uint8_Int16(&src[10], &acc2);
-        cv_Uint8_Int16(&src[12], &acc3);
+
+        cv_Uint8_Int16(&src[0], &value1);
+        cv_Uint8_Int16(&src[2], &value2);
+        cv_Uint8_Int16(&src[4], &value3);
+        
+        cv_Uint8_Int16(&src[6], &acc1);
+        cv_Uint8_Int16(&src[8], &acc2);
+        cv_Uint8_Int16(&src[10], &acc3);
+        
 
         printf("%3u    %10d    %10d    %10d    %10d    %10d    %10d\n",
                i + 1,

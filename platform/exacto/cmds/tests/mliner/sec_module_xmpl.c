@@ -177,7 +177,7 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 			else if (id == ISM330DLC)
 			{
 				for(uint8_t i = 0; i < 6; i++)
-					exlnk_cv_Uint8_Int16(&data[i*2 + 2], (int16_t *)&Print_Buffer[i + 3]);
+					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
 			}
 			Print_Mark  = 1;
 		}
