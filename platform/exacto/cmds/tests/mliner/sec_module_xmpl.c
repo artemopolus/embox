@@ -50,15 +50,19 @@ static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
 
-#define SENSOR_DATA_BUFFER_LEN 256
-#define GYR_DATA_BUFFER_LEN 512
-static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
+#define ACCA_DATA_BUFFER_LEN 256
+#define GYR_DATA_BUFFER_LEN 256
+#define BCCB_DATA_BUFFER_LEN 256
+static uint8_t AccADataBuffer[ACCA_DATA_BUFFER_LEN] = {0};
 static uint8_t GyrDataBuffer[GYR_DATA_BUFFER_LEN] = {0};
+static uint8_t BccBDataBuffer[BCCB_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
+static exlnk_data_str_t BccBData;
 
-static uint16_t DataUploadLen = 0;
+static uint16_t AccADataUploadLen = 0;
 static uint16_t GyrDataUploadLen = 0;
+static uint16_t BccBDataUploadLen = 0;
 static uint16_t SensorDataUploadCnt = 0;
 
 static uint16_t TIM_Event_Counter = 0;
@@ -68,7 +72,7 @@ int ReportStatus()
 	if (NeedToPrint == 0)
 		return 1;
 	printf("Tim Events: %d\n", TIM_Event_Counter);
-	printf("ACC upload[%d]\n", DataUploadLen);
+	printf("ACC upload[%d]\n", AccADataUploadLen);
 	printf("GYR upload[%d]\n", GyrDataUploadLen);
 	printf("SNS Events: %d\n", SensorDataUploadCnt);
 	if (OverLoad_Mark)
@@ -94,7 +98,7 @@ int applyExactolinkCommand( )
 {
 	if (AccData.len > 0)
 	{
-		DataUploadLen += AccData.len;
+		AccADataUploadLen += AccData.len;
 		exmliner_Upload(&AccData, AccData.len, EXLNK_DATA_ID_DATA, 7);
 		exlnk_clearData(&AccData);
 	}
@@ -104,6 +108,13 @@ int applyExactolinkCommand( )
 		exmliner_Upload(&GyrData, GyrData.len, EXLNK_DATA_ID_DATA, 7);
 		exlnk_clearData(&GyrData);
 	}
+	if (BccBData.len > 0)
+	{
+		BccBDataUploadLen += BccBData.len;
+		exmliner_Upload(&BccBData, BccBData.len, EXLNK_DATA_ID_DATA, 7);
+		exlnk_clearData(&BccBData);
+	}
+
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
 		if (Command_Mark == 5)
@@ -160,6 +171,10 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	{
 		overload_value = exlnk_addNewData(&GyrData,len, data);
 	}
+	else if (id == ISM330DLC_XL)
+	{
+		overload_value = exlnk_addNewData(&BccBData,len, data);
+	}
 	if (overload_value > 0)
 	{
 		OverLoad_Mark += overload_value;
@@ -176,8 +191,13 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 			}
 			else if (id == ISM330DLC)
 			{
-				for(uint8_t i = 0; i < 6; i++)
+				for(uint8_t i = 0; i < 3; i++)
 					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
+			}
+			else if (id == ISM330DLC_XL)
+			{
+				for(uint8_t i = 0; i < 3; i++)
+					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 6]);
 			}
 			Print_Mark  = 1;
 		}
@@ -267,8 +287,9 @@ int main(int argc, char *argv[])
 	ex_setFreqHz(100);
 	exmliner_Init(0, Address);
 
-	exlnk_setData( & AccData, 33, SENSOR_DATA_BUFFER_LEN, SensorsDataBuffer);
+	exlnk_setData( & AccData, 33, ACCA_DATA_BUFFER_LEN, AccADataBuffer);
 	exlnk_setData( &GyrData, 34, GYR_DATA_BUFFER_LEN, GyrDataBuffer);
+	exlnk_setData( & BccBData, 35, BCCB_DATA_BUFFER_LEN, BccBDataBuffer);
 
 	while (1)
 	{

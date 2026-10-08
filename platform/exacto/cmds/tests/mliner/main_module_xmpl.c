@@ -30,8 +30,9 @@ static uint8_t AddressCount = 6;
 static uint8_t AdrCntIndex = 0;
 
 
-ExactoBufferUint8Type DataStore;
+ExactoBufferUint8Type AccADataStore;
 ExactoBufferUint8Type GyrDataStore;
+ExactoBufferUint8Type BccBDataStore;
 uint8_t DataTmBuffer[DATA_STORE_SZ] = {0};
 
 static uint16_t TIM_Counter = 0;
@@ -135,11 +136,15 @@ static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 	print_hex( data, len );
 	if (reg == 33)
 	{
-		pshsftPack_exbu8(&DataStore, data, len);
+		pshsftPack_exbu8(&AccADataStore, data, len);
 	}
 	else if (reg == 34)
 	{
 		pshsftPack_exbu8(&GyrDataStore, data, len);
+	}
+	else if (reg == 35)
+	{
+		pshsftPack_exbu8(&BccBDataStore, data, len);
 	}
 	return 0;
 }
@@ -152,9 +157,9 @@ void uploadDataToSDwriter( )
 		return;
 	}
 	blockWrite();
-	if (getlen_exbu8( &DataStore) )
+	if (getlen_exbu8( &AccADataStore) )
 	{
-		uint16_t copy = grbfstPack_exbu8(&DataStore, DataTmBuffer, DATA_STORE_SZ);
+		uint16_t copy = grbfstPack_exbu8(&AccADataStore, DataTmBuffer, DATA_STORE_SZ);
 		// addDataToWrite( DataTmBuffer, copy );
 		addDataToFile( 0, DataTmBuffer, copy);
 	}
@@ -162,6 +167,12 @@ void uploadDataToSDwriter( )
 	{
 		uint16_t copy = grbfstPack_exbu8(&GyrDataStore, DataTmBuffer, DATA_STORE_SZ);
 		addDataToFile( 1, DataTmBuffer, copy);
+	}
+	if (getlen_exbu8( &BccBDataStore) )
+	{
+		uint16_t copy = grbfstPack_exbu8(&BccBDataStore, DataTmBuffer, DATA_STORE_SZ);
+		// addDataToWrite( DataTmBuffer, copy );
+		addDataToFile( 2, DataTmBuffer, copy);
 	}
 	unBlockWrite();
 }
@@ -252,8 +263,9 @@ int main(int argc, char *argv[])
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(1, 1);
-	setini_exbu8(&DataStore);
+	setini_exbu8(&AccADataStore);
 	setini_exbu8(&GyrDataStore);
+	setini_exbu8(&BccBDataStore);
 
 	openFileSD();
 

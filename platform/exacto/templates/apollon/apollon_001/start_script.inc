@@ -1,5 +1,5 @@
 //"help"//,
 //"test_mline_sec"
 //"lsmism_reader"
-//"test_mline_sec_xmpl"
-"test_read_sensors"
+"test_mline_sec_xmpl"
+//"test_read_sensors"

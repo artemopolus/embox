@@ -50,6 +50,7 @@ ExactoFile AccDataFile = {
     .file_write_dones = 0,
     .filename = "none",
 };
+
 ExactoFile GyrDataFile = {
     .status = 0,
     .write_flag = 1,
@@ -58,7 +59,16 @@ ExactoFile GyrDataFile = {
     .file_write_dones = 0,
     .filename = "none",
 };
-	
+
+ExactoFile BccBDataFile = {
+    .status = 0,
+    .write_flag = 1,
+    .write_event_cnt = 0,
+    .write_cnt = 0,
+    .file_write_dones = 0,
+    .filename = "none",
+};
+
 ExactoBufferUint8Type ReaderStore;
 
 static uint8_t buffer[1048];
@@ -200,10 +210,13 @@ int get_filenames()
     {
         snprintf(AccDataFile.filename, sizeof(AccDataFile.filename),"%s_acc.bin", target_prefix);
         snprintf(GyrDataFile.filename, sizeof(GyrDataFile.filename),"%s_gyr.bin", target_prefix);
+        snprintf(BccBDataFile.filename, sizeof(BccBDataFile.filename),"%s_xlB.bin", target_prefix);
         printf("Acc filename:%s\n", AccDataFile.filename);
         printf("Gyr filename:%s\n", GyrDataFile.filename);
+        printf("XlB filename:%s\n", BccBDataFile.filename);
         AccDataFile.status = 1;
         GyrDataFile.status = 1;
+        BccBDataFile.status = 1;
     }
     else
     {
@@ -225,6 +238,7 @@ void close_files()
 {
     close_one_file( & AccDataFile );
     close_one_file( & GyrDataFile );
+    close_one_file( & BccBDataFile );
     printf("Close files\n");
 }
 int open_one_file(ExactoFile * trg)
@@ -247,7 +261,7 @@ int open_one_file(ExactoFile * trg)
 }
 int open_files()
 {
-    if ((!open_one_file(&AccDataFile)) && (!open_one_file(&GyrDataFile)))
+    if ((!open_one_file(&AccDataFile)) && (!open_one_file(&GyrDataFile)) && (!open_one_file(&BccBDataFile)))
     {
         return 0;
     }
@@ -308,6 +322,8 @@ void readFileAndPrintHex(const char *filename)
     readOneFile( & AccDataFile );
 
     readOneFile( & GyrDataFile );
+
+    readOneFile( & BccBDataFile );
 }
 
 void readTestFile()
@@ -346,6 +362,7 @@ void write_to_buffers( )
 {
     writeBuffer( & AccDataFile);
     writeBuffer( & GyrDataFile);
+    writeBuffer( & BccBDataFile);
 }
 
 static void *runMainBasicThread(void *arg) {
@@ -383,6 +400,7 @@ static void *runMainBasicThread(void *arg) {
 
     addDataToFile(0, Header, 6);
     addDataToFile(1, Header, 6);
+    addDataToFile(2, Header, 6);
 
 
     // addDataToWrite( Header, 6);
@@ -390,6 +408,7 @@ static void *runMainBasicThread(void *arg) {
     write_to_buffers();
     AccDataFile.write_flag = 1;
     GyrDataFile.write_flag = 1;
+    BccBDataFile.write_flag = 1;
 	// Print2SDFlag = 1;
     BBBFlag = 1;
     // printf("Test end\n");
@@ -399,7 +418,7 @@ static void *runMainBasicThread(void *arg) {
 
 	while (BBBFlag)
 	{
-		while (AccDataFile.write_flag == 0 && GyrDataFile.write_flag == 0)
+		while (AccDataFile.write_flag == 0 && GyrDataFile.write_flag == 0 && BccBDataFile.write_flag)
 		{
 		}
 
@@ -411,6 +430,7 @@ static void *runMainBasicThread(void *arg) {
 	
     addDataToFile(0, Ender, 6);
     addDataToFile(1, Ender, 6);
+    addDataToFile(2, Ender, 6);
 
     // addDataToWrite( Ender, 6);
     // writeBufferDataToFile();
@@ -428,17 +448,19 @@ void openFileSD()
 uint8_t isReadyToWrite()
 {
 	// return Print2SDFlag;
-    return AccDataFile.write_flag && GyrDataFile.write_flag;
+    return AccDataFile.write_flag && GyrDataFile.write_flag && BccBDataFile.write_flag;
 }
 void blockWrite()
 {
     AccDataFile.write_flag = 0;
     GyrDataFile.write_flag = 0;
+    BccBDataFile.write_flag = 0;
 }
 void unBlockWrite()
 {
     AccDataFile.write_flag = 1;
     GyrDataFile.write_flag = 1;
+    BccBDataFile.write_flag = 1;
 }
 void addDataToFile(uint8_t file_id, uint8_t *data, uint16_t datalen)
 {
@@ -450,6 +472,10 @@ void addDataToFile(uint8_t file_id, uint8_t *data, uint16_t datalen)
     else if (file_id == 1)
     {
         trg = & GyrDataFile;
+    }
+    else if (file_id == 2)
+    {
+        trg = & BccBDataFile;
     }
     else
     {
@@ -479,8 +505,10 @@ void printReaderData()
             "Data added len: %d\n"
             "GYR events: %d\n"
             "Data added len: %d\n"
-        , BBBFlag, AccDataFile.write_event_cnt, AccDataFile.write_cnt,
-        GyrDataFile.write_event_cnt, GyrDataFile.write_cnt
+        , BBBFlag, 
+        AccDataFile.write_event_cnt, AccDataFile.write_cnt,
+        GyrDataFile.write_event_cnt, GyrDataFile.write_cnt,
+        BccBDataFile.write_event_cnt, BccBDataFile.write_cnt
     );
 }
 EMBOX_UNIT_INIT(initTestSmplMod);
@@ -497,6 +525,7 @@ static int initTestSmplMod()
 	setini_exbu8(&ReaderStore);
     setini_exbu8(&(AccDataFile.Store));
     setini_exbu8(&(GyrDataFile.Store));
+    setini_exbu8(&(BccBDataFile.Store));
 	MainBasicThread = thread_create(THREAD_FLAG_DETACHED |THREAD_FLAG_SUSPENDED, runMainBasicThread, NULL);
     thread_launch(MainBasicThread);
 	return 0;
