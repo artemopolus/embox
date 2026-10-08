@@ -316,9 +316,10 @@ static int run_Init_Lthread(struct lthread * self)
 	SnsContainer.sns[0].sns = LSM303AH;
 	SnsContainer.sns[0].id_sns = LSM303AH;
 	SnsContainer.sns[0].address = LSM303AH_STATUS_A; 
+	// SnsContainer.sns[0].address = LSM303AH_OUT_X_L_A; 
 	SnsContainer.sns[0].datalen = 6;
 	SnsContainer.sns[0].pt2buffer = 0;
-	SnsContainer.sns[0].shift = 0;
+	SnsContainer.sns[0].shift = 1;
 	SnsContainer.sns[0].counter = 0;
 	SnsContainer.sns[0].cnt_cur = 0;
 	SnsContainer.sns[0].cnt_max = 0;

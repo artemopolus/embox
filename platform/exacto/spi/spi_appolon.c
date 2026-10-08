@@ -85,6 +85,18 @@ uint8_t ex_runTransmiter()
 #define SPI_APPOLON_INDEX_MAX 1000
 #define SPI_APPOLON_INDEX_SZ_INT uint16_t
 
+static inline void spi_flush_rx(SPI_TypeDef *spi)
+{
+    /* Чтение DR, затем SR сбрасывает RXNE и OVR */
+    while (LL_SPI_IsActiveFlag_RXNE(spi))
+        (void)LL_SPI_ReceiveData8(spi);
+    (void)spi->SR;
+
+    // альтернативный вариант
+    // (void)SPI1->DR;   /* сброс RXNE */
+    // (void)SPI1->SR;   /* DR→SR сбрасывает OVR */
+}
+
 uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
 {
     const uint8_t address = input->data[0];
@@ -92,8 +104,11 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
     uint8_t mask = 0x7F ;//01111111b
 	mask &= address;
     // remember to reset CS -->LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_4);
-	// LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
-    // LL_SPI_Enable(SPI1);
+    LL_SPI_Disable(SPI1);
+	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
+    spi_flush_rx(SPI1);
+    LL_SPI_Enable(SPI1);
+
     SPI_APPOLON_INDEX_SZ_INT i = 0;
     i = 0;
     while(!LL_SPI_IsActiveFlag_TXE(SPI1))
@@ -128,36 +143,32 @@ uint8_t ex_sendSpiSns(ex_spi_pack_t * input)
         if (i > SPI_APPOLON_INDEX_MAX)
             return 1;
     }
-    // LL_SPI_Disable(SPI1);
+    LL_SPI_Disable(SPI1);
+    spi_flush_rx(SPI1);
 	// remember to set CS -->LL_GPIO_SetOutputPin(GPIOA,LL_GPIO_PIN_4);
     return 0;
 }
 
-static inline void spi_flush_rx(SPI_TypeDef *spi)
-{
-    /* Чтение DR, затем SR сбрасывает RXNE и OVR */
-    while (LL_SPI_IsActiveFlag_RXNE(spi))
-        (void)LL_SPI_ReceiveData8(spi);
-    (void)spi->SR;
 
-    // альтернативный вариант
-    // (void)SPI1->DR;   /* сброс RXNE */
-    // (void)SPI1->SR;   /* DR→SR сбрасывает OVR */
-}
 /* 
 ~1 период SCK. При APB2=72 МГц и DIV16 это 16 тактов ядра; берём с запасом 
 По сути, пустой цикл на 8 итераций
 */
 // static inline void spi_delay_one_sck(void)
 // {
-//     for (volatile int i = 0; i < 8; i++) { }
+//         for (volatile int i = 0; i < 8; i++) { }
 // }
 
-uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
+uint8_t __attribute__((optimize("O1")))ex_gettSpiSns(ex_spi_pack_t *output)
 {
 	ipl_t ipl;
 
 	ipl = ipl_save();
+
+    LL_SPI_Disable(SPI1);
+	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
+    spi_flush_rx(SPI1);
+    LL_SPI_Enable(SPI1);
 
     // EDS_spidmairq_Marker = 0; TODO: is irq marker need?
     const uint8_t address = output->cmd;
@@ -188,18 +199,32 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
     // Проверить в (RM0008: bidirectional receive)
     LL_SPI_Disable(SPI1);
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
+    spi_flush_rx(SPI1);
     LL_SPI_Enable(SPI1);
     for (uint8_t idx = 0; idx < output->datalen; idx++)
     {
-        for(SPI_APPOLON_INDEX_SZ_INT j = 0; (!result) && (!LL_SPI_IsActiveFlag_RXNE(SPI1)); j++)
-            result = (j > SPI_APPOLON_INDEX_MAX)? 1 : 0; 
+        // for(SPI_APPOLON_INDEX_SZ_INT j = 0; (!result) && (!LL_SPI_IsActiveFlag_RXNE(SPI1)); j++)
+        //     result = (j > SPI_APPOLON_INDEX_MAX)? 1 : 0; 
+
+        result = 1;
+        for(SPI_APPOLON_INDEX_SZ_INT j = 0;  j < SPI_APPOLON_INDEX_MAX; j++)
+        {
+            if (LL_SPI_IsActiveFlag_RXNE(SPI1))
+            {
+                result = 0;
+                break;
+            }
+        }
+
+
         // if (output->datalen >= 2 && idx == output->datalen - 2) {
-        //     /* Предпоследний байт принят: последний уже идёт, остановить клок */
-        //     spi_delay_one_sck();
+            /* Предпоследний байт принят: последний уже идёт, остановить клок */
+            // spi_delay_one_sck();
         //     LL_SPI_Disable(SPI1);
         // }
         if (result)
-            output->data[idx] = 0;
+            goto ex_getSpiSns_error;
+            // output->data[idx] = 0;
         else
             output->data[idx] = LL_SPI_ReceiveData8(SPI1);
     }
