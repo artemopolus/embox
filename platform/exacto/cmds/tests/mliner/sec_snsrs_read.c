@@ -72,16 +72,18 @@ int printSensorData ()
 		}
 		printf("\n");
 		// printf("Cmd mark: %d\n", Command_Mark);
-		Print_Mark = 0;
 		Acc_Mark = 1;
 		Gyr_Mark = 1;
 		GXL_Mark = 1;
+		Print_Mark = 0;
 	}
 	return 0;	
 }
 
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
+	if (Print_Mark)
+		return 0;
 	if(Acc_Mark && id == LSM303AH )
 	{
 		for(int i = 0; i < 3; i++)
@@ -103,7 +105,7 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	if(Print_Counter > Print_MaxCounter)
 	{
 		Print_Counter = 0;
-		if(!Print_Mark)
+		if((!Print_Mark))
 		{
 			
 			Print_Mark  = 1;

@@ -141,7 +141,7 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
     // EDS_spidmairq_Marker = 0; TODO: is irq marker need?
     const uint8_t address = output->cmd;
     uint8_t value = address | 0x80;
-    static uint8_t result = 0;
+    uint8_t result = 0;
 	LL_SPI_TransmitData8(SPI1, value);
     SPI_APPOLON_INDEX_SZ_INT i = 0;
 	while(!LL_SPI_IsActiveFlag_TXE(SPI1))
@@ -183,9 +183,11 @@ uint8_t __attribute__((optimize("O0")))ex_gettSpiSns(ex_spi_pack_t *output)
         }
     }
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
-        for(SPI_APPOLON_INDEX_SZ_INT j = 0; ((!LL_SPI_IsActiveFlag_RXNE(SPI1))&&(j < SPI_APPOLON_INDEX_MAX)); j++)
-            ;
-            output->data[output->datalen] = LL_SPI_ReceiveData8(SPI1);
+    for(SPI_APPOLON_INDEX_SZ_INT j = 0; ((!LL_SPI_IsActiveFlag_RXNE(SPI1))&&(j < SPI_APPOLON_INDEX_MAX)); j++)
+        ;
+    output->data[output->datalen] = LL_SPI_ReceiveData8(SPI1);
+    
+    
     // if (EDS_spidmairq_Marker)
         // result = 1;
 	ipl_restore(ipl);
