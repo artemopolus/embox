@@ -185,17 +185,17 @@ uint8_t __attribute__((optimize("O1")))ex_gettSpiSns(ex_spi_pack_t *output)
             // break;
         }
     }
-    i = 0;
-	while(LL_SPI_IsActiveFlag_BSY(SPI1))
-    {
-        i++;
-        if (i > SPI_APPOLON_INDEX_MAX)
-        {
-            result = 1;
-            goto ex_getSpiSns_error;
-            // break;
-        }
-    }
+    // i = 0;
+	// while(LL_SPI_IsActiveFlag_BSY(SPI1))
+    // {
+    //     i++;
+    //     if (i > SPI_APPOLON_INDEX_MAX)
+    //     {
+    //         result = 1;
+    //         goto ex_getSpiSns_error;
+    //         // break;
+    //     }
+    // }
     // Проверить в (RM0008: bidirectional receive)
     LL_SPI_Disable(SPI1);
 	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_RX);
@@ -228,16 +228,16 @@ uint8_t __attribute__((optimize("O1")))ex_gettSpiSns(ex_spi_pack_t *output)
         else
             output->data[idx] = LL_SPI_ReceiveData8(SPI1);
     }
-    i = 0;
-	while(LL_SPI_IsActiveFlag_BSY(SPI1))
-    {
-        i++;
-        if (i > SPI_APPOLON_INDEX_MAX)
-        {
-            result = 1;
-            break;
-        }
-    }
+    // i = 0;
+	// while(LL_SPI_IsActiveFlag_BSY(SPI1))
+    // {
+    //     i++;
+    //     if (i > SPI_APPOLON_INDEX_MAX)
+    //     {
+    //         result = 1;
+    //         break;
+    //     }
+    // }
 
 ex_getSpiSns_error:
     LL_SPI_Disable(SPI1);

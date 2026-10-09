@@ -10,7 +10,7 @@
 // Sensor print section
 
 static uint16_t Print_Counter = 0;
-static uint16_t Print_MaxCounter = 100;
+static uint16_t Print_MaxCounter = 25;
 static int16_t Print_Buffer[20] = {0};
 static uint32_t Print_ItCounter = 0;
 
@@ -177,6 +177,7 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	SensorDataUploadCnt += 1;
 	DataInputALLCount += (uint32_t)len;
 	uint16_t overload_value = 0;
+	len = 6;
 	if (id == LSM303AH)
 	{
 		overload_value = exlnk_addNewData(&AccData,len, data);
