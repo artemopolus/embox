@@ -7,6 +7,7 @@
 #include "sensors/lsmism.h"
 #include "exactolink/exlnk_Data.h"
 
+#define TIM_1SEC_DIVIDER 200
 // Sensor print section
 
 static uint16_t Print_Counter = 0;
@@ -34,10 +35,6 @@ static uint8_t EnableUpdate = 0;
 static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
-
-static exlnk_data_str_t AccData;
-static exlnk_data_str_t GyrData;
-
 
 static uint16_t TIM_Event_Counter = 0;
 
