@@ -173,9 +173,10 @@ uint8_t switchStage(const exactolink_package_result_t type)
 	    return 1;
 	    case EXACTOLINK_SNS_XL_0100_XLGR_0100:
 	    ex_setFreqHz(100);
-	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xc5, try_cnt);	//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
-	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x48, try_cnt);	//0100 10 0 0 : 104 Hz 4g 
-	    // sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x44, try_cnt);	//0100 01 0 0 : 104 Hz 16g 
+	    // sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xc5, try_cnt);	//1100 01 0 1 : 100 Hz 16g HF_ODR= 0 BDU=1
+	    sendOptionsRaw(LSM303AH, LSM303AH_CTRL1_A,		0xc9, try_cnt);	//1100 10 0 1 : 100 Hz 4g HF_ODR= 0 BDU=1
+	    // sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x48, try_cnt);	//0100 10 0 0 : 104 Hz 4g 
+	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL1_XL,	0x44, try_cnt);	//0100 01 0 0 : 104 Hz 16g 
 	    sendOptionsRaw(ISM330DLC, ISM330DLC_CTRL2_G, 	0x4c, try_cnt);	//0100 11 0 0 : 104 Hz 2000 dps
 	    SnsContainer.sns[0].cnt_max = 0;
 	    SnsContainer.sns[1].cnt_max = 0;

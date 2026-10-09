@@ -11,9 +11,14 @@
 
 static uint16_t Print_Counter = 0;
 static uint16_t Print_MaxCounter = 100;
-static uint8_t Print_Mark = 0;
 static int16_t Print_Buffer[20] = {0};
 static uint32_t Print_ItCounter = 0;
+
+static uint8_t Print_Mark = 0;
+static uint8_t Acc_Mark = 1;
+static uint8_t Gyr_Mark = 1;
+static uint8_t GXL_Mark = 1;
+
 
 // ===
 
@@ -25,6 +30,7 @@ static uint32_t OverLoad_Mark = 0;
 static uint32_t DataInputALLCount = 0;
 
 // ===
+struct lthread UploadDataThread;
 
 
 #define TIM_1SEC_DIVIDER 200
@@ -93,8 +99,7 @@ int ReportStatus()
 
 	return 0;
 }
-
-int applyExactolinkCommand( )
+static int run_UploadData_Lthread(struct  lthread * self)
 {
 	if (AccData.len > 0)
 	{
@@ -114,6 +119,12 @@ int applyExactolinkCommand( )
 		exmliner_Upload(&BccBData, BccBData.len, EXLNK_DATA_ID_DATA, 7);
 		exlnk_clearData(&BccBData);
 	}
+	return 0;
+}
+
+int applyExactolinkCommand( )
+{
+	lthread_launch(&UploadDataThread);
 
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
@@ -153,6 +164,9 @@ int printSensorData ()
 			Print_Buffer[6], Print_Buffer[7], Print_Buffer[8]
 		);
 		// printf("Cmd mark: %d\n", Command_Mark);
+		Acc_Mark = 1;
+		Gyr_Mark = 1;
+		GXL_Mark = 1;
 		Print_Mark = 0;
 	}
 	return 0;	
@@ -179,26 +193,32 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	{
 		OverLoad_Mark += overload_value;
 	}
+	if (Print_Mark)
+		return 0;
+	if(Acc_Mark && id == LSM303AH )
+	{
+		for(int i = 0; i < 3; i++)
+			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
+		Acc_Mark = 0;
+	}
+	else if ( Gyr_Mark && id == ISM330DLC)
+	{
+		for(uint8_t i = 0; i < 3; i++)
+			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
+		Gyr_Mark = 0;
+	}	
+	else if ( GXL_Mark && id == ISM330DLC_XL)
+	{
+		for(uint8_t i = 0; i < 3; i++)
+			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 6]);
+		GXL_Mark = 0;
+	}
 	if(Print_Counter > Print_MaxCounter)
 	{
 		Print_Counter = 0;
-		if(!Print_Mark)
+		if((!Print_Mark))
 		{
-			if(id == LSM303AH )
-			{
-				for(int i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
-			}
-			else if (id == ISM330DLC)
-			{
-				for(uint8_t i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
-			}
-			else if (id == ISM330DLC_XL)
-			{
-				for(uint8_t i = 0; i < 3; i++)
-					exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 6]);
-			}
+			
 			Print_Mark  = 1;
 		}
 	}
@@ -270,6 +290,7 @@ static int onErrorEventHandler(int id)
 int main(int argc, char *argv[]) 
 {
 	printf("Basic application\nV 0.1\nAbilities:\n- Send ack\n- Change mode(start/stop sns)\n\n");
+	lthread_init(&UploadDataThread, run_UploadData_Lthread);
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);

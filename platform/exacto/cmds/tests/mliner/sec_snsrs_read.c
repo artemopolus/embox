@@ -27,14 +27,6 @@ static uint8_t GXL_Mark = 1;
 // ===
 
 
-#define TIM_1SEC_DIVIDER 200
-#define MEASURE_TIME
-
-#ifdef MEASURE_TIME
-static exutils_data_t TagTimer;
-#endif
-
-
 static uint16_t TIM_Counter = 0;
 
 static int PointToTim;
@@ -43,10 +35,6 @@ static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
 
-#define SENSOR_DATA_BUFFER_LEN 256
-#define GYR_DATA_BUFFER_LEN 512
-static uint8_t SensorsDataBuffer[SENSOR_DATA_BUFFER_LEN] = {0};
-static uint8_t GyrDataBuffer[GYR_DATA_BUFFER_LEN] = {0};
 static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
 
@@ -143,17 +131,10 @@ int main(int argc, char *argv[])
 
 	exmliner_init(&LsmIsmDev, onUpdateSensorData);
 
-#ifdef MEASURE_TIME
-	ex_dwt_cyccnt_reset();
-	exutils_init(&TagTimer);
-#endif
-
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(0, Address);
 
-	exlnk_setData( & AccData, 33, SENSOR_DATA_BUFFER_LEN, SensorsDataBuffer);
-	exlnk_setData( & GyrData, 34, GYR_DATA_BUFFER_LEN, GyrDataBuffer);
 
 	startSensors();
 
