@@ -133,7 +133,7 @@ static int onResetEventHandler()
 static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 {
 	printf("Common event handler\n");
-	print_hex( data, len );
+	// print_hex( data, len );
 	if (reg == 33)
 	{
 		pshsftPack_exbu8(&AccADataStore, data, len);
