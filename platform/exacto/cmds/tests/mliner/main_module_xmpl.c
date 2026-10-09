@@ -132,7 +132,7 @@ static int onResetEventHandler()
 }
 static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 {
-	printf("Common event handler\n");
+	printf("Common event handler [%d]\n", len);
 	// print_hex( data, len );
 	if (reg == 33)
 	{

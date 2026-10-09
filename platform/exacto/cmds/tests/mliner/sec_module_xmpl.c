@@ -80,6 +80,7 @@ int ReportStatus()
 	printf("Tim Events: %d\n", TIM_Event_Counter);
 	printf("ACC upload[%d]\n", AccADataUploadLen);
 	printf("GYR upload[%d]\n", GyrDataUploadLen);
+	printf("BCC upload[%d]\n", BccBDataUploadLen);
 	printf("SNS Events: %d\n", SensorDataUploadCnt);
 	if (OverLoad_Mark)
 	{
