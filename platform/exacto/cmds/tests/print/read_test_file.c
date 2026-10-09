@@ -196,9 +196,9 @@ static void print_hex(const uint8_t *data, uint16_t len)
 // #include <errno.h>
 // #include <string.h>
 
-static int readOneFile(const char *filename, int print_mode)
+static int readOneFile(const char *filename, int print_mode, int print_count)
 {
-    uint8_t read_buffer[1024];
+    uint8_t read_buffer[4096];
     ssize_t bytes_read;
     int file = open(filename, O_RDONLY);
 
@@ -244,16 +244,16 @@ static int readOneFile(const char *filename, int print_mode)
 
         if (print_mode == 2)
         {
-            print_gyr_values(read_buffer, (size_t)bytes_read, 64);
+            print_gyr_values(read_buffer, (size_t)bytes_read, (uint16_t)print_count);
 
-        }
-        else if (print_mode == 1)
-        {
-            print_hex(read_buffer, (size_t)bytes_read);
         }
         else if (print_mode == 0)
         {
-            print_values(read_buffer, (size_t)bytes_read, 64);
+            print_hex(read_buffer, (size_t)bytes_read);
+        }
+        else if (print_mode == 1)
+        {
+            print_values(read_buffer, (size_t)bytes_read, (uint16_t)print_count);
         }
         else 
         {
@@ -269,15 +269,18 @@ static int readOneFile(const char *filename, int print_mode)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
+    if (argc != 4)
     {
         printf("Usage: %s <filename> <mode>\n", argv[0]);
-        printf("  mode 0 - print_values\n");
-        printf("  mode 1 - print_hex\n");
+        printf("  mode 0 - print_hex\n");
+        printf("  mode 1 - print_values 3x\n");
+        printf("  mode 2 - print values 6x\n");
+        printf("  count to print rows\n");
         return 1;
     }
 
     int mode = atoi(argv[2]);
+    int count = atoi(argv[3]);
 
     // if (mode != 0 && mode != 1)
     // {
@@ -285,5 +288,5 @@ int main(int argc, char *argv[])
     //     return 1;
     // }
 
-    return readOneFile(argv[1], mode);
+    return readOneFile(argv[1], mode, count);
 }
