@@ -133,6 +133,7 @@ static int onResetEventHandler()
 static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 {
 	printf("Common event handler [%d]\n", len);
+	
 	// print_hex( data, len );
 	if (reg == 33)
 	{
@@ -145,6 +146,19 @@ static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 	else if (reg == 35)
 	{
 		pshsftPack_exbu8(&BccBDataStore, data, len);
+	}
+	else if (reg == EXLNK_DATA_ID_STATUS)
+	{
+		printf("STATUS\n");
+		exlnk_status_str_t StatusData;
+		exlnk_ArrayToStatus( &StatusData, data, len );
+		
+		printf("Tim Events: %d\n", StatusData.tim_event_counter);
+		printf("ACC upload[%d]\n", StatusData.acc_a_data_upload_len );
+		printf("GYR upload[%d]\n", StatusData.gyr_data_upload_len );
+		printf("BCC upload[%d]\n", StatusData.bcc_b_data_upload_len);
+		printf("SNS Events: %d\n", StatusData.sensor_data_upload_cnt );
+
 	}
 	return 0;
 }
