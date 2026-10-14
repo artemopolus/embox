@@ -61,7 +61,7 @@ static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
 static exlnk_data_str_t BccBData;
 
-static uint16_t TIM_Event_Counter = 0;
+// static uint16_t TIM_Event_Counter = 0;
 
 int ReportStatus()
 {
@@ -282,29 +282,40 @@ static int onErrorEventHandler(int id)
 }
 int main(int argc, char *argv[]) 
 {
-	printf("Basic application\nV 0.1\nAbilities:\n- Send ack\n- Change mode(start/stop sns)\n\n");
+	printf("Basic application\nV 0.2\n"
+		"Abilities:\n"
+		"- Send Ack\n"
+		"- Send Status\n"
+		"- Change mode(start/stop sns)\n"
+		"\n");
 	lthread_init(&UploadDataThread, run_UploadData_Lthread);
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
 	exmliner_setRepeatAction(onRepeatEventHandler);
 	exmliner_setErrorAction(onErrorEventHandler);
-	
+
+	printf("Init sensors\n");
 	exmliner_init(&LsmIsmDev, onUpdateSensorData);
-	exlnk_status_init(&StatusData);
 
 #ifdef MEASURE_TIME
 	ex_dwt_cyccnt_reset();
 	exutils_init(&TagTimer);
 #endif
 
+	printf("Init timers\n");
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
 	ex_setFreqHz(100);
 	exmliner_Init(0, Address);
 
+	printf("Init buffers for data\n");
+
 	exlnk_setData( & AccData, 33);
 	exlnk_setData( &GyrData, 34);
 	exlnk_setData( & BccBData, 35);
+	exlnk_status_init(&StatusData);
+
+	printf("Start basic cycle\n");
 
 	while (1)
 	{

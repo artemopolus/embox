@@ -67,6 +67,7 @@ module sec_module_xmpl{
 	depends exacto.cmds.perf_tests.ex_utils
 	depends exacto.sensors.lsmism
     depends ext.exacto.exactolink.exlnk_data
+    depends ext.exacto.exactolink.exlnk_status
 }
 @AutoCmd
 @Cmd(name="test_read_sensors", help=" Test grab data from sensors ", man='''
