@@ -99,10 +99,11 @@ int ReportStatus()
 }
 uint16_t uploadDataPackToExMliner( exlnk_data_str_t * trg)
 {
-	if (trg->len > 72)
+	#define SEC_MODULE_DATA_TO_COPY 30
+	if (exlnk_getDataLen(trg) > SEC_MODULE_DATA_TO_COPY)
 	{
 		exmliner_Upload(trg, 72, EXLNK_DATA_ID_DATA, 7);
-		return 72;
+		return trg->latest_upload;
 	}
 	return 0;
 }
@@ -311,7 +312,7 @@ int main(int argc, char *argv[])
 	printf("Init buffers for data\n");
 
 	exlnk_setData( & AccData, 33);
-	exlnk_setData( &GyrData, 34);
+	exlnk_setData( & GyrData, 34);
 	exlnk_setData( & BccBData, 35);
 	exlnk_status_init(&StatusData);
 
