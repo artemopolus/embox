@@ -38,13 +38,16 @@ struct lthread UploadDataThread[4];
 #ifdef MEASURE_TIME
 static exutils_data_t TagTimer;
 static uint32_t 	
+						UploadToMlineDuration = 0,
 						UpdateMlineDuration = 0,
 						UpdateMlineDurationAVR = 0,
 						TransmitMlineDuration = 0,
 						TransmitMlineDurationAVR = 0
 						;
 #endif
+static uint8_t TransmitMlineDuration_meas_on = 0;
 
+static uint8_t UploadToMlineEventCnt = 0,
 
 static exlnk_status_str_t StatusData;
 
@@ -53,6 +56,7 @@ static uint16_t SendCounter = 0;
 
 static int PointToTim;
 static uint8_t EnableUpdate = 0;
+static uint8_t ReadyToUpload = 0;
 static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
@@ -122,10 +126,23 @@ static int run_UploadInfo_Lthread(struct  lthread * self)
 static int run_UploadData_Lthread(struct  lthread * self)
 {
 	if (exmliner_checkStatus(Address)) return 0;
+
+#ifdef MEASURE_TIME
+	exutils_updt(&TagTimer);
+#endif	
 	exmliner_checkHeaders();
 	StatusData.acc_a_data_upload_len += uploadDataPackToExMliner( &AccData );
 	StatusData.gyr_data_upload_len += uploadDataPackToExMliner ( &GyrData );
 	StatusData.bcc_b_data_upload_len += uploadDataPackToExMliner( &BccBData);
+
+#ifdef MEASURE_TIME
+	exutils_updt(&TagTimer);
+#endif	
+	uint32_t duration = TagTimer.result;
+	UploadToMlineDuration += duration;
+	UploadToMlineEventCnt ++;
+	if (TransmitMlineDuration_meas_on)
+		TransmitMlineDuration += duration;
 	return 0;
 }
 
@@ -254,6 +271,7 @@ static int run_Tim_Lthread(struct  lthread * self)
 			StatusData.tim_event_counter ++;
 		}
 	}
+	ReadyToUpload = 1;
 	EnableUpdate = 1;
 	return 0;
 }
@@ -347,57 +365,81 @@ int main(int argc, char *argv[])
 	exlnk_status_init(&StatusData);
 
 	printf("Start basic cycle\n");
+	uint32_t index = 0;
 
 	while (1)
 	{
-		while(!EnableUpdate)
-			__asm("nop");
-#ifdef MEASURE_TIME
-		exutils_updt(&TagTimer);
-#endif
-		applyExactolinkCommand();
-		exmliner_Update(Address);
-#ifdef MEASURE_TIME
-		exutils_updt(&TagTimer);
-		UpdateMlineDuration = TagTimer.result;
-#endif
-		int index = 0;
-		while(!exmliner_getRxIRQ())
+		uint8_t receive_marker = exmliner_getRxIRQ();
+		if (ReadyToUpload && receive_marker)
 		{
-			index++;
-			if(index > 500000)
-			{
-				exmliner_Update(Address);
-				index = 0;
-				printf("reset irq\n");
-				__asm("nop");
-			}
+			applyExactolinkCommand();
 		}
-#ifdef MEASURE_TIME
-		exutils_updt(&TagTimer);
-		TransmitMlineDuration = TagTimer.result;
-		UpdateMlineDurationAVR += UpdateMlineDuration;
-		TransmitMlineDurationAVR += TransmitMlineDuration;
-#endif
-		printSensorData();
-		ReportStatus();
-		if(NeedToPrint)
+		if (!EnableUpdate)
 		{
+			__asm("nop");
+		}
+		else
+		{
+			if (!receive_marker)
+			{
+				index++;
+				if(index > 500000)
+				{
+					exmliner_Update(Address);
+					index = 0;
+					printf("reset irq\n");
+					__asm("nop");
+				}
+			}
+			else
+			{
 
 #ifdef MEASURE_TIME
-			UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
-			TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
-			printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, TransmitMlineDurationAVR);
+				exutils_updt(&TagTimer);
+				TransmitMlineDuration += TagTimer.result;
+				TransmitMlineDuration_meas_on = 0;
+				TransmitMlineDurationAVR += TransmitMlineDuration;
+				StatusData.mline_wait_duration = TransmitMlineDurationAVR;
+				StatusData.mline_sns_upload_duration = UploadToMlineDuration / UploadToMlineEventCnt;
+
+				UploadToMlineDuration = 0;
+				UploadToMlineEventCnt = 0;
 #endif
-			printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
-			NeedToPrint = 0;
+
+
+				exmliner_Update(Address);
 #ifdef MEASURE_TIME
-			UpdateMlineDurationAVR = 0;
-			TransmitMlineDurationAVR = 0;
+				exutils_updt(&TagTimer);
+				UpdateMlineDuration = TagTimer.result;
+				UpdateMlineDurationAVR += UpdateMlineDuration;
 #endif
-		}
-		EnableUpdate = 0;
+
+				printSensorData();
+				ReportStatus();
+				if(NeedToPrint)
+				{
+
+#ifdef MEASURE_TIME
+					UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
+					TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
+					printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, TransmitMlineDurationAVR);
+#endif
+					printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
+					NeedToPrint = 0;
+#ifdef MEASURE_TIME
+					UpdateMlineDurationAVR = 0;
+					TransmitMlineDurationAVR = 0;
+#endif
+				}
+				EnableUpdate = 0;
+#ifdef MEASURE_TIME
+				exutils_updt(&TagTimer);
+				TransmitMlineDuration = 0;
+				TransmitMlineDuration_meas_on = 1;
+#endif
+			}
 		// sleep(1);
+		}
 	}
 	
 	return 1;
