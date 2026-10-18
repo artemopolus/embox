@@ -29,7 +29,7 @@ static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
 static uint8_t ModeChange_Mark = 0;
 
 // ===
-struct lthread UploadDataThread;
+struct lthread UploadDataThread[4];
 
 
 #define TIM_1SEC_DIVIDER 200
@@ -91,7 +91,6 @@ int ReportStatus()
 		ModeChange_Mark = 0;
 	}
 
-	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	
 	exmliner_printStatus(0);
 
@@ -107,8 +106,23 @@ uint16_t uploadDataPackToExMliner( exlnk_data_str_t * trg)
 	}
 	return 0;
 }
+static int run_MlinerPack_Lthread(struct  lthread * self)
+{
+	exmliner_checkHeaders();
+	return 0;
+}
+static int run_UploadInfo_Lthread(struct  lthread * self)
+{
+	if (exmliner_checkStatus(Address)) return 0;
+	exmliner_checkHeaders();
+	exmliner_UploadALLACKS(7);
+	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
+	return 0;
+}
 static int run_UploadData_Lthread(struct  lthread * self)
 {
+	if (exmliner_checkStatus(Address)) return 0;
+	exmliner_checkHeaders();
 	StatusData.acc_a_data_upload_len += uploadDataPackToExMliner( &AccData );
 	StatusData.gyr_data_upload_len += uploadDataPackToExMliner ( &GyrData );
 	StatusData.bcc_b_data_upload_len += uploadDataPackToExMliner( &BccBData);
@@ -117,7 +131,9 @@ static int run_UploadData_Lthread(struct  lthread * self)
 
 int applyExactolinkCommand( )
 {
-	lthread_launch(&UploadDataThread);
+	lthread_launch(&UploadDataThread[2]);
+	lthread_launch(&UploadDataThread[0]);
+	lthread_launch(&UploadDataThread[1]);
 
 	if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
@@ -255,6 +271,16 @@ static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 	printf("ack:[mnum: %5d reg: %5d]\n", cmd->mnum, cmd->reg);
 	return 0;
 }
+static int run_Transmit_Lthread(struct  lthread * self)
+{
+	exmliner_gogoTransmit();
+	return 0;
+}
+static int onTransmitHandler(uint16_t adr)
+{
+	lthread_launch(&UploadDataThread[3]);
+	return 0;
+}
 static int onResetEventHandler()
 {
 	printf("Try reset Mline\n");
@@ -289,12 +315,16 @@ int main(int argc, char *argv[])
 		"- Send Status\n"
 		"- Change mode(start/stop sns)\n"
 		"\n");
-	lthread_init(&UploadDataThread, run_UploadData_Lthread);
+	lthread_init(&UploadDataThread[0], run_UploadData_Lthread);
+	lthread_init(&UploadDataThread[1], run_UploadInfo_Lthread);
+	lthread_init(&UploadDataThread[2], run_MlinerPack_Lthread);
+	lthread_init(&UploadDataThread[3], run_Transmit_Lthread);
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
 	exmliner_setRepeatAction(onRepeatEventHandler);
 	exmliner_setErrorAction(onErrorEventHandler);
+	exmliner_seTransmit(onTransmitHandler);
 
 	printf("Init sensors\n");
 	exmliner_init(&LsmIsmDev, onUpdateSensorData);
@@ -325,6 +355,7 @@ int main(int argc, char *argv[])
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
 #endif
+		applyExactolinkCommand();
 		exmliner_Update(Address);
 #ifdef MEASURE_TIME
 		exutils_updt(&TagTimer);
@@ -349,7 +380,6 @@ int main(int argc, char *argv[])
 		TransmitMlineDurationAVR += TransmitMlineDuration;
 #endif
 		printSensorData();
-		applyExactolinkCommand();
 		ReportStatus();
 		if(NeedToPrint)
 		{
