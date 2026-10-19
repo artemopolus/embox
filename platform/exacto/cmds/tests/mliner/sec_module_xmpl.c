@@ -41,13 +41,18 @@ static uint32_t
 						UploadToMlineDuration = 0,
 						UpdateMlineDuration = 0,
 						UpdateMlineDurationAVR = 0,
-						TransmitMlineDuration = 0,
 						TransmitMlineDurationAVR = 0
 						;
 #endif
 static uint8_t TransmitMlineDuration_meas_on = 0;
+static uint32_t TransmitMlineDuration = 0;
+static uint8_t TransmitMlineDuration_cnt = 0;
 
-static uint8_t UploadToMlineEventCnt = 0,
+static uint32_t Meas2MeasTime_duration = 0;
+static uint8_t Meas2MeasTime_meas_on = 0;
+static uint8_t Meas2MeasTime_cnt = 0;
+
+static uint8_t UploadToMlineEventCnt = 0;
 
 static exlnk_status_str_t StatusData;
 
@@ -123,12 +128,22 @@ static int run_UploadInfo_Lthread(struct  lthread * self)
 	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	return 0;
 }
+static uint32_t getTagTimerResult()
+{
+	exutils_updt(&TagTimer);
+	uint32_t duration = TagTimer.result;
+	if (TransmitMlineDuration_meas_on)
+		TransmitMlineDuration += duration;
+	if (Meas2MeasTime_meas_on)
+		Meas2MeasTime_duration += duration;
+	return duration;
+}
 static int run_UploadData_Lthread(struct  lthread * self)
 {
 	if (exmliner_checkStatus(Address)) return 0;
 
 #ifdef MEASURE_TIME
-	exutils_updt(&TagTimer);
+	getTagTimerResult();
 #endif	
 	exmliner_checkHeaders();
 	StatusData.acc_a_data_upload_len += uploadDataPackToExMliner( &AccData );
@@ -136,13 +151,10 @@ static int run_UploadData_Lthread(struct  lthread * self)
 	StatusData.bcc_b_data_upload_len += uploadDataPackToExMliner( &BccBData);
 
 #ifdef MEASURE_TIME
-	exutils_updt(&TagTimer);
-#endif	
-	uint32_t duration = TagTimer.result;
+	uint32_t duration = getTagTimerResult();
 	UploadToMlineDuration += duration;
 	UploadToMlineEventCnt ++;
-	if (TransmitMlineDuration_meas_on)
-		TransmitMlineDuration += duration;
+#endif	
 	return 0;
 }
 
@@ -200,6 +212,8 @@ int printSensorData ()
 
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
+	Meas2MeasTime_meas_on = 0;
+	getTagTimerResult();
 	StatusData.sensor_data_upload_cnt += 1;
 	StatusData.data_input_all_count += (uint32_t)len;
 	uint16_t overload_value = 0;
@@ -251,6 +265,18 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	}
 	else
 		Print_Counter++;
+
+	if (Meas2MeasTime_cnt < 32)
+		Meas2MeasTime_cnt++;
+	else
+	{
+		StatusData.sns2sns_time = Meas2MeasTime_duration /Meas2MeasTime_cnt;
+		Meas2MeasTime_duration = 0;
+		Meas2MeasTime_cnt = 0;
+	}
+	getTagTimerResult();
+	Meas2MeasTime_meas_on = 1;
+
 	return 0;	
 }
 
@@ -395,11 +421,9 @@ int main(int argc, char *argv[])
 			{
 
 #ifdef MEASURE_TIME
-				exutils_updt(&TagTimer);
-				TransmitMlineDuration += TagTimer.result;
+				TransmitMlineDuration += getTagTimerResult();
 				TransmitMlineDuration_meas_on = 0;
 				TransmitMlineDurationAVR += TransmitMlineDuration;
-				StatusData.mline_wait_duration = TransmitMlineDurationAVR;
 				StatusData.mline_sns_upload_duration = UploadToMlineDuration / UploadToMlineEventCnt;
 
 				UploadToMlineDuration = 0;
@@ -409,8 +433,7 @@ int main(int argc, char *argv[])
 
 				exmliner_Update(Address);
 #ifdef MEASURE_TIME
-				exutils_updt(&TagTimer);
-				UpdateMlineDuration = TagTimer.result;
+				UpdateMlineDuration = getTagTimerResult();
 				UpdateMlineDurationAVR += UpdateMlineDuration;
 #endif
 
@@ -421,19 +444,26 @@ int main(int argc, char *argv[])
 
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
-					TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
-					printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, TransmitMlineDurationAVR);
+					// TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
+					printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, StatusData.mline_wait_duration);
 #endif
 					printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
 					NeedToPrint = 0;
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = 0;
-					TransmitMlineDurationAVR = 0;
 #endif
 				}
 				EnableUpdate = 0;
 #ifdef MEASURE_TIME
-				exutils_updt(&TagTimer);
+				getTagTimerResult();
+				if (TransmitMlineDuration_cnt < 32)
+					TransmitMlineDuration_cnt++;
+				else
+				{
+					StatusData.mline_wait_duration = TransmitMlineDurationAVR / TransmitMlineDuration_cnt;
+					TransmitMlineDuration_cnt = 0;
+					TransmitMlineDurationAVR = 0;
+				}
 				TransmitMlineDuration = 0;
 				TransmitMlineDuration_meas_on = 1;
 #endif

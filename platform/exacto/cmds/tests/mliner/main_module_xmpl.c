@@ -19,6 +19,8 @@
 #define TIM_1SEC_DIVIDER 200
 #define DATA_STORE_SZ 128
 
+struct lthread UploadDataThread[2];
+
 // uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
 // uint8_t AddressSendOrder[] = {7, 0,0, 16, 0,0};
 static uint8_t AddressSendOrder[] = {7, 16, 7, 16, 7, 16};
@@ -258,7 +260,28 @@ static void changeSnsMode(uint8_t value)
 	exutils_updt(&TagTimer);
 }
 
-
+static int run_UploadInfo_Lthread(struct  lthread * self)
+{
+	if (exmliner_checkStatus(7)) return 0;
+	exmliner_checkHeaders();
+	exmliner_UploadALLACKS(7);
+	return 0;
+}
+static int onExMlinerStartHandler()
+{
+	lthread_launch(&UploadDataThread[1]);
+	return 0;
+}
+static int run_Transmit_Lthread(struct  lthread * self)
+{
+	exmliner_gogoTransmit();
+	return 0;
+}
+static int onTransmitHandler(uint16_t adr)
+{
+	lthread_launch(&UploadDataThread[0]);
+	return 0;
+}
 
 int main(int argc, char *argv[]) 
 {
@@ -269,9 +292,12 @@ int main(int argc, char *argv[])
 	exmliner_setRepeatAction(onRepeatEventHandler);
 	exmliner_setErrorAction(onErrorEventHandler);
 	exmliner_setCommonAction(onCommonEventHandler);
+	exmliner_seTransmit(onTransmitHandler);
 
 	ex_dwt_cyccnt_reset();
 	exutils_init(&TagTimer);
+	lthread_init(&UploadDataThread[0], run_Transmit_Lthread);
+	lthread_init(&UploadDataThread[1], run_UploadInfo_Lthread);
 
 
 	PointToTim = exse_subscribe(&ExTimServicesInfo, ExTimServices, EX_THR_TIM, run_Tim_Lthread);
@@ -327,6 +353,7 @@ int main(int argc, char *argv[])
 			printf("\ncnt: %d\n", cnt);
 			cnt++;
 		}
+		onExMlinerStartHandler();
 		exmliner_Update(trg_adr);
 		exutils_updt(&TagTimer);
 		UpdateMlineDuration = TagTimer.result;
