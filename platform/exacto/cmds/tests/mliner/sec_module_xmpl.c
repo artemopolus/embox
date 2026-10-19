@@ -65,6 +65,7 @@ static uint8_t ReadyToUpload = 0;
 static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
+static uint8_t StatusCounter = 0;
 
 static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
@@ -125,7 +126,6 @@ static int run_UploadInfo_Lthread(struct  lthread * self)
 	if (exmliner_checkStatus(Address)) return 0;
 	exmliner_checkHeaders();
 	exmliner_UploadALLACKS(7);
-	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	return 0;
 }
 static uint32_t getTagTimerResult()
@@ -317,6 +317,8 @@ static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 }
 static int run_Transmit_Lthread(struct  lthread * self)
 {
+	StatusCounter ++;
+	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	exmliner_gogoTransmit();
 	return 0;
 }
@@ -447,7 +449,7 @@ int main(int argc, char *argv[])
 					// TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
 					printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, StatusData.mline_wait_duration);
 #endif
-					printf("tim[%8d]send[%5d]\n", TIM_Counter,SendCounter);
+					printf("tim[%8d]send[%5d]status[%d]\n", TIM_Counter, SendCounter, StatusCounter);
 					NeedToPrint = 0;
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = 0;
