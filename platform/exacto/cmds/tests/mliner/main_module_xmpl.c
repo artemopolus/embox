@@ -19,6 +19,8 @@
 #define TIM_1SEC_DIVIDER 200
 #define DATA_STORE_SZ 128
 
+static uint8_t CurrentDivider = TIM_1SEC_DIVIDER;
+
 // uint8_t AddressSendOrder[] = {7, 7, 7, 7, 7, 0,0,0,0,0, 16, 16, 16, 16, 16, 0,0,0,0,0};
 // uint8_t AddressSendOrder[] = {7, 0,0, 16, 0,0};
 static uint8_t AddressSendOrder[] = {7, 16, 7, 16, 7, 16};
@@ -28,6 +30,11 @@ static uint8_t AddressCount = 6;
 
 
 static uint8_t AdrCntIndex = 0;
+
+
+static uint32_t AccA_cnt = 0;
+static uint32_t GyrB_cnt = 0;
+static uint32_t BccB_cnt = 0;
 
 
 ExactoBufferUint8Type AccADataStore;
@@ -102,7 +109,7 @@ static int run_Tim_Lthread(struct  lthread * self)
 		if(! (TIM_Counter % TIM_1SEC_DIVIDER))
 			NeedToPrint = 1;
 	}
-	if(! (TIM_Counter % TIM_1SEC_DIVIDER))
+	if(! (TIM_Counter % CurrentDivider))
 		EnableUpdate = 1;
 	return 0;
 }
@@ -137,14 +144,17 @@ static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 	// print_hex( data, len );
 	if (reg == 33)
 	{
+		AccA_cnt += len;
 		pshsftPack_exbu8(&AccADataStore, data, len);
 	}
 	else if (reg == 34)
 	{
+		GyrB_cnt += len;
 		pshsftPack_exbu8(&GyrDataStore, data, len);
 	}
 	else if (reg == 35)
 	{
+		BccB_cnt += len;
 		pshsftPack_exbu8(&BccBDataStore, data, len);
 	}
 	else if (reg == EXLNK_DATA_ID_STATUS)
@@ -154,10 +164,16 @@ static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
 		exlnk_ArrayToStatus( &StatusData, data, len );
 		
 		printf("Tim Events: %d\n", StatusData.tim_event_counter);
+		printf("Acc:%d\n", AccA_cnt);
+		printf("Gyr:%d\n", GyrB_cnt);
+		printf("Bcc:%d\n", BccB_cnt);
 		printf("ACC upload[%d]\n", StatusData.acc_a_data_upload_len );
 		printf("GYR upload[%d]\n", StatusData.gyr_data_upload_len );
 		printf("BCC upload[%d]\n", StatusData.bcc_b_data_upload_len);
 		printf("SNS Events: %d\n", StatusData.sensor_data_upload_cnt );
+		printf("Overfow:%d\n", StatusData.over_load_mark);
+		printf("Mline:%d\n", StatusData.mline_sns_upload_duration);
+		printf("Sns:%d\n", StatusData.sns2sns_time);
 
 	}
 	return 0;
@@ -263,6 +279,17 @@ static void changeSnsMode(uint8_t value)
 int main(int argc, char *argv[]) 
 {
 	printf("Start smpl sender to mliner\n\n");
+    if (argc == 2)
+	{
+		CurrentDivider = (uint8_t)atoi(argv[1]);
+		printf("Current Time Divider: %d\n", CurrentDivider);
+		if (CurrentDivider > TIM_1SEC_DIVIDER)
+			CurrentDivider = TIM_1SEC_DIVIDER;
+	}
+	else
+	{
+		printf("Default Time Divider\n");
+	}
 	exmliner_setCmdAction(onCmdEventHandler);
 	exmliner_setResetAction(onResetEventHandler);
 	exmliner_setCmdAckAction(onCmdAckEventHandler);
@@ -298,6 +325,7 @@ int main(int argc, char *argv[])
 
 
 	uint8_t cnt = 0;
+	sleep(2);
    
 	
 	while (1)
@@ -316,7 +344,7 @@ int main(int argc, char *argv[])
 			{
 				changeSnsMode( 1 );
 			}
-			else if ( cnt > 10  && cnt < 20)
+			else if ( cnt > 20  && cnt < 30)
 			{
 				changeSnsMode( 0 );
 			}
