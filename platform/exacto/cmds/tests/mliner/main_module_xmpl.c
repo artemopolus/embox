@@ -137,7 +137,7 @@ static int onResetEventHandler()
 	printf("Try reset Mline\n");
 	return 0;
 }
-static int onCommonEventHandler(uint8_t * data, uint16_t len, uint8_t reg)
+static int onCommonEventHandler(uint8_t * data, uint16_t len, uint32_t reg)
 {
 	printf("Common event handler [%d]\n", len);
 	
