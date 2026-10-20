@@ -10,15 +10,6 @@
 
 // Sensor print section
 
-static uint16_t Print_Counter = 0;
-static uint16_t Print_MaxCounter = 25;
-static int16_t Print_Buffer[20] = {0};
-static uint32_t Print_ItCounter = 0;
-
-static uint8_t Print_Mark = 0;
-static uint8_t Acc_Mark = 1;
-static uint8_t Gyr_Mark = 1;
-static uint8_t GXL_Mark = 1;
 
 
 // ===
@@ -65,7 +56,7 @@ static uint8_t ReadyToUpload = 0;
 static uint8_t NeedToPrint = 0;
 
 static uint8_t Address = 7;
-static uint8_t StatusCounter = 0;
+// static uint8_t StatusCounter = 0;
 
 static exlnk_data_str_t AccData;
 static exlnk_data_str_t GyrData;
@@ -81,11 +72,7 @@ int ReportStatus()
 	if (1)
 	{
 
-		printf("Tim Events: %d\n", StatusData.tim_event_counter);
-		printf("ACC upload[%d]\n", StatusData.acc_a_data_upload_len );
-		printf("GYR upload[%d]\n", StatusData.gyr_data_upload_len );
-		printf("BCC upload[%d]\n", StatusData.bcc_b_data_upload_len);
-		printf("SNS Events: %d\n", StatusData.sensor_data_upload_cnt );
+		// printf("Tim Events: %d\n", StatusData.tim_event_counter);
 		if (StatusData.over_load_mark)
 		{
 			printf("Buffer OVERLOAD(!!!)[%d]/[%d]\n", StatusData.over_load_mark, StatusData.data_input_all_count );
@@ -102,7 +89,7 @@ int ReportStatus()
 	}
 
 	
-	exmliner_printStatus(0);
+	// exmliner_printStatus(0);
 
 	return 0;
 }
@@ -146,9 +133,9 @@ static int run_UploadData_Lthread(struct  lthread * self)
 	getTagTimerResult();
 #endif	
 	exmliner_checkHeaders();
-	StatusData.acc_a_data_upload_len += uploadDataPackToExMliner( &AccData );
-	StatusData.gyr_data_upload_len += uploadDataPackToExMliner ( &GyrData );
-	StatusData.bcc_b_data_upload_len += uploadDataPackToExMliner( &BccBData);
+	uploadDataPackToExMliner( &AccData );
+	uploadDataPackToExMliner ( &GyrData );
+	uploadDataPackToExMliner( &BccBData);
 
 #ifdef MEASURE_TIME
 	uint32_t duration = getTagTimerResult();
@@ -187,28 +174,6 @@ int applyExactolinkCommand( )
 }
 
 
-int printSensorData ()
-{
-	if (Print_Mark)
-	{
-		printf("[%d]sensor:"
-			"[%8d %8d %8d] "
-			"[%8d %8d %8d] "
-			"[%8d %8d %8d]"
-			"\n"
-			, Print_ItCounter++, 
-			Print_Buffer[0], Print_Buffer[1], Print_Buffer[2],
-			Print_Buffer[3], Print_Buffer[4], Print_Buffer[5],
-			Print_Buffer[6], Print_Buffer[7], Print_Buffer[8]
-		);
-		// printf("Cmd mark: %d\n", Command_Mark);
-		Acc_Mark = 1;
-		Gyr_Mark = 1;
-		GXL_Mark = 1;
-		Print_Mark = 0;
-	}
-	return 0;	
-}
 
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
@@ -220,51 +185,23 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	len = 6;
 	if (id == LSM303AH)
 	{
+		StatusData.acc_a_data_upload_len += len;
 		overload_value = exlnk_addNewData(&AccData,len, data);
 	}
 	else if (id == ISM330DLC)
 	{
+		StatusData.gyr_data_upload_len += len;
 		overload_value = exlnk_addNewData(&GyrData,len, data);
 	}
 	else if (id == ISM330DLC_XL)
 	{
+		StatusData.bcc_b_data_upload_len += len;
 		overload_value = exlnk_addNewData(&BccBData,len, data);
 	}
 	if (overload_value > 0)
 	{
 		StatusData.over_load_mark += overload_value;
 	}
-	if (Print_Mark)
-		return 0;
-	if(Acc_Mark && id == LSM303AH )
-	{
-		for(int i = 0; i < 3; i++)
-			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i]);
-		Acc_Mark = 0;
-	}
-	else if ( Gyr_Mark && id == ISM330DLC)
-	{
-		for(uint8_t i = 0; i < 3; i++)
-			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 3]);
-		Gyr_Mark = 0;
-	}	
-	else if ( GXL_Mark && id == ISM330DLC_XL)
-	{
-		for(uint8_t i = 0; i < 3; i++)
-			exlnk_cv_Uint8_Int16(&data[i*2], (int16_t *)&Print_Buffer[i + 6]);
-		GXL_Mark = 0;
-	}
-	if(Print_Counter > Print_MaxCounter)
-	{
-		Print_Counter = 0;
-		if((!Print_Mark))
-		{
-			
-			Print_Mark  = 1;
-		}
-	}
-	else
-		Print_Counter++;
 
 	if (Meas2MeasTime_cnt < 32)
 		Meas2MeasTime_cnt++;
@@ -294,7 +231,6 @@ static int run_Tim_Lthread(struct  lthread * self)
 		if(! (TIM_Counter % TIM_1SEC_DIVIDER))
 		{
 			NeedToPrint = 1;
-			StatusData.tim_event_counter ++;
 		}
 	}
 	ReadyToUpload = 1;
@@ -304,7 +240,7 @@ static int run_Tim_Lthread(struct  lthread * self)
 static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
 	Command_Mark = cmd->value;
-	printf("Get Command:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
+	// printf("Get Command:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	// cmd->value += 3;
 	// exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
 	SendCounter++;
@@ -312,12 +248,13 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 }
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
-	printf("ack:[mnum: %5d reg: %5d]\n", cmd->mnum, cmd->reg);
+	// printf("ack:[mnum: %5d reg: %5d]\n", cmd->mnum, cmd->reg);
 	return 0;
 }
 static int run_Transmit_Lthread(struct  lthread * self)
 {
-	StatusCounter ++;
+	// StatusCounter ++;
+	StatusData.tim_event_counter ++;
 	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	exmliner_gogoTransmit();
 	return 0;
@@ -439,7 +376,6 @@ int main(int argc, char *argv[])
 				UpdateMlineDurationAVR += UpdateMlineDuration;
 #endif
 
-				printSensorData();
 				ReportStatus();
 				if(NeedToPrint)
 				{
@@ -447,9 +383,10 @@ int main(int argc, char *argv[])
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
 					// TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
-					printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, StatusData.mline_wait_duration);
+					// printf("Update [%8d] Transmit [%8d]\n", UpdateMlineDurationAVR, StatusData.mline_wait_duration);
 #endif
-					printf("tim[%8d]send[%5d]status[%d]\n", TIM_Counter, SendCounter, StatusCounter);
+					// printf("tim[%8d]send[%5d]status[%d]\n", TIM_Counter, SendCounter, StatusCounter);
+					printf("TIM CNT:%8d | %8d\n", TIM_Counter, StatusData.tim_event_counter);
 					NeedToPrint = 0;
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = 0;
