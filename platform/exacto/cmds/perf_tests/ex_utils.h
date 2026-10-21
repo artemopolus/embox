@@ -15,5 +15,7 @@ extern uint32_t ex_dwt_cyccnt_stop(void);
 
 extern void exutils_init(exutils_data_t * trg);
 extern void exutils_updt(exutils_data_t * trg);
+extern void exutils_force_start(exutils_data_t * trg);
+extern uint32_t exutils_get_elapsed(exutils_data_t * trg);
 
 #endif

@@ -37,7 +37,7 @@ void exutils_init(exutils_data_t * trg)
 }
 void exutils_updt(exutils_data_t * trg)
 {
-	if(trg->is_enabled)
+	if(trg->is_enabled == 0)
 	{
 		trg->start = ex_dwt_cyccnt_start();
 		trg->is_enabled = 1;
@@ -48,5 +48,29 @@ void exutils_updt(exutils_data_t * trg)
 		trg->result = trg->stop - trg->start;
 		trg->start = ex_dwt_cyccnt_start();
 	}
+}
+void exutils_force_start(exutils_data_t * trg)
+{
+	if(trg->is_enabled == 0)
+	{
+		trg->start = ex_dwt_cyccnt_start();
+		trg->result = 0;
+		trg->is_enabled = 1;
+	}
+	else
+	{
+		trg->stop = ex_dwt_cyccnt_stop();
+		trg->result = trg->stop - trg->start;
+		trg->start = ex_dwt_cyccnt_start();
+	}
+}
+uint32_t exutils_get_elapsed(exutils_data_t * trg)
+{
+	if (trg->is_enabled)
+	{
+		trg->result = ex_dwt_cyccnt_start() - trg->start;
+		return trg->result;
+	}
+	return 0;
 }
 

@@ -9,10 +9,72 @@
 #include "exactolink/exlnk_Status.h"
 
 // Sensor print section
+static exutils_data_t TagTimer;
 
+typedef struct time_marker{
+	uint32_t pt;
+	uint8_t id;
+}time_marker_t;
 
+typedef struct markers_storage
+{
+	uint8_t print_on;
+	uint8_t len;
+	uint8_t enabled;
+	uint8_t idx;
+	time_marker_t markers[100];
+}markers_storage_t;
+
+markers_storage_t SecModuleTimeStorage = {
+	.enabled = 0,
+	.idx = 0,
+	.print_on = 0,
+	.len = 100,
+};
 
 // ===
+void addTimeMarker( uint8_t id)
+{
+	if (SecModuleTimeStorage.enabled == 0)
+		return;
+	if (SecModuleTimeStorage.print_on)
+		return;
+	if ((SecModuleTimeStorage.idx + 1) > SecModuleTimeStorage.len)
+		return;
+	uint8_t i = SecModuleTimeStorage.idx;
+	SecModuleTimeStorage.markers[i].id = id;
+	SecModuleTimeStorage.markers[i].pt = exutils_get_elapsed( &TagTimer);
+	
+	SecModuleTimeStorage.idx++;
+}
+void printMeasuredTime()
+{
+	// if (SecModuleTimeStorage.print_on == 0)
+		// return;
+	SecModuleTimeStorage.print_on = 1;
+	for (uint8_t i = 0; i < SecModuleTimeStorage.idx; i++)
+	{
+		uint32_t diff;
+		if (i > 0)
+			diff = SecModuleTimeStorage.markers[i].pt - SecModuleTimeStorage.markers[i-1].pt;
+		else
+			diff = 0;
+		printf("[%d]%d : %d | %d\n", i, SecModuleTimeStorage.markers[i].id, SecModuleTimeStorage.markers[i].pt, diff);
+	}
+	
+	SecModuleTimeStorage.idx = 0;
+	SecModuleTimeStorage.print_on = 0;
+	exutils_force_start(&TagTimer);
+}
+void measureTime()
+{
+	if (SecModuleTimeStorage.enabled == 0)
+		SecModuleTimeStorage.enabled = 1;
+	// else
+	// 	SecModuleTimeStorage.print_on = 1;
+	addTimeMarker(5);
+}
+
 
 // Command value
 
@@ -27,7 +89,6 @@ struct lthread UploadDataThread[4];
 #define MEASURE_TIME
 
 #ifdef MEASURE_TIME
-static exutils_data_t TagTimer;
 static uint32_t 	
 						UploadToMlineDuration = 0,
 						UpdateMlineDuration = 0,
@@ -98,7 +159,9 @@ uint16_t uploadDataPackToExMliner( exlnk_data_str_t * trg)
 	#define SEC_MODULE_DATA_TO_COPY 30
 	if (exlnk_getDataLen(trg) > SEC_MODULE_DATA_TO_COPY)
 	{
-		exmliner_Upload(trg, 72, EXLNK_DATA_ID_DATA, 7);
+	addTimeMarker(3);
+		exmliner_Upload(trg, 60, EXLNK_DATA_ID_DATA, 7);
+	addTimeMarker(4);
 		return trg->latest_upload;
 	}
 	return 0;
@@ -115,22 +178,22 @@ static int run_UploadInfo_Lthread(struct  lthread * self)
 	exmliner_UploadALLACKS(7);
 	return 0;
 }
-static uint32_t getTagTimerResult()
-{
-	exutils_updt(&TagTimer);
-	uint32_t duration = TagTimer.result;
-	if (TransmitMlineDuration_meas_on)
-		TransmitMlineDuration += duration;
-	if (Meas2MeasTime_meas_on)
-		Meas2MeasTime_duration += duration;
-	return duration;
-}
+// static uint32_t getTagTimerResult()
+// {
+// 	exutils_updt(&TagTimer);
+// 	uint32_t duration = TagTimer.result;
+// 	if (TransmitMlineDuration_meas_on)
+// 		TransmitMlineDuration += duration;
+// 	if (Meas2MeasTime_meas_on)
+// 		Meas2MeasTime_duration += duration;
+// 	return duration;
+// }
 static int run_UploadData_Lthread(struct  lthread * self)
 {
 	if (exmliner_checkStatus(Address)) return 0;
 
 #ifdef MEASURE_TIME
-	getTagTimerResult();
+	// getTagTimerResult();
 #endif	
 	exmliner_checkHeaders();
 	uploadDataPackToExMliner( &AccData );
@@ -138,8 +201,8 @@ static int run_UploadData_Lthread(struct  lthread * self)
 	uploadDataPackToExMliner( &BccBData);
 
 #ifdef MEASURE_TIME
-	uint32_t duration = getTagTimerResult();
-	UploadToMlineDuration += duration;
+	// uint32_t duration = getTagTimerResult();
+	// UploadToMlineDuration += duration;
 	UploadToMlineEventCnt ++;
 #endif	
 	return 0;
@@ -177,16 +240,32 @@ int applyExactolinkCommand( )
 
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
-	Meas2MeasTime_meas_on = 0;
-	getTagTimerResult();
+	addTimeMarker(1);
 	StatusData.sensor_data_upload_cnt += 1;
 	StatusData.data_input_all_count += (uint32_t)len;
 	uint16_t overload_value = 0;
 	len = 6;
 	if (id == LSM303AH)
 	{
+		// getTagTimerResult();
+		Meas2MeasTime_meas_on = 0;
+
 		StatusData.acc_a_data_upload_len += len;
 		overload_value = exlnk_addNewData(&AccData,len, data);
+
+		if (Meas2MeasTime_cnt < 32)
+			Meas2MeasTime_cnt++;
+		else
+		{
+			StatusData.sns2sns_time = Meas2MeasTime_duration /Meas2MeasTime_cnt;
+			Meas2MeasTime_duration = 0;
+			Meas2MeasTime_cnt = 0;
+		}
+		// getTagTimerResult();
+		Meas2MeasTime_meas_on = 1;
+
+
+
 	}
 	else if (id == ISM330DLC)
 	{
@@ -203,16 +282,7 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 		StatusData.over_load_mark += overload_value;
 	}
 
-	if (Meas2MeasTime_cnt < 32)
-		Meas2MeasTime_cnt++;
-	else
-	{
-		StatusData.sns2sns_time = Meas2MeasTime_duration /Meas2MeasTime_cnt;
-		Meas2MeasTime_duration = 0;
-		Meas2MeasTime_cnt = 0;
-	}
-	getTagTimerResult();
-	Meas2MeasTime_meas_on = 1;
+	addTimeMarker(2);
 
 	return 0;	
 }
@@ -348,7 +418,7 @@ int main(int argc, char *argv[])
 			if (!receive_marker)
 			{
 				index++;
-				if(index > 500000)
+				if(index > 1000000)
 				{
 					exmliner_Update(Address);
 					index = 0;
@@ -360,7 +430,7 @@ int main(int argc, char *argv[])
 			{
 
 #ifdef MEASURE_TIME
-				TransmitMlineDuration += getTagTimerResult();
+				// TransmitMlineDuration += getTagTimerResult();
 				TransmitMlineDuration_meas_on = 0;
 				TransmitMlineDurationAVR += TransmitMlineDuration;
 				StatusData.mline_sns_upload_duration = UploadToMlineDuration / UploadToMlineEventCnt;
@@ -369,17 +439,18 @@ int main(int argc, char *argv[])
 				UploadToMlineEventCnt = 0;
 #endif
 
-
 				exmliner_Update(Address);
+				// printf("idx:%d\n", idx_main);
 #ifdef MEASURE_TIME
-				UpdateMlineDuration = getTagTimerResult();
+				// UpdateMlineDuration = getTagTimerResult();
 				UpdateMlineDurationAVR += UpdateMlineDuration;
 #endif
+					measureTime();
 
 				ReportStatus();
 				if(NeedToPrint)
 				{
-
+					printMeasuredTime();
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = UpdateMlineDurationAVR / TIM_1SEC_DIVIDER;
 					// TransmitMlineDurationAVR = TransmitMlineDurationAVR /TIM_1SEC_DIVIDER;
@@ -394,7 +465,7 @@ int main(int argc, char *argv[])
 				}
 				EnableUpdate = 0;
 #ifdef MEASURE_TIME
-				getTagTimerResult();
+				// getTagTimerResult();
 				if (TransmitMlineDuration_cnt < 32)
 					TransmitMlineDuration_cnt++;
 				else
