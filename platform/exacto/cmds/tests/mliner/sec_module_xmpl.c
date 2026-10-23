@@ -35,6 +35,9 @@ markers_storage_t SecModuleTimeStorage = {
 // ===
 void addTimeMarker( uint8_t id)
 {
+	// if ((id == 3) || (id ==4))
+	if(id < 10)
+		return;
 	if (SecModuleTimeStorage.enabled == 0)
 		return;
 	if (SecModuleTimeStorage.print_on)
@@ -47,11 +50,13 @@ void addTimeMarker( uint8_t id)
 	
 	SecModuleTimeStorage.idx++;
 }
+#define SEC_MODULE_TIME_STORAGE
 void printMeasuredTime()
 {
 	// if (SecModuleTimeStorage.print_on == 0)
 		// return;
 	SecModuleTimeStorage.print_on = 1;
+#ifdef SEC_MODULE_TIME_STORAGE
 	for (uint8_t i = 0; i < SecModuleTimeStorage.idx; i++)
 	{
 		uint32_t diff;
@@ -61,7 +66,7 @@ void printMeasuredTime()
 			diff = 0;
 		printf("[%d]%d : %d | %d\n", i, SecModuleTimeStorage.markers[i].id, SecModuleTimeStorage.markers[i].pt, diff);
 	}
-	
+#endif
 	SecModuleTimeStorage.idx = 0;
 	SecModuleTimeStorage.print_on = 0;
 	exutils_force_start(&TagTimer);
@@ -72,7 +77,7 @@ void measureTime()
 		SecModuleTimeStorage.enabled = 1;
 	// else
 	// 	SecModuleTimeStorage.print_on = 1;
-	addTimeMarker(5);
+	// addTimeMarker(5);
 }
 
 
@@ -175,7 +180,8 @@ static int run_UploadInfo_Lthread(struct  lthread * self)
 {
 	if (exmliner_checkStatus(Address)) return 0;
 	exmliner_checkHeaders();
-	exmliner_UploadALLACKS(7);
+	if (exmliner_UploadALLACKS(7))
+		exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	return 0;
 }
 // static uint32_t getTagTimerResult()
@@ -219,6 +225,7 @@ int applyExactolinkCommand( )
 		if (Command_Mark == 5)
 		{
 			exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
+			measureTime();
 			ModeChange_Mark = 1;
 		}
 		else if (Command_Mark == 9)
@@ -240,13 +247,13 @@ int applyExactolinkCommand( )
 
 int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 {
-	addTimeMarker(1);
 	StatusData.sensor_data_upload_cnt += 1;
 	StatusData.data_input_all_count += (uint32_t)len;
 	uint16_t overload_value = 0;
 	len = 6;
 	if (id == LSM303AH)
 	{
+	addTimeMarker(1);
 		// getTagTimerResult();
 		Meas2MeasTime_meas_on = 0;
 
@@ -276,13 +283,13 @@ int onUpdateSensorData(uint8_t * data, uint16_t len, uint8_t id)
 	{
 		StatusData.bcc_b_data_upload_len += len;
 		overload_value = exlnk_addNewData(&BccBData,len, data);
+	addTimeMarker(2);
 	}
 	if (overload_value > 0)
 	{
 		StatusData.over_load_mark += overload_value;
 	}
 
-	addTimeMarker(2);
 
 	return 0;	
 }
@@ -323,15 +330,21 @@ static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 }
 static int run_Transmit_Lthread(struct  lthread * self)
 {
+	if (exmliner_checkStatus(Address)) return 0;
+	exmliner_checkHeaders();
 	// StatusCounter ++;
+	addTimeMarker(21);
 	StatusData.tim_event_counter ++;
 	exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
 	exmliner_gogoTransmit();
+	addTimeMarker(25);
 	return 0;
 }
 static int onTransmitHandler(uint16_t adr)
 {
+	addTimeMarker(11);
 	lthread_launch(&UploadDataThread[3]);
+	addTimeMarker(12);
 	return 0;
 }
 static int onResetEventHandler()
@@ -425,10 +438,11 @@ int main(int argc, char *argv[])
 					printf("reset irq\n");
 					__asm("nop");
 				}
+				// usleep(100);
 			}
 			else
 			{
-
+				index = 0;
 #ifdef MEASURE_TIME
 				// TransmitMlineDuration += getTagTimerResult();
 				TransmitMlineDuration_meas_on = 0;
@@ -438,14 +452,16 @@ int main(int argc, char *argv[])
 				UploadToMlineDuration = 0;
 				UploadToMlineEventCnt = 0;
 #endif
-
+				addTimeMarker(5);
+				
 				exmliner_Update(Address);
+
+				addTimeMarker(6);
 				// printf("idx:%d\n", idx_main);
 #ifdef MEASURE_TIME
 				// UpdateMlineDuration = getTagTimerResult();
 				UpdateMlineDurationAVR += UpdateMlineDuration;
 #endif
-					measureTime();
 
 				ReportStatus();
 				if(NeedToPrint)
@@ -458,6 +474,7 @@ int main(int argc, char *argv[])
 #endif
 					// printf("tim[%8d]send[%5d]status[%d]\n", TIM_Counter, SendCounter, StatusCounter);
 					printf("TIM CNT:%8d | %8d\n", TIM_Counter, StatusData.tim_event_counter);
+					exmliner_printStatus(0);
 					NeedToPrint = 0;
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = 0;
@@ -477,6 +494,7 @@ int main(int argc, char *argv[])
 				TransmitMlineDuration = 0;
 				TransmitMlineDuration_meas_on = 1;
 #endif
+				addTimeMarker(7);
 			}
 		// sleep(1);
 		}
