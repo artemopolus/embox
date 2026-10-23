@@ -83,6 +83,19 @@ void measureTime()
 
 // Command value
 
+typedef struct command_buffer{
+	uint8_t pt;
+	uint8_t max;
+	uint8_t overflow;
+	uint8_t commands[10];
+}command_buffer_t;
+
+static command_buffer_t AfinaCmdRec = {
+	.pt = 0,
+	.overflow = 0,
+	.max = 10,
+};
+
 static uint8_t Command_Mark = EXACTOLINK_NO_DATA;
 static uint8_t ModeChange_Mark = 0;
 
@@ -112,6 +125,8 @@ static uint8_t Meas2MeasTime_cnt = 0;
 static uint8_t UploadToMlineEventCnt = 0;
 
 static exlnk_status_str_t StatusData;
+
+static uint8_t AtLeastOneCmdReceived = 0;
 
 static uint16_t TIM_Counter = 0;
 static uint16_t SendCounter = 0;
@@ -213,22 +228,23 @@ static int run_UploadData_Lthread(struct  lthread * self)
 #endif	
 	return 0;
 }
-
-int applyExactolinkCommand( )
+int checkAfinaCmdBuffer()
 {
-	lthread_launch(&UploadDataThread[2]);
-	lthread_launch(&UploadDataThread[0]);
-	lthread_launch(&UploadDataThread[1]);
+	printf(
+		"Commands:%d,overflow:%d\n", AfinaCmdRec.pt, AfinaCmdRec.overflow
+	);
 
-	if (Command_Mark != EXACTOLINK_NO_DATA)
+	for (uint8_t i = 0; i < AfinaCmdRec.pt; i++)
+	// if (Command_Mark != EXACTOLINK_NO_DATA)
 	{
-		if (Command_Mark == 5)
+		uint8_t cmd = AfinaCmdRec.commands[i];
+		if (cmd == 5)
 		{
 			exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
 			measureTime();
 			ModeChange_Mark = 1;
 		}
-		else if (Command_Mark == 9)
+		else if (cmd == 9)
 		{
 			exSnsStop();
 			ModeChange_Mark = 2;
@@ -238,8 +254,24 @@ int applyExactolinkCommand( )
 			// printf("\n\nUnknown command: %d\n\n", Command_Mark);
 		}
 		
-		Command_Mark = 0;
+		// Command_Mark = 0;
 	}
+	if ((AtLeastOneCmdReceived == 0)&&( AfinaCmdRec.pt == 0))
+	{
+		usleep(10);
+		exmliner_reset();
+	}
+	AfinaCmdRec.pt = 0;
+	AfinaCmdRec.overflow = 0;
+	return 0;
+}
+
+int applyExactolinkCommand( )
+{
+	lthread_launch(&UploadDataThread[2]);
+	lthread_launch(&UploadDataThread[0]);
+	lthread_launch(&UploadDataThread[1]);
+
 	return 0;	
 }
 
@@ -317,6 +349,18 @@ static int run_Tim_Lthread(struct  lthread * self)
 static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 {
 	Command_Mark = cmd->value;
+	if (cmd->value == 112)
+	{
+		AtLeastOneCmdReceived = 1;
+	}
+	if (AfinaCmdRec.pt < AfinaCmdRec.max)
+	{
+		AfinaCmdRec.commands[AfinaCmdRec.pt++] = cmd->value;
+	}
+	else
+	{
+		AfinaCmdRec.overflow++;
+	}	
 	// printf("Get Command:[reg: %3d val: %3d]\n", cmd->reg, cmd->value);
 	// cmd->value += 3;
 	// exmliner_Upload(cmd, sizeof(exlnk_cmd_str_t), EXLNK_DATA_ID_CMD, Address);
@@ -462,7 +506,7 @@ int main(int argc, char *argv[])
 				// UpdateMlineDuration = getTagTimerResult();
 				UpdateMlineDurationAVR += UpdateMlineDuration;
 #endif
-
+				checkAfinaCmdBuffer();
 				ReportStatus();
 				if(NeedToPrint)
 				{
