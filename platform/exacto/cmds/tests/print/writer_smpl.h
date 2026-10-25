@@ -6,6 +6,7 @@ extern void addDataToWrite( uint8_t * data, uint16_t datalen);
 extern void addDataToFile( uint8_t file_id, uint8_t * data, uint16_t datalen);
 extern void printReaderData();
 extern void openFileSD();
+extern uint8_t isFileOpen();
 extern uint8_t isReadyToWrite();
 extern void blockWrite();
 extern void unBlockWrite();

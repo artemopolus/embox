@@ -123,7 +123,7 @@ static int onCmdEventHandler(exlnk_cmd_str_t * cmd)
 }
 static int onCmdAckEventHandler(exlnk_cmdack_str_t * cmd)
 {
-	printf("inAck:[mnum: %5d reg: %5d]\n", cmd->mnum, cmd->reg);
+	printf("inAck:[mnum: %5d] %5d; %5d]\n", cmd->mnum, cmd->reg, cmd->id);
 	if(exmliner_checkAck(cmd, AddressSendOrder[AdrCntIndex]))
 	{
 		printf("=====>Done\n");
@@ -275,7 +275,6 @@ static void changeSnsMode(uint8_t value)
 }
 
 
-
 int main(int argc, char *argv[]) 
 {
 	printf("Start smpl sender to mliner\n\n");
@@ -310,6 +309,13 @@ int main(int argc, char *argv[])
 
 	openFileSD();
 
+	while (!isFileOpen())
+	{
+		usleep(100000);
+		printf(".");
+	}
+	
+
 	// if (1)
 	// {
 	// 	while (1)
@@ -325,7 +331,6 @@ int main(int argc, char *argv[])
 
 
 	uint8_t cnt = 0;
-	sleep(2);
    
 	
 	while (1)

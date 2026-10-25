@@ -364,7 +364,10 @@ void write_to_buffers( )
     writeBuffer( & GyrDataFile);
     writeBuffer( & BccBDataFile);
 }
-
+uint8_t isFileOpen()
+{
+	return FileOpen;
+}
 static void *runMainBasicThread(void *arg) {
     
 	printf("Start thread with SD writing\n");
