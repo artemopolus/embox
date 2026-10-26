@@ -9,6 +9,9 @@
 #include "exactolink/exlnk_Status.h"
 
 // Sensor print section
+
+static uint8_t CurrSecXmplMode = 0;
+
 static exutils_data_t TagTimer;
 
 typedef struct time_marker{
@@ -22,7 +25,7 @@ typedef struct markers_storage
 	uint8_t len;
 	uint8_t enabled;
 	uint8_t idx;
-	time_marker_t markers[100];
+	time_marker_t markers[50];
 }markers_storage_t;
 
 markers_storage_t SecModuleTimeStorage = {
@@ -166,6 +169,11 @@ int ReportStatus()
 		{
 			printf("\n\nSTOP\n\n");
 		}
+		else if (ModeChange_Mark == 100)
+		{
+			printf("\n\nALREADY SET\n\n");
+		}
+		
 		ModeChange_Mark = 0;
 	}
 
@@ -240,9 +248,17 @@ int checkAfinaCmdBuffer()
 		uint8_t cmd = AfinaCmdRec.commands[i];
 		if (cmd == 5)
 		{
-			exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
-			measureTime();
-			ModeChange_Mark = 1;
+			if (CurrSecXmplMode == 1)
+			{
+				ModeChange_Mark = 100;
+			}
+			else
+			{
+				exSnsStart(EXACTOLINK_SNS_XL_0100_XLGR_0100);
+				measureTime();
+				ModeChange_Mark = 1;
+				CurrSecXmplMode = 1;
+			}
 		}
 		else if (cmd == 9)
 		{
@@ -457,6 +473,7 @@ int main(int argc, char *argv[])
 	exlnk_status_init(&StatusData);
 
 	printf("Start basic cycle\n");
+	exmliner_printInfo();
 	uint32_t index = 0;
 
 	while (1)
