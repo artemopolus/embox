@@ -307,6 +307,8 @@ int main(int argc, char *argv[])
 	setini_exbu8(&GyrDataStore);
 	setini_exbu8(&BccBDataStore);
 
+	exmliner_printInfo();
+
 	openFileSD();
 
 	while (!isFileOpen())
