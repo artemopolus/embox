@@ -7,6 +7,7 @@
 #include "sensors/lsmism.h"
 #include "exactolink/exlnk_Data.h"
 #include "exactolink/exlnk_Status.h"
+#include "exactolink/exlnk_setHeader.h"
 
 // Sensor print section
 
@@ -25,14 +26,14 @@ typedef struct markers_storage
 	uint8_t len;
 	uint8_t enabled;
 	uint8_t idx;
-	time_marker_t markers[50];
+	time_marker_t markers[10];
 }markers_storage_t;
 
 markers_storage_t SecModuleTimeStorage = {
 	.enabled = 0,
 	.idx = 0,
 	.print_on = 0,
-	.len = 100,
+	.len = 10,
 };
 
 // ===
@@ -53,7 +54,7 @@ void addTimeMarker( uint8_t id)
 	
 	SecModuleTimeStorage.idx++;
 }
-#define SEC_MODULE_TIME_STORAGE
+// #define SEC_MODULE_TIME_STORAGE
 void printMeasuredTime()
 {
 	// if (SecModuleTimeStorage.print_on == 0)
@@ -182,13 +183,13 @@ int ReportStatus()
 
 	return 0;
 }
-uint16_t uploadDataPackToExMliner( exlnk_data_str_t * trg)
+uint16_t uploadDataPackToExMliner( exlnk_data_str_t * trg, const uint16_t len)
 {
-	#define SEC_MODULE_DATA_TO_COPY 30
+	#define SEC_MODULE_DATA_TO_COPY 60
 	if (exlnk_getDataLen(trg) > SEC_MODULE_DATA_TO_COPY)
 	{
 	addTimeMarker(3);
-		exmliner_Upload(trg, 60, EXLNK_DATA_ID_DATA, 7);
+		exmliner_Upload(trg, len, EXLNK_DATA_ID_DATA, 7);
 	addTimeMarker(4);
 		return trg->latest_upload;
 	}
@@ -203,8 +204,11 @@ static int run_UploadInfo_Lthread(struct  lthread * self)
 {
 	if (exmliner_checkStatus(Address)) return 0;
 	exmliner_checkHeaders();
-	if (exmliner_UploadALLACKS(7))
+	if (exmliner_haveAck())
+	{
 		exmliner_Upload(&StatusData,0,EXLNK_DATA_ID_STATUS, 7);
+		exmliner_UploadALLACKS(7);
+	}
 	return 0;
 }
 // static uint32_t getTagTimerResult()
@@ -225,9 +229,15 @@ static int run_UploadData_Lthread(struct  lthread * self)
 	// getTagTimerResult();
 #endif	
 	exmliner_checkHeaders();
-	uploadDataPackToExMliner( &AccData );
-	uploadDataPackToExMliner ( &GyrData );
-	uploadDataPackToExMliner( &BccBData);
+	uint16_t free_space = exmliner_getFreeSpace(7);
+	uint16_t len_to_copy = 294;
+	if (free_space < len_to_copy*3)
+	{
+		len_to_copy  = ((free_space / 3) / 6) * 6;
+	}
+	uploadDataPackToExMliner( &AccData, len_to_copy);
+	uploadDataPackToExMliner ( &GyrData, len_to_copy );
+	uploadDataPackToExMliner( &BccBData, len_to_copy);
 
 #ifdef MEASURE_TIME
 	// uint32_t duration = getTagTimerResult();
@@ -238,9 +248,9 @@ static int run_UploadData_Lthread(struct  lthread * self)
 }
 int checkAfinaCmdBuffer()
 {
-	printf(
-		"Commands:%d,overflow:%d\n", AfinaCmdRec.pt, AfinaCmdRec.overflow
-	);
+	// printf(
+	// 	"Commands:%d,overflow:%d\n", AfinaCmdRec.pt, AfinaCmdRec.overflow
+	// );
 
 	for (uint8_t i = 0; i < AfinaCmdRec.pt; i++)
 	// if (Command_Mark != EXACTOLINK_NO_DATA)
@@ -535,7 +545,7 @@ int main(int argc, char *argv[])
 #endif
 					// printf("tim[%8d]send[%5d]status[%d]\n", TIM_Counter, SendCounter, StatusCounter);
 					printf("TIM CNT:%8d | %8d\n", TIM_Counter, StatusData.tim_event_counter);
-					exmliner_printStatus(0);
+					// exmliner_printStatus(0);
 					NeedToPrint = 0;
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = 0;
