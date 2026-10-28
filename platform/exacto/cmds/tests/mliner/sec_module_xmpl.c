@@ -156,8 +156,13 @@ int ReportStatus()
 
 	if (1)
 	{
-
 		// printf("Tim Events: %d\n", StatusData.tim_event_counter);
+		// printf("ACC upload[%d]\n", StatusData.acc_a_data_upload_len );
+		// printf("GYR upload[%d]\n", StatusData.gyr_data_upload_len );
+		// printf("BCC upload[%d]\n", StatusData.bcc_b_data_upload_len);
+		// printf("SNS Events: %d\n", StatusData.sensor_data_upload_cnt );
+		// exmliner_printStatus(0);
+
 		if (StatusData.over_load_mark)
 		{
 			printf("Buffer OVERLOAD(!!!)[%d]/[%d]\n", StatusData.over_load_mark, StatusData.data_input_all_count );
@@ -178,14 +183,11 @@ int ReportStatus()
 		ModeChange_Mark = 0;
 	}
 
-	
-	// exmliner_printStatus(0);
-
 	return 0;
 }
 uint16_t uploadDataPackToExMliner( exlnk_data_str_t * trg, const uint16_t len)
 {
-	#define SEC_MODULE_DATA_TO_COPY 60
+	#define SEC_MODULE_DATA_TO_COPY 30
 	if (exlnk_getDataLen(trg) > SEC_MODULE_DATA_TO_COPY)
 	{
 	addTimeMarker(3);
@@ -229,12 +231,12 @@ static int run_UploadData_Lthread(struct  lthread * self)
 	// getTagTimerResult();
 #endif	
 	exmliner_checkHeaders();
-	uint16_t free_space = exmliner_getFreeSpace(7);
+	// uint16_t free_space = exmliner_getFreeSpace(7);
 	uint16_t len_to_copy = 294;
-	if (free_space < len_to_copy*3)
-	{
-		len_to_copy  = ((free_space / 3) / 6) * 6;
-	}
+	// if (free_space < len_to_copy*3)
+	// {
+	// 	len_to_copy  = ((free_space / 3) / 6) * 6;
+	// }
 	uploadDataPackToExMliner( &AccData, len_to_copy);
 	uploadDataPackToExMliner ( &GyrData, len_to_copy );
 	uploadDataPackToExMliner( &BccBData, len_to_copy);
@@ -545,7 +547,6 @@ int main(int argc, char *argv[])
 #endif
 					// printf("tim[%8d]send[%5d]status[%d]\n", TIM_Counter, SendCounter, StatusCounter);
 					printf("TIM CNT:%8d | %8d\n", TIM_Counter, StatusData.tim_event_counter);
-					// exmliner_printStatus(0);
 					NeedToPrint = 0;
 #ifdef MEASURE_TIME
 					UpdateMlineDurationAVR = 0;
