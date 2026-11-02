@@ -3,6 +3,8 @@
 #include "tim/tim.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+// #include <stdlib.h>
 #include "operator/exacto_buffer.h"
 
 #include "exactolink/exlnk_setHeader.h"
@@ -70,6 +72,11 @@ static uint32_t
 
 static const char hex[] = "0123456789ABCDEF";
 
+void sigint_handler(int sig)
+{
+    printf("\nDone\n");
+    exit(0);
+}
 
 void print_hex(const uint8_t *data, uint16_t len)
 {
@@ -277,6 +284,8 @@ static void changeSnsMode(uint8_t value)
 
 int main(int argc, char *argv[]) 
 {
+	signal(SIGINT, sigint_handler);   // <-- добавить эту строку
+
 	printf("Start smpl sender to mliner\n\n");
     if (argc == 2)
 	{

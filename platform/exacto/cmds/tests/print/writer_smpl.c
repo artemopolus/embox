@@ -37,6 +37,8 @@ typedef struct{
     uint16_t write_event_cnt;
     uint16_t file_write_dones;
     uint32_t write_cnt;
+    uint32_t buffer_write_cnt;
+    uint16_t fsync_cnt;
     char filename[64];
     uint8_t buffer[WRITE_FILE_BUFFER_SZ];
     ExactoBufferUint8Type Store;
@@ -47,6 +49,8 @@ ExactoFile AccDataFile = {
     .write_flag = 1,
     .write_event_cnt = 0,
     .write_cnt = 0,
+    .buffer_write_cnt = 0,
+    .fsync_cnt = 0,
     .file_write_dones = 0,
     .filename = "none",
 };
@@ -56,6 +60,8 @@ ExactoFile GyrDataFile = {
     .write_flag = 1,
     .write_event_cnt = 0,
     .write_cnt = 0,
+    .buffer_write_cnt = 0,
+    .fsync_cnt = 0,
     .file_write_dones = 0,
     .filename = "none",
 };
@@ -65,6 +71,8 @@ ExactoFile BccBDataFile = {
     .write_flag = 1,
     .write_event_cnt = 0,
     .write_cnt = 0,
+    .buffer_write_cnt = 0,
+    .fsync_cnt = 0,
     .file_write_dones = 0,
     .filename = "none",
 };
@@ -226,13 +234,48 @@ int get_filenames()
 }
 void close_one_file( ExactoFile * trg)
 {
-    if (trg->status == 0 )
+    struct stat file_stat;
+
+    if (trg == NULL || trg->status != 2)
         return;
-    close(trg->File);
+
+    printf("\n========== FILE CLOSING ==========\n");
+    printf("Filename: %s\n", trg->filename);
+
+    /* Получаем фактический размер файла перед закрытием */
+    if (fstat(trg->File, &file_stat) == 0)
+    {
+        printf("File size: %ld bytes\n",
+               (long)file_stat.st_size);
+    }
+    else
+    {
+        printf("Can't get file size, errno=%d\n", errno);
+    }
+
+    printf("Written bytes: %lu\n",
+           (unsigned long)trg->write_cnt);
+
+    printf("Write events: %u\n",
+           (unsigned int)trg->write_event_cnt);
+
+    /* Закрываем файл */
+    if (close(trg->File) == 0)
+    {
+        printf("File successfully closed\n");
+    }
+    else
+    {
+        printf("Error closing file, errno=%d\n", errno);
+    }
+
+    trg->File = -1;
     trg->status = 0;
     trg->write_cnt = 0;
     trg->write_event_cnt = 0;
     trg->file_write_dones = 0;
+
+    printf("==================================\n");
 }
 void close_files()
 {
@@ -354,6 +397,18 @@ void writeBuffer( ExactoFile * trg)
         else
         {
             trg->file_write_dones ++;
+            trg->buffer_write_cnt += copy;
+            if (trg->buffer_write_cnt > 4096)
+            {
+                if (fsync(trg->File) != 0) 
+                {
+                    printf("fsync error\n");
+                }
+                else
+                {
+                    trg->fsync_cnt ++;
+                }
+            }
         }
         trg->write_flag = 1;
     }
@@ -508,10 +563,12 @@ void printReaderData()
             "Data added len: %d\n"
             "GYR events: %d\n"
             "Data added len: %d\n"
+            "FSYNC(Acc): %d\n"
         , BBBFlag, 
         AccDataFile.write_event_cnt, AccDataFile.write_cnt,
         GyrDataFile.write_event_cnt, GyrDataFile.write_cnt,
-        BccBDataFile.write_event_cnt, BccBDataFile.write_cnt
+        BccBDataFile.write_event_cnt, BccBDataFile.write_cnt,
+        AccDataFile.fsync_cnt
     );
 }
 EMBOX_UNIT_INIT(initTestSmplMod);
