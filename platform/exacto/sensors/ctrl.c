@@ -127,7 +127,7 @@ uint8_t isXlGrDataReady(exacto_sensors_list_t sensor, const uint8_t value)
             return 1; 
         break;
     case ISM330DLC:
-        if(value & 0x03)
+        // if(value & 0x03)
             return 1; 
         break;
     default:
