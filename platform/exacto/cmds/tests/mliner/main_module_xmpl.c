@@ -19,7 +19,7 @@
 #define ECTM_MESSAGE_SIZE EXACTO_BUFFER_UINT8_SZ
 #define ECTM_SEC_COUNT 2
 #define TIM_1SEC_DIVIDER 200
-#define DATA_STORE_SZ 128
+#define DATA_STORE_SZ 2048
 
 static uint8_t CurrentDivider = TIM_1SEC_DIVIDER;
 
@@ -74,6 +74,12 @@ static const char hex[] = "0123456789ABCDEF";
 
 void sigint_handler(int sig)
 {
+	stopWritingThread();
+	while (isFileOpen())
+	{
+		sleep(1);
+	}
+	
     printf("\nDone\n");
     exit(0);
 }

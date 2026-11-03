@@ -11,5 +11,6 @@ extern uint8_t isReadyToWrite();
 extern void blockWrite();
 extern void unBlockWrite();
 extern void readTestFile();
+extern void stopWritingThread();
 
 #endif

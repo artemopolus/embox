@@ -277,12 +277,17 @@ void close_one_file( ExactoFile * trg)
 
     printf("==================================\n");
 }
-void close_files()
+void closeSDFiles()
 {
+    printReaderData();
+
+    printf("\nACC FILE\n");
     close_one_file( & AccDataFile );
+    printf("\nGYR FILE\n");
     close_one_file( & GyrDataFile );
+    printf("\nBCC FILE\n");
     close_one_file( & BccBDataFile );
-    printf("Close files\n");
+    printf("\nClose files\n");
 }
 int open_one_file(ExactoFile * trg)
 {
@@ -343,7 +348,11 @@ void readOneFile( ExactoFile * trg)
     close(trg->File);
     printf("\nEnd of file: %s\n", trg->filename);
 }
-
+void stopWritingThread()
+{
+    printf("\nStop write data to files\n");
+    BBBFlag = 0;
+}
 void readFileAndPrintHex(const char *filename) 
 {
 
@@ -398,8 +407,9 @@ void writeBuffer( ExactoFile * trg)
         {
             trg->file_write_dones ++;
             trg->buffer_write_cnt += copy;
-            if (trg->buffer_write_cnt > 4096)
+            if (trg->buffer_write_cnt > 2048)
             {
+                trg->buffer_write_cnt = 0;
                 if (fsync(trg->File) != 0) 
                 {
                     printf("fsync error\n");
@@ -483,7 +493,7 @@ static void *runMainBasicThread(void *arg) {
         // writeBufferDataToFile();
         write_to_buffers();
 
-		usleep(10000);
+		usleep(100);
 	}
 	
     addDataToFile(0, Ender, 6);
@@ -493,7 +503,7 @@ static void *runMainBasicThread(void *arg) {
     // addDataToWrite( Ender, 6);
     // writeBufferDataToFile();
     write_to_buffers();
-    close_files();
+    closeSDFiles();
     // close(Pt);
     FileOpen = 0;
     
